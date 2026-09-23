@@ -1,17 +1,14 @@
 import { cn, initials } from "@/lib/utils";
 
 const sizes = {
-  xs: "size-7 text-[0.625rem]",
-  sm: "size-9 text-[0.7rem]",
-  md: "size-12 text-[0.85rem]",
-  lg: "size-16 text-[1.05rem]",
-  xl: "size-24 text-[1.5rem]",
+  xs: "size-6 text-[0.6rem]",
+  sm: "size-8 text-[0.68rem]",
+  md: "size-10 text-[0.8rem]",
+  lg: "size-14 text-[1rem]",
+  xl: "size-20 text-[1.3rem]",
 } as const;
 
-/**
- * Avatars fall back to initials on the brand gradient, so a profile without a
- * photo still looks deliberate rather than broken.
- */
+/** Initials on a plain background when there is no photo. */
 export function Avatar({
   name,
   image,
@@ -26,19 +23,16 @@ export function Avatar({
   ring?: boolean;
 }) {
   const shell = cn(
-    "relative shrink-0 overflow-hidden rounded-full",
+    "shrink-0 overflow-hidden rounded-full border border-line",
     sizes[size],
-    ring && "ring-2 ring-surface outline outline-1 outline-line",
+    ring && "border-2",
     className,
   );
 
   if (image) {
-    return (
-      // A plain <img> keeps avatars working without the image optimizer, which
-      // matters for local development and self-hosted deployments.
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={image} alt={name} className={cn(shell, "object-cover")} />
-    );
+    // A plain <img> keeps avatars working without the image optimizer.
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={image} alt={name} className={cn(shell, "object-cover")} />;
   }
 
   return (
@@ -46,7 +40,7 @@ export function Avatar({
       aria-hidden
       className={cn(
         shell,
-        "brand-gradient flex items-center justify-center font-bold text-white",
+        "flex items-center justify-center bg-surface-2 font-semibold text-ink-2",
       )}
     >
       {initials(name)}

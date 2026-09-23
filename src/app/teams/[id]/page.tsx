@@ -72,9 +72,8 @@ export default async function TeamPage({ params }: Props) {
   return (
     <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
       {/* --------------------------------------------------------- header */}
-      <Card className="overflow-hidden">
-        <div className="brand-gradient h-1.5" aria-hidden />
-        <CardBody className="p-5 sm:p-6">
+      <Card>
+        <CardBody className="p-4 sm:p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">

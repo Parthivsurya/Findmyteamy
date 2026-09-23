@@ -47,8 +47,6 @@ export function EventCard({ event }: { event: EventCardEvent }) {
 
   return (
     <Card interactive className="flex h-full flex-col">
-      <div className="brand-gradient h-1.5 rounded-t-card" aria-hidden />
-
       <div className="flex flex-1 flex-col p-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">

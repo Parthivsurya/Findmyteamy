@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { btn } from "@/components/ui/button";
-import { BellIcon, InboxIcon } from "@/components/icons";
 import { getCurrentUser } from "@/lib/auth";
 import { Logo } from "./logo";
 import {
@@ -21,12 +20,16 @@ export async function SiteHeader() {
   const user = await getCurrentUser();
 
   const links: NavLink[] = user
-    ? [{ href: "/dashboard", label: "Dashboard" }, ...PUBLIC_LINKS]
+    ? [
+        { href: "/dashboard", label: "Dashboard" },
+        ...PUBLIC_LINKS,
+        { href: "/teams", label: "My teams" },
+      ]
     : PUBLIC_LINKS;
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-[color-mix(in_srgb,var(--surface)_88%,transparent)] backdrop-blur-md">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 sm:px-6">
+    <header className="border-b border-line bg-surface">
+      <div className="mx-auto flex h-12 max-w-6xl items-center gap-3 px-4 sm:px-6">
         <Logo />
 
         <div className="ml-2 flex-1">
@@ -40,24 +43,18 @@ export async function SiteHeader() {
             <>
               <Link
                 href="/requests"
-                aria-label={`Requests${user.pendingRequests ? ` (${user.pendingRequests} pending)` : ""}`}
-                className="relative hidden size-9 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink sm:inline-flex"
+                className="hidden px-2 py-1 text-[0.82rem] text-ink-2 hover:text-brand sm:inline"
               >
-                <InboxIcon className="size-4.5" />
-                {user.pendingRequests > 0 ? <Pip count={user.pendingRequests} /> : null}
+                Requests
+                {user.pendingRequests > 0 ? ` (${user.pendingRequests})` : ""}
               </Link>
-
               <Link
                 href="/notifications"
-                aria-label={`Notifications${user.unreadNotifications ? ` (${user.unreadNotifications} unread)` : ""}`}
-                className="relative inline-flex size-9 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
+                className="px-2 py-1 text-[0.82rem] text-ink-2 hover:text-brand"
               >
-                <BellIcon className="size-4.5" />
-                {user.unreadNotifications > 0 ? (
-                  <Pip count={user.unreadNotifications} />
-                ) : null}
+                Alerts
+                {user.unreadNotifications > 0 ? ` (${user.unreadNotifications})` : ""}
               </Link>
-
               <div className="ml-1 hidden md:block">
                 <UserMenu
                   user={{
@@ -76,7 +73,7 @@ export async function SiteHeader() {
                 Sign in
               </Link>
               <Link href="/signup" className={btn("primary", "sm")}>
-                Get started
+                Sign up
               </Link>
             </div>
           )}
@@ -85,13 +82,5 @@ export async function SiteHeader() {
         </div>
       </div>
     </header>
-  );
-}
-
-function Pip({ count }: { count: number }) {
-  return (
-    <span className="absolute -right-0.5 -top-0.5 inline-flex min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[0.62rem] font-bold leading-4 text-white">
-      {count > 9 ? "9+" : count}
-    </span>
   );
 }

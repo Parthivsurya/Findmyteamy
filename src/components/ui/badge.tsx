@@ -12,14 +12,15 @@ export type BadgeTone =
 
 const tones: Record<BadgeTone, string> = {
   neutral: "bg-surface-2 text-ink-2 border-line",
-  brand: "bg-brand-soft text-brand border-transparent",
-  sky: "bg-sky-soft text-sky-ink border-transparent",
-  lime: "bg-lime-soft text-lime-ink border-transparent",
-  ok: "bg-ok-soft text-ok border-transparent",
-  warn: "bg-warn-soft text-warn border-transparent",
-  danger: "bg-danger-soft text-danger border-transparent",
+  brand: "bg-brand-soft text-brand border-line",
+  sky: "bg-sky-soft text-sky-ink border-line",
+  lime: "bg-lime-soft text-lime-ink border-line",
+  ok: "bg-ok-soft text-ok border-line",
+  warn: "bg-warn-soft text-warn border-line",
+  danger: "bg-danger-soft text-danger border-line",
 };
 
+/** A small plain label. */
 export function Badge({
   children,
   tone = "neutral",
@@ -35,8 +36,8 @@ export function Badge({
     <span
       title={title}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5",
-        "text-[0.7rem] font-semibold leading-5 tracking-[0.01em]",
+        "inline-flex items-center gap-1 rounded border px-1.5 py-0.5",
+        "text-[0.72rem] font-medium leading-4",
         tones[tone],
         className,
       )}
@@ -46,7 +47,6 @@ export function Badge({
   );
 }
 
-/** A small coloured dot, used for availability and skill levels. */
 export function Dot({ className }: { className?: string }) {
   return (
     <span

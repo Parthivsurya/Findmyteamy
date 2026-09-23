@@ -191,26 +191,18 @@ export default async function ProfilePage({ params }: Props) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
       {/* --------------------------------------------------------- header */}
-      <Card className="overflow-hidden">
-        <div className="brand-gradient h-20 sm:h-24" aria-hidden />
-
-        <div className="px-5 pb-5">
-          <div className="-mt-10 flex flex-wrap items-end justify-between gap-4 sm:-mt-12">
-            <div className="flex items-end gap-4">
-              <Avatar
-                name={profile.name}
-                image={profile.image}
-                size="xl"
-                ring
-                className="shadow-float"
-              />
-              <div className="pb-1">
-                <h1 className="text-xl font-bold sm:text-2xl">{profile.name}</h1>
+      <Card>
+        <div className="p-4 sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <Avatar name={profile.name} image={profile.image} size="lg" />
+              <div>
+                <h1 className="text-xl font-semibold">{profile.name}</h1>
                 <p className="text-[0.85rem] text-ink-muted">@{profile.username}</p>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2 pb-1">
+            <div className="flex flex-wrap gap-2">
               {isOwner ? (
                 <>
                   <Link href="/settings/profile" className={btn("outline", "md")}>
