@@ -1,0 +1,342 @@
+@import "tailwindcss";
+
+/* Dark mode is class-driven so the header toggle can override the OS setting. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   Palette — https://colorhunt.co/palette/2373f4578ef565d0f4f2f7a0
+
+     #2373F4  brand        primary actions, links, active state
+     #578EF5  brand light  hovers, gradients, secondary accents
+     #65D0F4  sky          informational highlights, rings, charts
+     #F2F7A0  lime         match scores, highlight chips, hero accents
+
+   Availability and verification keep conventional green / amber / grey
+   semantics, as the product documentation requires.
+--------------------------------------------------------------------------- */
+
+:root {
+  --brand: #2373f4;
+  --brand-light: #578ef5;
+  --brand-hover: #1a62dc;
+  --brand-soft: #e7f0fe;
+  --brand-ring: rgb(35 115 244 / 0.35);
+  --sky: #65d0f4;
+  --sky-soft: #e1f6fd;
+  --sky-ink: #0b5e78;
+  --lime: #f2f7a0;
+  --lime-soft: #fbfce8;
+  --lime-ink: #5a6113;
+
+  --canvas: #f5f8fd;
+  --surface: #ffffff;
+  --surface-2: #f0f5fc;
+  --surface-3: #e7eff9;
+  --line: #dfe7f3;
+  --line-strong: #c7d5e9;
+
+  --ink: #0c1526;
+  --ink-2: #3d4e66;
+  --ink-muted: #66798f;
+
+  --ok: #0f9d6e;
+  --ok-soft: #e4f7ef;
+  --warn: #b8760a;
+  --warn-soft: #fdf2dd;
+  --danger: #d4344a;
+  --danger-soft: #fdeaed;
+
+  --shadow-sm: 0 1px 2px rgb(12 21 38 / 0.06);
+  --shadow-md: 0 4px 16px -4px rgb(12 21 38 / 0.12);
+  --shadow-lg: 0 18px 44px -20px rgb(12 21 38 / 0.28);
+}
+
+.dark {
+  --brand: #4d8cf8;
+  --brand-light: #7aa9fb;
+  --brand-hover: #6ba0fa;
+  --brand-soft: rgb(35 115 244 / 0.18);
+  --brand-ring: rgb(101 208 244 / 0.45);
+  --sky: #65d0f4;
+  --sky-soft: rgb(101 208 244 / 0.14);
+  --sky-ink: #9fe3f8;
+  --lime: #f2f7a0;
+  --lime-soft: rgb(242 247 160 / 0.14);
+  --lime-ink: #eef4a8;
+
+  --canvas: #070c15;
+  --surface: #0e1624;
+  --surface-2: #16202f;
+  --surface-3: #1d283a;
+  --line: #1f2c40;
+  --line-strong: #2e3e56;
+
+  --ink: #e9eff8;
+  --ink-2: #b9c7da;
+  --ink-muted: #8497b0;
+
+  --ok: #34d399;
+  --ok-soft: rgb(16 185 129 / 0.16);
+  --warn: #fbbf24;
+  --warn-soft: rgb(251 191 36 / 0.16);
+  --danger: #fb7185;
+  --danger-soft: rgb(251 113 133 / 0.16);
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 18px -4px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 20px 48px -22px rgb(0 0 0 / 0.75);
+}
+
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-light: var(--brand-light);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-sky: var(--sky);
+  --color-sky-soft: var(--sky-soft);
+  --color-sky-ink: var(--sky-ink);
+  --color-lime: var(--lime);
+  --color-lime-soft: var(--lime-soft);
+  --color-lime-ink: var(--lime-ink);
+
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-muted: var(--ink-muted);
+
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, "Noto Sans", sans-serif;
+  --font-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+
+  --radius-card: 14px;
+  --shadow-card: var(--shadow-sm);
+  --shadow-float: var(--shadow-md);
+  --shadow-pop: var(--shadow-lg);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Base                                                                      */
+/* ------------------------------------------------------------------------- */
+
+@layer base {
+  * {
+    border-color: var(--line);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    color: var(--ink);
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  /* One visible, consistent focus ring everywhere — WCAG AA keyboard nav. */
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: var(--brand);
+    color: #fff;
+  }
+
+  input, textarea, select, button {
+    font: inherit;
+    color: inherit;
+  }
+
+  ::placeholder {
+    color: var(--ink-muted);
+    opacity: 1;
+  }
+
+  /* Hide number input spinners — team-size fields read better without them. */
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ------------------------------------------------------------------------- */
+/* Reusable pieces                                                           */
+/* ------------------------------------------------------------------------- */
+
+@layer components {
+  /* Form controls appear on nearly every screen, so they live here rather
+     than being re-declared in a dozen components. */
+  .field {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.925rem;
+    color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+
+  .field:hover:not(:disabled) {
+    border-color: var(--brand-light);
+  }
+
+  .field:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-ring);
+  }
+
+  .field:disabled {
+    background: var(--surface-2);
+    color: var(--ink-muted);
+    cursor: not-allowed;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    margin-bottom: 0.3rem;
+  }
+
+  .field-hint {
+    font-size: 0.775rem;
+    color: var(--ink-muted);
+    margin-top: 0.3rem;
+  }
+
+  .field-error {
+    font-size: 0.775rem;
+    color: var(--danger);
+    margin-top: 0.3rem;
+  }
+
+  /* The brand gradient used on the hero, empty states and score meters. */
+  .brand-gradient {
+    background-image: linear-gradient(
+      135deg,
+      var(--brand) 0%,
+      var(--brand-light) 45%,
+      var(--sky) 100%
+    );
+  }
+
+  .brand-text-gradient {
+    background-image: linear-gradient(
+      100deg,
+      var(--brand) 0%,
+      var(--brand-light) 40%,
+      var(--sky) 90%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Subtle grid backdrop behind the landing hero. */
+  .hero-grid::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(to right, rgb(255 255 255 / 0.09) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(255 255 255 / 0.09) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 40%, transparent 100%);
+    pointer-events: none;
+  }
+
+  .scrollbar-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+
+  .scrollbar-slim::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-slim::-webkit-scrollbar-thumb {
+    background: var(--line-strong);
+    border-radius: 99px;
+  }
+}
+
+@layer utilities {
+  .animate-in {
+    animation: fade-rise 0.28s ease-out both;
+  }
+
+  @keyframes fade-rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--surface-2) 25%,
+      var(--surface-3) 37%,
+      var(--surface-2) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.4s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    from { background-position: 100% 50%; }
+    to { background-position: 0 50%; }
+  }
+}
