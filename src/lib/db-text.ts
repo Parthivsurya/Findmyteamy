@@ -1,3 +1,5 @@
+import { databaseProvider } from "./env";
+
 /**
  * Provider-aware text matching.
  *
@@ -8,7 +10,7 @@
  * matches after the migration.
  */
 
-const NEEDS_MODE = (process.env.DATABASE_PROVIDER ?? "sqlite") === "postgresql";
+const NEEDS_MODE = databaseProvider() === "postgresql";
 
 export type TextFilter = { contains: string; mode?: "insensitive" };
 

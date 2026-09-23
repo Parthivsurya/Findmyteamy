@@ -1,6 +1,7 @@
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { HttpError } from "@/lib/api";
 import { db } from "@/lib/db";
+import { envText } from "@/lib/env";
 import { otpEmail, sendMail } from "@/lib/mailer";
 
 /**
@@ -18,7 +19,7 @@ const MAX_ATTEMPTS = 5;
 export type OtpPurpose = "SIGNUP" | "LOGIN" | "RESET";
 
 function hashCode(email: string, purpose: string, code: string): string {
-  const secret = process.env.AUTH_SECRET ?? "findmyteammate-insecure-development-secret";
+  const secret = envText("AUTH_SECRET") ?? "findmyteammate-insecure-development-secret";
   return createHmac("sha256", secret).update(`${email}:${purpose}:${code}`).digest("hex");
 }
 

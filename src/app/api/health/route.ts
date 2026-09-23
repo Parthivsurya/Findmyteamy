@@ -1,5 +1,6 @@
 import { authSecretProblem } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { databaseProvider } from "@/lib/env";
 import { emailTransport, isEmailConfigured } from "@/lib/mailer";
 
 /**
@@ -20,7 +21,7 @@ export async function GET() {
   const body = {
     status: database === "ok" ? "ok" : "degraded",
     database,
-    databaseProvider: process.env.DATABASE_PROVIDER ?? "sqlite",
+    databaseProvider: databaseProvider(),
     // Warn loudly about the two settings that are unsafe in production.
     config: {
       email: isEmailConfigured()

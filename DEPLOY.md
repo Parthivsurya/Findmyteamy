@@ -110,12 +110,21 @@ Project → Settings → Environment Variables (Production **and** Preview):
 ```
 DATABASE_PROVIDER = postgresql
 AUTH_SECRET       = <openssl rand -base64 32>
-NEXT_PUBLIC_APP_URL = https://your-app.vercel.app
 RESEND_API_KEY    = re_...
 EMAIL_FROM        = FindMyTeammate <onboarding@resend.dev>
 CRON_SECRET       = <openssl rand -hex 24>
 ALLOW_DEMO_LOGIN  = false
 ```
+
+`NEXT_PUBLIC_APP_URL` is optional here. When it is unset or blank the app falls
+back to `VERCEL_PROJECT_PRODUCTION_URL`, then `VERCEL_URL`, both of which Vercel
+injects automatically — so email links and page metadata are correct without
+configuring anything, and preview deployments link to themselves. Set it
+explicitly once you have a custom domain.
+
+Note that a variable left blank in the dashboard is stored as an **empty
+string**, not as unset. Every environment read goes through `src/lib/env.ts`,
+which treats blank as absent, because `process.env.X ?? fallback` does not.
 
 **Use Resend rather than SMTP here.** Serverless functions handle an HTTP API
 call much better than holding an SMTP connection open, which competes with the

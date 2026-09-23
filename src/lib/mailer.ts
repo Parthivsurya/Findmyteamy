@@ -1,4 +1,5 @@
 import nodemailer, { type Transporter } from "nodemailer";
+import { envNumber, envText } from "./env";
 
 /**
  * Outbound email, with one implementation for the whole app.
@@ -20,11 +21,11 @@ import nodemailer, { type Transporter } from "nodemailer";
 let cachedTransport: Transporter | null = null;
 
 export function isSmtpConfigured(): boolean {
-  return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+  return Boolean(envText("SMTP_HOST") && envText("SMTP_USER") && envText("SMTP_PASS"));
 }
 
 export function isResendConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY);
+  return Boolean(envText("RESEND_API_KEY"));
 }
 
 /** Whether email can actually be delivered at all. */
@@ -43,7 +44,7 @@ function smtpTransport(): Transporter | null {
   if (!isSmtpConfigured()) return null;
   if (cachedTransport) return cachedTransport;
 
-  const port = Number(process.env.SMTP_PORT ?? 587);
+  const port = envNumber("SMTP_PORT", 587);
 
   cachedTransport = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
@@ -58,9 +59,9 @@ function smtpTransport(): Transporter | null {
 
 export function mailFrom(): string {
   return (
-    process.env.EMAIL_FROM ??
-    process.env.SMTP_FROM ??
-    process.env.SMTP_USER ??
+    envText("EMAIL_FROM") ??
+    envText("SMTP_FROM") ??
+    envText("SMTP_USER") ??
     "FindMyTeammate <onboarding@resend.dev>"
   );
 }

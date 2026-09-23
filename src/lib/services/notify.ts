@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { appUrl } from "@/lib/env";
 import { sendMail } from "@/lib/mailer";
 import type { NotificationType } from "@/lib/enums";
 
@@ -61,9 +62,7 @@ export async function notify(input: NotifyInput): Promise<void> {
   });
 }
 
-function appUrl(): string {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
-}
+
 
 export async function markNotificationsRead(
   userId: string,

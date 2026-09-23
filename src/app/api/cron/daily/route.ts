@@ -1,6 +1,7 @@
 import { ok, route } from "@/lib/api";
 import { assertCronRequest } from "@/lib/cron";
 import { db } from "@/lib/db";
+import { appUrl } from "@/lib/env";
 import { sendMail } from "@/lib/mailer";
 import { buildTeam } from "@/lib/services/search";
 import { notify } from "@/lib/services/notify";
@@ -115,7 +116,7 @@ export const GET = route(async (request) => {
     const withCandidates = groups.filter((group) => group.candidates.length);
     if (withCandidates.length === 0) continue;
 
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+    const base = appUrl();
     const lines = [
       `Hi ${team.leader.name.split(" ")[0]},`,
       "",

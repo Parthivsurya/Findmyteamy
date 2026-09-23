@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { appUrl } from "@/lib/env";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import "./globals.css";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+const APP_URL = appUrl();
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),

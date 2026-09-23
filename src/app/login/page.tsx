@@ -9,6 +9,7 @@ import { Card } from "@/components/ui/card";
 import { academicSummary } from "@/lib/amrita";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { envText } from "@/lib/env";
 
 export const metadata: Metadata = {
   title: "Sign in",
@@ -36,7 +37,7 @@ export default async function LoginPage({
   const demoAllowed =
     process.env.ALLOW_DEMO_LOGIN === "true" &&
     process.env.NODE_ENV !== "production";
-  const demoPassword = process.env.DEMO_PASSWORD ?? "Amrita@2026";
+  const demoPassword = envText("DEMO_PASSWORD") ?? "Amrita@2026";
   const demoAccounts = demoAllowed
     ? await db.user.findMany({
         where: { isDemo: true, emailVerifiedAt: { not: null }, onboarded: true },

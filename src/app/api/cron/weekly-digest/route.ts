@@ -1,6 +1,7 @@
 import { ok, route } from "@/lib/api";
 import { assertCronRequest } from "@/lib/cron";
 import { db } from "@/lib/db";
+import { appUrl } from "@/lib/env";
 import { sendMail } from "@/lib/mailer";
 import { buildTeam } from "@/lib/services/search";
 
@@ -65,7 +66,7 @@ export const GET = route(async (request) => {
         ),
         "",
       ]),
-      `Invite them: ${(process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000")}/team-builder?team=${team.id}`,
+      `Invite them: ${appUrl()}/team-builder?team=${team.id}`,
       "",
       "— FindMyTeammate",
       "",
