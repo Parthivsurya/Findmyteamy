@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { appUrl } from "@/lib/env";
 import { SiteHeader } from "@/components/layout/site-header";
-import { SiteFooter } from "@/components/layout/site-footer";
 import "./globals.css";
 
 const APP_URL = appUrl();
@@ -72,7 +71,6 @@ export default function RootLayout({
         <main id="main" className="flex-1">
           {children}
         </main>
-        <SiteFooter />
       </body>
     </html>
   );
