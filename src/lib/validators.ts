@@ -171,6 +171,19 @@ export const searchQuerySchema = z.object({
   college: optionalText(120),
   location: optionalText(80),
   mode: z.enum(EVENT_MODES).optional(),
+
+  // --- Amrita academic filters ---------------------------------------------
+  // "same as me" pairs, resolved against the signed-in student's own address,
+  // plus explicit values for shareable links.
+  sameYear: boolFlag,
+  sameBranch: boolFlag,
+  sameCampus: boolFlag,
+  /** Branch code, e.g. "cse", "aie", "cys". */
+  branch: optionalText(8),
+  /** Joining year, e.g. 2024 — this is what "same year" means. */
+  joinYear: z.coerce.number().int().min(2000).max(2100).optional(),
+  campus: optionalText(4),
+
   sort: z.enum(["match", "wins", "recent"]).optional().default("match"),
   page: z.coerce.number().int().min(1).max(500).optional().default(1),
   perPage: z.coerce.number().int().min(1).max(50).optional().default(20),

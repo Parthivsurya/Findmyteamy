@@ -1,34 +1,60 @@
 # FindMyTeammate
 
-> Find the right teammates for hackathons and competitions.
+> Find the right teammates for hackathons and competitions — built for Amrita Vishwa Vidyapeetham.
 
-FindMyTeammate is a web platform that helps students and developers find the right
-teammates for hackathons, coding competitions and project challenges. Every user
-creates a profile listing their technical skills, the roles they can play in a team,
-and their verified achievements. Anyone forming a team can then search by skill,
-role, availability and track record — and invite people directly to a team for a
-specific event.
-
-Think of it as LinkedIn built for team formation rather than hiring.
+FindMyTeammate helps Amrita students find teammates for hackathons, coding
+competitions and project challenges. Every student signs in with their Amrita
+roll address, lists their technical skills and the roles they can play, and adds
+their achievements. Anyone forming a team can then search by skill, role,
+availability and verified track record — narrowed to their own year or their own
+branch — and invite people directly into a specific open role.
 
 ## Core features
 
-- **Skill profiles** — structured skills with proficiency levels and team roles
-- **Verified achievements** — hackathon wins backed by certificates and admin review
-- **Availability status** — global and per-event, so you only contact people who are free
-- **Team Builder** — pick the roles you need, get ranked candidates grouped by role
+- **Skills-first search** — the home page is a skill search, with one-click
+  filters for *same year as me* and *same branch as me*
+- **Amrita sign-in** — email and password, restricted to student addresses and
+  confirmed with a six-digit code over SMTP
+- **Academic identity from the address** — campus, school, programme, branch and
+  joining year are read from the email, so there is nothing to type and nothing
+  to fake
+- **Verified achievements** — hackathon results backed by a certificate and
+  admin review; only verified wins count in search filters
+- **Availability** — global status plus a per-event status, so you only contact
+  people who are actually free
+- **Team Builder** — describe the roles you need and get a separate ranked
+  shortlist for each one
 - **Event pages** — people looking for a team, and teams looking for members
-- **Team formation** — open role slots, invites, join requests, notifications
+- **Two-way team formation** — invites and join requests into specific role
+  slots, with team size limits enforced
+
+## How the email address is read
+
+```
+cb.sc.u4cse24535@cb.students.amrita.edu
+│  │  ││  │  │
+│  │  ││  │  └── 535  roll number within the batch
+│  │  ││  └───── 24   joined in 2024
+│  │  │└──────── cse  branch
+│  │  └───────── u4   undergraduate, four years
+│  └──────────── sc   School of Computing
+└─────────────── cb   Coimbatore campus
+```
+
+That gives every profile its branch, batch and year of study, which is what
+makes *same year* and *same branch* search possible. The parser and the code
+tables live in `src/lib/amrita.ts`.
 
 ## Tech stack
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | Next.js (App Router) + TypeScript |
+| Frontend | Next.js 16 (App Router) + TypeScript |
 | Styling | Tailwind CSS v4 |
 | Backend | Next.js route handlers + server actions |
 | Database | Prisma ORM (SQLite for local dev, PostgreSQL in production) |
-| Auth | Signed HTTP-only session cookies, GitHub + Google OAuth |
+| Auth | Email + password, scrypt hashing, signed HTTP-only session cookies |
+| Email | SMTP via Nodemailer, for one-time codes |
 | Validation | Zod |
 
 ## Colour palette
@@ -37,8 +63,8 @@ Think of it as LinkedIn built for team formation rather than hiring.
 | --- | --- | --- |
 | Brand | `#2373F4` | primary actions, links, active state |
 | Brand light | `#578EF5` | hovers, gradients, secondary accents |
-| Sky | `#65D0F4` | informational highlights, charts, rings |
-| Lime | `#F2F7A0` | verified badges, highlight chips, callouts |
+| Sky | `#65D0F4` | informational highlights, rings |
+| Lime | `#F2F7A0` | match scores, verified badges, hero accents |
 
 ## Getting started
 
@@ -46,12 +72,35 @@ Think of it as LinkedIn built for team formation rather than hiring.
 npm install
 cp .env.example .env
 npm run db:push     # create the SQLite dev database
-npm run db:seed     # load skills, roles, demo users and events
+npm run db:seed     # load skills, roles, demo students and events
 npm run dev
 ```
 
-Open http://localhost:3000. The seeded demo accounts are listed on the sign-in page —
-pick any one to sign in locally without OAuth credentials.
+Open http://localhost:3000.
+
+### Signing in locally
+
+The seed creates sixteen Amrita students across several branches and batches.
+They all share one password, and a few are listed on the sign-in page:
+
+| Address | Student | Branch / batch |
+| --- | --- | --- |
+| `cb.sc.u4cse24535@cb.students.amrita.edu` | Parthiv Surya (admin) | CSE 2024 |
+| `cb.sc.u4cse24118@cb.students.amrita.edu` | Priya Sharma | CSE 2024 |
+| `cb.sc.u4aie23156@cb.students.amrita.edu` | Meera Krishnan | AIE 2023 |
+| `cb.sc.u4cse25211@cb.students.amrita.edu` | Arjun Menon | CSE 2025 |
+
+Password for all of them: `Amrita@2026`
+
+Set `ALLOW_DEMO_LOGIN="false"` to hide that list before deploying.
+
+### Email (one-time codes)
+
+Sign-up confirmation and password resets send a six-digit code. With no SMTP
+credentials configured, the code is printed to the server console and shown on
+the verification screen, so registration works offline. To send real mail, fill
+in the `SMTP_*` values in `.env` — for Gmail that means an app password, not the
+account password.
 
 ## Scripts
 
@@ -62,9 +111,22 @@ pick any one to sign in locally without OAuth credentials.
 | `npm run db:push` | sync the Prisma schema to the database |
 | `npm run db:seed` | seed skills, roles and demo data |
 | `npm run db:studio` | browse the database in Prisma Studio |
-| `npm run lint` | type-check and lint |
+| `npm run typecheck` | TypeScript check |
+
+## Going to production
+
+1. Change the `datasource` provider in `prisma/schema.prisma` to `postgresql`
+   and point `DATABASE_URL` at Neon or Supabase. The enum-valued columns are
+   stored as strings for SQLite's sake and can become real Postgres enums; the
+   application code does not change.
+2. Set a strong `AUTH_SECRET` (`openssl rand -base64 32`).
+3. Configure `SMTP_*` so codes are actually delivered.
+4. Set `ALLOW_DEMO_LOGIN="false"`.
+5. Add `mode: "insensitive"` to the `contains` filters in
+   `src/lib/services/search.ts` and `events.ts` — SQLite is already
+   case-insensitive for ASCII, PostgreSQL is not.
 
 ## Documentation
 
-The full product requirements, system design and implementation plan live in
+The original product requirements, system design and implementation plan are in
 `FindMyTeammate_Project_Documentation.docx`.

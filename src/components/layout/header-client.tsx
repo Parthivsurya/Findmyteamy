@@ -262,7 +262,7 @@ export function MobileNav({
                 <Link href="/login" className={btn("outline", "md")}>
                   Sign in
                 </Link>
-                <Link href="/login" className={btn("primary", "md")}>
+                <Link href="/signup" className={btn("primary", "md")}>
                   Get started
                 </Link>
               </div>

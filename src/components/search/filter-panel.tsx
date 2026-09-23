@@ -9,6 +9,7 @@ import {
   type Availability,
   type SkillLevel,
 } from "@/lib/enums";
+import { BRANCHES } from "@/lib/amrita";
 import type { SearchQuery } from "@/lib/validators";
 import { SkillPicker, type PickerSkill } from "./skill-picker";
 
@@ -22,12 +23,19 @@ export function FilterPanel({
   events,
   query,
   skillIds,
+  branches,
+  years,
+  signedIn,
 }: {
   skills: PickerSkill[];
   roles: Array<{ id: string; name: string }>;
   events: Array<{ id: string; name: string; slug: string }>;
   query: SearchQuery;
   skillIds: string[];
+  /** Branch codes and joining years that actually exist on the platform. */
+  branches: string[];
+  years: number[];
+  signedIn: boolean;
 }) {
   return (
     <form
@@ -59,6 +67,82 @@ export function FilterPanel({
           placeholder="Name, skill or college"
           className="field"
         />
+      </div>
+
+      {/* The two filters that matter most on a single campus. */}
+      <fieldset className="space-y-2 rounded-xl border border-line bg-surface-2 p-3">
+        <legend className="px-1 text-[0.72rem] font-bold uppercase tracking-wider text-ink-muted">
+          My batch
+        </legend>
+
+        <label className="flex items-center gap-2 text-[0.83rem]">
+          <input
+            type="checkbox"
+            name="sameYear"
+            value="true"
+            defaultChecked={query.sameYear}
+            disabled={!signedIn}
+            className="size-4 accent-[var(--brand)]"
+          />
+          Same year as me
+        </label>
+
+        <label className="flex items-center gap-2 text-[0.83rem]">
+          <input
+            type="checkbox"
+            name="sameBranch"
+            value="true"
+            defaultChecked={query.sameBranch}
+            disabled={!signedIn}
+            className="size-4 accent-[var(--brand)]"
+          />
+          Same branch as me
+        </label>
+
+        {!signedIn ? (
+          <p className="text-[0.75rem] text-ink-muted">
+            Sign in to use these.
+          </p>
+        ) : null}
+      </fieldset>
+
+      <div>
+        <label htmlFor="branch" className="field-label">
+          Branch
+        </label>
+        <select
+          id="branch"
+          name="branch"
+          defaultValue={query.branch ?? ""}
+          className="field"
+        >
+          <option value="">Any branch</option>
+          {branches.map((code) => (
+            <option key={code} value={code}>
+              {code.toUpperCase()}
+              {BRANCHES[code] ? ` — ${BRANCHES[code]}` : ""}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="joinYear" className="field-label">
+          Joining year
+        </label>
+        <select
+          id="joinYear"
+          name="joinYear"
+          defaultValue={query.joinYear ? String(query.joinYear) : ""}
+          className="field"
+        >
+          <option value="">Any year</option>
+          {years.map((year) => (
+            <option key={year} value={year}>
+              {year} batch
+            </option>
+          ))}
+        </select>
       </div>
 
       <SkillPicker
@@ -190,32 +274,6 @@ export function FilterPanel({
           ))}
         </select>
       </fieldset>
-
-      <div>
-        <label htmlFor="college" className="field-label">
-          College or company
-        </label>
-        <input
-          id="college"
-          name="college"
-          defaultValue={query.college ?? ""}
-          placeholder="e.g. Anna University"
-          className="field"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="location" className="field-label">
-          City
-        </label>
-        <input
-          id="location"
-          name="location"
-          defaultValue={query.location ?? ""}
-          placeholder="e.g. Chennai"
-          className="field"
-        />
-      </div>
 
       <input type="hidden" name="sort" value={query.sort ?? "match"} />
 

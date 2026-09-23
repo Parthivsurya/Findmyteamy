@@ -12,8 +12,10 @@ import { RoleChip, SkillsByCategory } from "@/components/profile/skills";
 import {
   CalendarIcon,
   EditIcon,
+  ClockIcon,
   ExternalIcon,
   GithubIcon,
+  LayersIcon,
   LinkIcon,
   LinkedinIcon,
   MapPinIcon,
@@ -22,6 +24,13 @@ import {
   UsersIcon,
   VerifiedIcon,
 } from "@/components/icons";
+import {
+  BRANCHES,
+  CAMPUSES,
+  SCHOOLS,
+  batchLabel,
+  studyYearLabel,
+} from "@/lib/amrita";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDateRange, relativeTime } from "@/lib/utils";
@@ -259,23 +268,67 @@ export default async function ProfilePage({ params }: Props) {
             </p>
           ) : null}
 
+          {/* Academic identity, read from the student's Amrita address. */}
           <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-[0.85rem] text-ink-2">
-            {profile.college ? (
+            {profile.branchCode ? (
               <div className="flex items-center gap-1.5">
-                <UsersIcon className="size-3.5 text-ink-muted" />
-                <dd>{profile.college}</dd>
+                <LayersIcon className="size-3.5 text-ink-muted" />
+                <dd>
+                  <span className="font-medium">
+                    {profile.branchCode.toUpperCase()}
+                  </span>
+                  {BRANCHES[profile.branchCode] ? (
+                    <span className="text-ink-muted">
+                      {" "}
+                      — {BRANCHES[profile.branchCode]}
+                    </span>
+                  ) : null}
+                </dd>
               </div>
             ) : null}
-            {profile.location ? (
+
+            {studyYearLabel(profile.joiningYear, profile.programYears) ? (
+              <div className="flex items-center gap-1.5">
+                <ClockIcon className="size-3.5 text-ink-muted" />
+                <dd>
+                  <span className="font-medium">
+                    {studyYearLabel(profile.joiningYear, profile.programYears)}
+                  </span>
+                  <span className="text-ink-muted">
+                    {" "}
+                    · {batchLabel(profile.joiningYear, profile.programYears)}
+                  </span>
+                </dd>
+              </div>
+            ) : null}
+
+            {profile.schoolCode ? (
+              <div className="flex items-center gap-1.5">
+                <UsersIcon className="size-3.5 text-ink-muted" />
+                <dd>{SCHOOLS[profile.schoolCode] ?? profile.schoolCode.toUpperCase()}</dd>
+              </div>
+            ) : null}
+
+            {profile.campusCode ? (
+              <div className="flex items-center gap-1.5">
+                <MapPinIcon className="size-3.5 text-ink-muted" />
+                <dd>
+                  {CAMPUSES[profile.campusCode] ?? profile.location ?? "Amrita"}
+                </dd>
+              </div>
+            ) : profile.location ? (
               <div className="flex items-center gap-1.5">
                 <MapPinIcon className="size-3.5 text-ink-muted" />
                 <dd>{profile.location}</dd>
               </div>
             ) : null}
+
             {canSeeContact ? (
               <div className="flex items-center gap-1.5">
                 <span className="text-ink-muted">Email</span>
-                <dd className="font-medium">{profile.email}</dd>
+                <dd className="break-all font-mono text-[0.78rem] font-medium">
+                  {profile.email}
+                </dd>
               </div>
             ) : null}
           </dl>

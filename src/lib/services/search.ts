@@ -30,6 +30,11 @@ export type CandidateResult = {
   score: number;
   reasons: string[];
   eventStatus: string | null;
+  /** From the Amrita roll address — drives the year and branch filters. */
+  branchCode: string | null;
+  joiningYear: number | null;
+  programYears: number | null;
+  campusCode: string | null;
 };
 
 export type SearchResults = {
@@ -105,6 +110,25 @@ export async function searchPeople(
       });
     }
   }
+
+  // --- Amrita academic filters --------------------------------------------
+  // "Same year" and "same branch" are resolved from the searcher's own address.
+  if (query.sameYear || query.sameBranch || query.sameCampus) {
+    const me = viewerId
+      ? await db.user.findUnique({
+          where: { id: viewerId },
+          select: { branchCode: true, joiningYear: true, campusCode: true },
+        })
+      : null;
+
+    if (query.sameBranch && me?.branchCode) and.push({ branchCode: me.branchCode });
+    if (query.sameYear && me?.joiningYear) and.push({ joiningYear: me.joiningYear });
+    if (query.sameCampus && me?.campusCode) and.push({ campusCode: me.campusCode });
+  }
+
+  if (query.branch) and.push({ branchCode: query.branch.toLowerCase() });
+  if (query.joinYear) and.push({ joiningYear: query.joinYear });
+  if (query.campus) and.push({ campusCode: query.campus.toLowerCase() });
 
   if (roleId) and.push({ roles: { some: { roleId } } });
   if (eventId) and.push({ participations: { some: { eventId } } });
@@ -210,6 +234,10 @@ export async function searchPeople(
         score: matchScore(forScoring, need),
         reasons: matchReasons(forScoring, need, skillNames),
         eventStatus: forScoring.eventStatus,
+        branchCode: user.branchCode,
+        joiningYear: user.joiningYear,
+        programYears: user.programYears,
+        campusCode: user.campusCode,
       };
     });
 
@@ -295,6 +323,12 @@ export async function buildTeam({
           college: undefined,
           location: undefined,
           mode: undefined,
+          sameYear: false,
+          sameBranch: false,
+          sameCampus: false,
+          branch: undefined,
+          joinYear: undefined,
+          campus: undefined,
           sort: "match",
           page: 1,
           // Over-fetch so that filling earlier slots still leaves candidates.

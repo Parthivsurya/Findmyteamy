@@ -75,7 +75,7 @@ export async function SiteHeader() {
               <Link href="/login" className={btn("ghost", "sm")}>
                 Sign in
               </Link>
-              <Link href="/login" className={btn("primary", "sm")}>
+              <Link href="/signup" className={btn("primary", "sm")}>
                 Get started
               </Link>
             </div>

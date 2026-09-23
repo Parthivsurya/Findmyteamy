@@ -26,11 +26,30 @@ model User {
   id       String  @id @default(cuid())
   name     String
   username String  @unique
-  email    String  @unique // never exposed publicly
+  email    String  @unique // Amrita student address; never exposed publicly
   image    String?
   bio      String? // max 300 chars, enforced by Zod
   college  String?
   location String?
+
+  // --- authentication ------------------------------------------------------
+  // Passwords are scrypt hashes (see src/lib/password.ts). Sign-in is refused
+  // until the address has been confirmed with an emailed one-time code.
+  passwordHash    String?
+  emailVerifiedAt DateTime?
+
+  // --- academic identity, derived from the Amrita email --------------------
+  // cb.sc.u4cse24535@cb.students.amrita.edu
+  //  ^campus ^school ^programme ^branch ^joining year + roll
+  // Stored as codes so that "same branch" and "same year" search stays exact;
+  // the human labels live in src/lib/amrita.ts.
+  campusCode   String?
+  schoolCode   String?
+  programCode  String? // "u4", "p2" …
+  programYears Int?
+  branchCode   String?
+  joiningYear  Int?
+  rollNumber   String?
 
   githubUrl    String?
   linkedinUrl  String?
@@ -79,6 +98,25 @@ model User {
   @@index([username])
   @@index([availability])
   @@index([lastActiveAt])
+  // Backs the "same year" and "same branch" filters on the home page.
+  @@index([branchCode])
+  @@index([joiningYear])
+  @@index([campusCode, branchCode, joiningYear])
+}
+
+/// One-time codes emailed for sign-up confirmation and password resets.
+model EmailOtp {
+  id        String    @id @default(cuid())
+  email     String
+  codeHash  String // the code itself is never stored
+  purpose   String // SIGNUP | LOGIN | RESET
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  consumedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, purpose])
+  @@index([expiresAt])
 }
 
 /// Links a user to an OAuth provider identity (GitHub / Google).

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { academicSummary } from "@/lib/amrita";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -19,6 +20,10 @@ export type ProfileCardUser = {
   verifiedWins: number;
   topSkills: Array<{ id: string; name: string; level: string }>;
   roles: string[];
+  /** Read from the student's Amrita address, when known. */
+  branchCode?: string | null;
+  joiningYear?: number | null;
+  programYears?: number | null;
 };
 
 /**
@@ -55,7 +60,9 @@ export function ProfileCard({
                 {user.name}
               </Link>
               <p className="truncate text-[0.78rem] text-ink-muted">
-                {user.college ?? `@${user.username}`}
+                {academicSummary(user) ??
+                  user.college ??
+                  `@${user.username}`}
                 {user.location ? ` · ${user.location}` : ""}
               </p>
             </div>

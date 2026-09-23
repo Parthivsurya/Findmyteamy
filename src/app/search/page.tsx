@@ -36,7 +36,7 @@ export default async function SearchPage({
   const parsed = searchQuerySchema.safeParse(raw);
   const query = parsed.success ? parsed.data : searchQuerySchema.parse({});
 
-  const [user, skills, roles, events] = await Promise.all([
+  const [user, skills, roles, events, branchRows, yearRows] = await Promise.all([
     getCurrentUser(),
     getSkills(),
     getRoles(),
@@ -45,7 +45,27 @@ export default async function SearchPage({
       orderBy: { startDate: "asc" },
       select: { id: true, name: true, slug: true },
     }),
+    // Offer only the branches and batches that actually exist here.
+    db.user.findMany({
+      where: { branchCode: { not: null }, onboarded: true },
+      distinct: ["branchCode"],
+      select: { branchCode: true },
+      orderBy: { branchCode: "asc" },
+    }),
+    db.user.findMany({
+      where: { joiningYear: { not: null }, onboarded: true },
+      distinct: ["joiningYear"],
+      select: { joiningYear: true },
+      orderBy: { joiningYear: "desc" },
+    }),
   ]);
+
+  const branches = branchRows
+    .map((row) => row.branchCode)
+    .filter((code): code is string => Boolean(code));
+  const years = yearRows
+    .map((row) => row.joiningYear)
+    .filter((year): year is number => year !== null);
 
   const search = await searchPeople(query, user?.id);
   const highlight = new Set(search.skillIds);
@@ -69,6 +89,9 @@ export default async function SearchPage({
             events={events}
             query={query}
             skillIds={search.skillIds}
+            branches={branches}
+            years={years}
+            signedIn={Boolean(user)}
           />
         </aside>
 

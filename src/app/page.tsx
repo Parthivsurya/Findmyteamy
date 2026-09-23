@@ -1,117 +1,108 @@
 import Link from "next/link";
 import { btn } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { SectionTitle } from "@/components/ui/card";
+import { Card, SectionTitle } from "@/components/ui/card";
 import { EventCard } from "@/components/events/event-card";
-import { ProfileCard } from "@/components/profile/profile-card";
+import { HomeSearch } from "@/components/search/home-search";
 import {
   ArrowRightIcon,
   CheckIcon,
-  SearchIcon,
   SparklesIcon,
   UsersIcon,
   VerifiedIcon,
 } from "@/components/icons";
+import { academicSummary, studyYearLabel } from "@/lib/amrita";
 import { getCurrentUser } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getSkills } from "@/lib/services/catalog";
 
 export const revalidate = 60;
 
-async function getLandingData() {
-  const [events, people, userCount, teamCount, verifiedCount] = await Promise.all([
+export default async function LandingPage() {
+  const [user, skills, events] = await Promise.all([
+    getCurrentUser(),
+    getSkills(),
     db.event.findMany({
       where: { status: "APPROVED", endDate: { gte: new Date() } },
       orderBy: { startDate: "asc" },
       take: 3,
-      include: {
-        _count: {
-          select: {
-            participations: { where: { status: "LOOKING_FOR_TEAM" } },
-            teams: true,
-          },
-        },
-      },
     }),
-    db.user.findMany({
-      where: { availability: "OPEN", onboarded: true },
-      orderBy: [{ profileCompleteness: "desc" }, { lastActiveAt: "desc" }],
-      take: 4,
-      include: {
-        skills: { include: { skill: true }, take: 4 },
-        roles: { include: { role: true } },
-        _count: { select: { achievements: { where: { status: "VERIFIED" } } } },
-      },
-    }),
-    db.user.count(),
-    db.team.count(),
-    db.achievement.count({ where: { status: "VERIFIED" } }),
   ]);
 
-  return { events, people, userCount, teamCount, verifiedCount };
-}
-
-export default async function LandingPage() {
-  const [user, data] = await Promise.all([getCurrentUser(), getLandingData()]);
+  // Only to label the two home-page filters with the student's own year/branch.
+  const me = user
+    ? await db.user.findUnique({
+        where: { id: user.id },
+        select: { branchCode: true, joiningYear: true, programYears: true },
+      })
+    : null;
 
   return (
     <>
       {/* ---------------------------------------------------------------- hero */}
       <section className="hero-grid relative overflow-hidden brand-gradient">
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28">
-          <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgb(255_255_255/0.16)] px-3 py-1 text-[0.78rem] font-semibold text-white ring-1 ring-inset ring-[rgb(255_255_255/0.28)]">
-              <SparklesIcon className="size-3.5" />
-              Built for hackathons, not hiring
-            </span>
+        <div className="relative mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-20">
+          <div className="grid items-center gap-10 lg:grid-cols-[1.05fr_1fr]">
+            <div>
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[rgb(255_255_255/0.16)] px-3 py-1 text-[0.78rem] font-semibold text-white ring-1 ring-inset ring-[rgb(255_255_255/0.28)]">
+                <SparklesIcon className="size-3.5" />
+                Amrita Vishwa Vidyapeetham
+              </span>
 
-            <h1 className="mt-5 text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-6xl">
-              Find the right teammates for{" "}
-              <span className="text-[#F2F7A0]">hackathons</span> and competitions.
-            </h1>
+              <h1 className="mt-5 text-4xl font-bold leading-[1.08] tracking-[-0.03em] text-white sm:text-5xl">
+                Search for a teammate{" "}
+                <span className="text-[#F2F7A0]">by skills</span>.
+              </h1>
 
-            <p className="mt-5 max-w-2xl text-[1.05rem] leading-relaxed text-[rgb(255_255_255/0.88)]">
-              Search people by skill, role, availability and verified wins. Pick
-              the roles your team is missing, and invite candidates directly for
-              the exact event you are attending.
-            </p>
+              <p className="mt-5 max-w-xl text-[1.02rem] leading-relaxed text-[rgb(255_255_255/0.88)]">
+                Tell it what your team is missing — React, PyTorch, Figma,
+                Solidity — and narrow it to your own year or your own branch.
+                Every profile carries verified hackathon results, so you can
+                judge before you ask.
+              </p>
 
-            {/* Straight into search — the fastest possible first action. */}
-            <form
-              action="/search"
-              method="get"
-              className="mt-8 flex max-w-xl flex-col gap-2 sm:flex-row"
-            >
-              <label htmlFor="landing-q" className="sr-only">
-                Search by skill, role or college
-              </label>
-              <div className="relative flex-1">
-                <SearchIcon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-muted" />
-                <input
-                  id="landing-q"
-                  name="q"
-                  placeholder="Try “React”, “ML engineer” or a college name"
-                  className="field h-12 pl-9 shadow-float"
-                />
-              </div>
-              <button type="submit" className={btn("lime", "lg", "shadow-float")}>
-                Search people
-              </button>
-            </form>
+              <ul className="mt-7 space-y-2.5">
+                {[
+                  "Skills with proficiency levels, not free text",
+                  "Filter to your batch or your branch in one click",
+                  "Verified wins, checked against uploaded proof",
+                ].map((line) => (
+                  <li
+                    key={line}
+                    className="flex items-start gap-2.5 text-[0.9rem] text-white"
+                  >
+                    <CheckIcon className="mt-0.5 size-4 shrink-0 text-[#F2F7A0]" />
+                    {line}
+                  </li>
+                ))}
+              </ul>
 
-            <div className="mt-8 flex flex-wrap items-center gap-x-7 gap-y-3">
-              <Stat value={data.userCount} label="profiles" />
-              <Stat value={data.verifiedCount} label="verified achievements" />
-              <Stat value={data.teamCount} label="teams formed" />
               {!user ? (
-                <Link
-                  href="/login"
-                  className="inline-flex items-center gap-1.5 text-[0.88rem] font-semibold text-white underline decoration-[rgb(255_255_255/0.4)] underline-offset-4 hover:decoration-white"
-                >
-                  Create your profile
-                  <ArrowRightIcon className="size-4" />
-                </Link>
-              ) : null}
+                <div className="mt-8 flex flex-wrap gap-3">
+                  <Link href="/signup" className={btn("lime", "lg", "shadow-float")}>
+                    Create your account
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="inline-flex h-12 items-center justify-center rounded-[10px] border border-[rgb(255_255_255/0.45)] px-6 text-[0.95rem] font-semibold text-white transition-colors hover:bg-[rgb(255_255_255/0.14)]"
+                  >
+                    Sign in
+                  </Link>
+                </div>
+              ) : (
+                <p className="mt-8 text-[0.88rem] text-[rgb(255_255_255/0.8)]">
+                  Signed in as {user.name}
+                  {academicSummary(me ?? {}) ? ` · ${academicSummary(me ?? {})}` : ""}
+                </p>
+              )}
             </div>
+
+            {/* the search itself, front and centre */}
+            <HomeSearch
+              skills={skills}
+              signedIn={Boolean(user)}
+              myBranch={me?.branchCode ? me.branchCode.toUpperCase() : null}
+              myYearLabel={studyYearLabel(me?.joiningYear, me?.programYears)}
+            />
           </div>
         </div>
       </section>
@@ -132,14 +123,14 @@ export default async function LandingPage() {
           {[
             {
               step: "01",
-              title: "Build a real profile",
-              body: "Add your skills with proficiency levels, the roles you can play, and your hackathon results. Takes about five minutes.",
+              title: "Sign in with your roll address",
+              body: "Your campus, school, branch and joining year are read straight from your Amrita email. Then add your skills and the roles you can play.",
               icon: <UsersIcon className="size-5" />,
             },
             {
               step: "02",
-              title: "Get verified",
-              body: "Upload a certificate for each win. An admin checks it, and your profile gets a verified badge that search filters actually count.",
+              title: "Get your wins verified",
+              body: "Upload a certificate for each result. An admin checks it, and your profile gets a verified badge that search filters actually count.",
               icon: <VerifiedIcon className="size-5" />,
             },
             {
@@ -180,8 +171,8 @@ export default async function LandingPage() {
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">
                 Most people only know their own classmates, who tend to have the
                 same skills they do. So teams end up with four frontend
-                developers and nobody to design, deploy or present. Every feature
-                here exists to fix one part of that.
+                developers and nobody to design, deploy or present. Every
+                feature here exists to fix one part of that.
               </p>
 
               <ul className="mt-6 space-y-2.5">
@@ -213,11 +204,11 @@ export default async function LandingPage() {
               {[
                 {
                   title: "Skill-based discovery",
-                  body: "Filter by skill, minimum level, role, college, city and event — then sort by best match, most wins or recent activity.",
+                  body: "Filter by skill, minimum level, role, branch, year and event — then sort by best match, most wins or recent activity.",
                 },
                 {
                   title: "Match score you can read",
-                  body: "Every candidate shows a 0–100 score, and the reasons behind it: required skills held, role fit, availability and verified wins.",
+                  body: "Every candidate shows a 0–100 score and the reasons behind it: required skills held, role fit, availability and verified wins.",
                 },
                 {
                   title: "Event-centred",
@@ -241,7 +232,7 @@ export default async function LandingPage() {
       </section>
 
       {/* --------------------------------------------------------------- events */}
-      {data.events.length ? (
+      {events.length ? (
         <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
           <SectionTitle
             action={
@@ -258,66 +249,8 @@ export default async function LandingPage() {
           </SectionTitle>
 
           <div className="grid gap-4 md:grid-cols-3">
-            {data.events.map((event) => (
-              <EventCard
-                key={event.id}
-                event={{
-                  ...event,
-                  lookingCount: event._count.participations,
-                  teamCount: event._count.teams,
-                }}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {/* --------------------------------------------------------------- people */}
-      {data.people.length ? (
-        <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
-          <SectionTitle
-            action={
-              <Link
-                href="/search"
-                className="inline-flex items-center gap-1 text-[0.85rem] font-semibold text-brand hover:underline"
-              >
-                Search everyone
-                <ArrowRightIcon className="size-3.5" />
-              </Link>
-            }
-          >
-            Open to teams right now
-          </SectionTitle>
-
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {data.people.map((person) => (
-              <ProfileCard
-                key={person.id}
-                user={{
-                  id: person.id,
-                  name: person.name,
-                  username: person.username,
-                  image: person.image,
-                  college: person.college,
-                  location: person.location,
-                  availability: person.availability,
-                  verifiedWins: person._count.achievements,
-                  topSkills: person.skills.map((s) => ({
-                    id: s.skill.id,
-                    name: s.skill.name,
-                    level: s.level,
-                  })),
-                  roles: person.roles.map((r) => r.role.name),
-                }}
-                action={
-                  <Link
-                    href={`/u/${person.username}`}
-                    className={btn("outline", "sm", "w-full")}
-                  >
-                    View profile
-                  </Link>
-                }
-              />
+            {events.map((event) => (
+              <EventCard key={event.id} event={event} />
             ))}
           </div>
         </section>
@@ -330,34 +263,25 @@ export default async function LandingPage() {
             Your next team is one search away
           </h2>
           <p className="relative mx-auto mt-3 max-w-xl text-[0.95rem] text-[rgb(255_255_255/0.88)]">
-            Create a profile, mark yourself available, and let team leaders find
+            Add your skills, mark yourself available, and let team leaders find
             you — or open Team Builder and fill the roles you are missing.
           </p>
           <div className="relative mt-7 flex flex-wrap justify-center gap-3">
             <Link
-              href={user ? "/dashboard" : "/login"}
+              href={user ? "/dashboard" : "/signup"}
               className={btn("lime", "lg", "shadow-float")}
             >
-              {user ? "Go to dashboard" : "Create your profile"}
+              {user ? "Go to dashboard" : "Create your account"}
             </Link>
             <Link
               href="/search"
               className="inline-flex h-12 items-center justify-center rounded-[10px] border border-[rgb(255_255_255/0.45)] px-6 text-[0.95rem] font-semibold text-white transition-colors hover:bg-[rgb(255_255_255/0.14)]"
             >
-              Find people
+              Search teammates
             </Link>
           </div>
         </div>
       </section>
     </>
-  );
-}
-
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <div>
-      <div className="text-2xl font-bold tabular-nums text-white">{value}</div>
-      <div className="text-[0.78rem] text-[rgb(255_255_255/0.75)]">{label}</div>
-    </div>
   );
 }

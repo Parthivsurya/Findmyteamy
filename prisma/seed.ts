@@ -1,7 +1,13 @@
 /**
- * Seeds the master tables (skills and roles) plus a demo dataset — users,
- * events, teams, achievements and requests — so that search, Team Builder and
- * the event pages have something real to show on a fresh clone.
+ * Seeds the master tables (skills and roles) plus a demo dataset — Amrita
+ * students, events, teams, achievements and requests — so that search, Team
+ * Builder and the event pages have something real to show on a fresh clone.
+ *
+ * Every demo account is a real-shaped Amrita roll address, spread across
+ * branches (CSE, AIE, CYS, CSD, ECE, EEE, MEC) and joining years, so the
+ * "same year" and "same branch" filters on the home page are demonstrable.
+ *
+ * All demo accounts share one password: Amrita@2026
  *
  * Run with:  npm run db:seed
  */
@@ -9,6 +15,10 @@
 import { PrismaClient } from "@prisma/client";
 import { profileCompleteness } from "../src/lib/completeness";
 import { STANDARD_ROLES } from "../src/lib/enums";
+import { parseStudentEmail } from "../src/lib/amrita";
+import { hashPassword } from "../src/lib/password";
+
+const DEMO_PASSWORD = process.env.DEMO_PASSWORD ?? "Amrita@2026";
 
 const db = new PrismaClient();
 
@@ -57,12 +67,10 @@ const SKILLS: Array<[string, string]> = [
 ];
 
 type DemoUser = {
-  username: string;
   name: string;
+  /** Amrita roll address — campus, school, programme, branch and year come from it. */
   email: string;
   bio: string;
-  college: string;
-  location: string;
   availability: string;
   role?: "USER" | "ADMIN";
   skills: Array<[string, string]>;
@@ -85,100 +93,85 @@ type DemoUser = {
 
 const USERS: DemoUser[] = [
   {
-    username: "priya",
-    name: "Priya Sharma",
-    email: "priya@example.com",
-    bio: "Third-year CSE student and backend developer. Building an accessible transport app for Smart India Hackathon — looking for an ML engineer and a designer.",
-    college: "Anna University, Chennai",
-    location: "Chennai",
+    name: "Parthiv Surya",
+    email: "cb.sc.u4cse24535@cb.students.amrita.edu",
+    bio: "Third-year CSE at Amrita Coimbatore. I build web apps and I am usually the one organising the team. Platform admin here.",
     availability: "OPEN",
-    skills: [["Node.js", "EXPERT"], ["PostgreSQL", "EXPERT"], ["Express", "INTERMEDIATE"], ["Docker", "INTERMEDIATE"], ["TypeScript", "INTERMEDIATE"], ["Project Management", "INTERMEDIATE"]],
-    roles: ["Backend Developer", "Team Lead/Project Manager"],
-    github: "https://github.com/priya",
-    linkedin: "https://linkedin.com/in/priya",
-    portfolio: "https://priya.dev",
+    role: "ADMIN",
+    skills: [["TypeScript", "EXPERT"], ["Next.js", "EXPERT"], ["React", "EXPERT"], ["Node.js", "INTERMEDIATE"], ["PostgreSQL", "INTERMEDIATE"], ["Prisma", "INTERMEDIATE"], ["Project Management", "INTERMEDIATE"]],
+    roles: ["Full Stack Developer", "Team Lead/Project Manager"],
+    github: "https://github.com/Parthivsurya",
     activeDaysAgo: 0,
     achievements: [
-      { title: "Runner-up – Kurukshetra Hackathon 2025", eventName: "Kurukshetra 2025", organizer: "Anna University", position: "RUNNER_UP", daysAgo: 220, status: "VERIFIED", description: "Built a crowd-sourced pothole reporting platform. Second place out of 180 teams." },
-      { title: "Finalist – Chennai Civic Tech Challenge", eventName: "Chennai Civic Tech Challenge", organizer: "Greater Chennai Corporation", position: "FINALIST", daysAgo: 95, status: "PENDING" },
+      { title: "Finalist – Anokha Hackathon 2025", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "FINALIST", daysAgo: 120, status: "VERIFIED", description: "Built a campus lost-and-found platform with image matching." },
     ],
   },
   {
-    username: "arjun",
+    name: "Priya Sharma",
+    email: "cb.sc.u4cse24118@cb.students.amrita.edu",
+    bio: "Backend developer, third year CSE. Working on an accessible transport app for Smart India Hackathon — looking for an ML engineer and a designer.",
+    availability: "OPEN",
+    skills: [["Node.js", "EXPERT"], ["PostgreSQL", "EXPERT"], ["Express", "INTERMEDIATE"], ["Docker", "INTERMEDIATE"], ["TypeScript", "INTERMEDIATE"], ["Project Management", "INTERMEDIATE"]],
+    roles: ["Backend Developer", "Team Lead/Project Manager"],
+    github: "https://github.com/priyasharma",
+    linkedin: "https://linkedin.com/in/priyasharma",
+    portfolio: "https://priya.dev",
+    activeDaysAgo: 0,
+    achievements: [
+      { title: "Runner-up – Anokha Hackathon 2025", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "RUNNER_UP", daysAgo: 220, status: "VERIFIED", description: "Crowd-sourced pothole reporting platform. Second of 180 teams." },
+      { title: "Finalist – Coimbatore Civic Tech Challenge", eventName: "Coimbatore Civic Tech Challenge", organizer: "Coimbatore Smart City", position: "FINALIST", daysAgo: 95, status: "PENDING" },
+    ],
+  },
+  {
+    name: "Meera Krishnan",
+    email: "cb.sc.u4aie23156@cb.students.amrita.edu",
+    bio: "Final-year AIE, three-time hackathon winner. Applied ML — vision and NLP. I only join teams that actually ship a demo.",
+    availability: "EVENTS_ONLY",
+    skills: [["Python", "EXPERT"], ["PyTorch", "EXPERT"], ["Computer Vision", "EXPERT"], ["TensorFlow", "INTERMEDIATE"], ["NLP", "INTERMEDIATE"], ["FastAPI", "INTERMEDIATE"], ["LangChain", "INTERMEDIATE"]],
+    roles: ["ML/AI Engineer", "Data Analyst"],
+    github: "https://github.com/meerak",
+    linkedin: "https://linkedin.com/in/meerakrishnan",
+    portfolio: "https://meera.ml",
+    activeDaysAgo: 2,
+    achievements: [
+      { title: "Winner – Smart India Hackathon 2025", eventName: "Smart India Hackathon 2025", organizer: "Ministry of Education, Govt. of India", position: "WINNER", daysAgo: 300, status: "VERIFIED", description: "Crop disease detection from phone photos, piloted with 2,000 farmers." },
+      { title: "Winner – Anokha Techfest AI Challenge", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 180, status: "VERIFIED", description: "Real-time sign language translation running fully on-device." },
+      { title: "Winner – Google Solution Challenge Regional", eventName: "Google Solution Challenge 2025", organizer: "Google Developers", position: "WINNER", daysAgo: 420, status: "VERIFIED" },
+      { title: "Finalist – Amazon ML Challenge", eventName: "Amazon ML Challenge 2026", organizer: "Amazon", position: "FINALIST", daysAgo: 60, status: "PENDING" },
+    ],
+  },
+  {
     name: "Arjun Menon",
-    email: "arjun@example.com",
-    bio: "Second-year student who loves shipping clean interfaces. React and Figma are my home turf. No team yet — happy to join one that likes moving fast.",
-    college: "NIT Trichy",
-    location: "Tiruchirappalli",
+    email: "cb.sc.u4cse25211@cb.students.amrita.edu",
+    bio: "Second-year CSE who loves shipping clean interfaces. React and Figma are my home turf. No team yet — happy to join one that moves fast.",
     availability: "OPEN",
     skills: [["React", "EXPERT"], ["Figma", "EXPERT"], ["Tailwind CSS", "INTERMEDIATE"], ["JavaScript", "INTERMEDIATE"], ["Next.js", "INTERMEDIATE"], ["Prototyping", "INTERMEDIATE"]],
     roles: ["Frontend Developer", "UI/UX Designer"],
-    github: "https://github.com/arjun",
-    linkedin: "https://linkedin.com/in/arjun",
+    github: "https://github.com/arjunmenon",
+    linkedin: "https://linkedin.com/in/arjunmenon",
     activeDaysAgo: 1,
     achievements: [
       { title: "Participant – HackCBS 6.0", eventName: "HackCBS 6.0", organizer: "SSCBS, Delhi University", position: "PARTICIPANT", daysAgo: 150, status: "UNVERIFIED" },
     ],
   },
   {
-    username: "meera",
-    name: "Meera Krishnan",
-    email: "meera@example.com",
-    bio: "Final-year student, three-time hackathon winner. I work on applied ML — vision and NLP — and I only join teams that actually ship a demo.",
-    college: "VIT Vellore",
-    location: "Vellore",
-    availability: "EVENTS_ONLY",
-    skills: [["Python", "EXPERT"], ["PyTorch", "EXPERT"], ["Computer Vision", "EXPERT"], ["TensorFlow", "INTERMEDIATE"], ["NLP", "INTERMEDIATE"], ["FastAPI", "INTERMEDIATE"], ["LangChain", "INTERMEDIATE"]],
-    roles: ["ML/AI Engineer", "Data Analyst"],
-    github: "https://github.com/meera",
-    linkedin: "https://linkedin.com/in/meera",
-    portfolio: "https://meera.ml",
-    activeDaysAgo: 2,
-    achievements: [
-      { title: "Winner – Smart India Hackathon 2025", eventName: "Smart India Hackathon 2025", organizer: "Ministry of Education, Govt. of India", position: "WINNER", daysAgo: 300, status: "VERIFIED", description: "Crop disease detection from phone photos, deployed for 2,000 farmers in a pilot district." },
-      { title: "Winner – VIT HackX 2025", eventName: "VIT HackX 2025", organizer: "VIT Vellore", position: "WINNER", daysAgo: 180, status: "VERIFIED", description: "Real-time sign language translation running fully on-device." },
-      { title: "Winner – Google Solution Challenge Regional", eventName: "Google Solution Challenge 2024", organizer: "Google Developers", position: "WINNER", daysAgo: 420, status: "VERIFIED" },
-      { title: "Finalist – Amazon ML Challenge", eventName: "Amazon ML Challenge 2025", organizer: "Amazon", position: "FINALIST", daysAgo: 60, status: "PENDING" },
-    ],
-  },
-  {
-    username: "rahul",
     name: "Rahul Verma",
-    email: "rahul@example.com",
-    bio: "Coding club lead. I run our college hackathon and build full-stack side projects in between.",
-    college: "BITS Pilani",
-    location: "Pilani",
+    email: "cb.sc.u4cse23044@cb.students.amrita.edu",
+    bio: "Final-year CSE and coding club lead. I run our department hackathon and build full-stack side projects in between.",
     availability: "OPEN",
     skills: [["React", "INTERMEDIATE"], ["Node.js", "INTERMEDIATE"], ["MongoDB", "INTERMEDIATE"], ["Presentation", "EXPERT"], ["Project Management", "EXPERT"], ["Pitching", "EXPERT"]],
     roles: ["Full Stack Developer", "Team Lead/Project Manager", "Pitcher/Presenter"],
-    github: "https://github.com/rahulv",
-    linkedin: "https://linkedin.com/in/rahulv",
+    github: "https://github.com/rahulverma",
+    linkedin: "https://linkedin.com/in/rahulverma",
     activeDaysAgo: 3,
     achievements: [
-      { title: "Winner – BITS Hack 2025", eventName: "BITS Hack 2025", organizer: "BITS Pilani", position: "WINNER", daysAgo: 240, status: "VERIFIED" },
+      { title: "Winner – Anokha Hackathon 2024", eventName: "Anokha 2024", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 240, status: "VERIFIED" },
     ],
   },
   {
-    username: "aditi",
-    name: "Aditi Rao",
-    email: "aditi@example.com",
-    bio: "Platform admin. I review achievement proofs and new event submissions.",
-    college: "IIT Madras",
-    location: "Chennai",
-    availability: "EVENTS_ONLY",
-    role: "ADMIN",
-    skills: [["Python", "EXPERT"], ["PostgreSQL", "INTERMEDIATE"], ["Technical Writing", "EXPERT"]],
-    roles: ["Backend Developer"],
-    github: "https://github.com/aditirao",
-    activeDaysAgo: 0,
-  },
-  {
-    username: "sneha",
     name: "Sneha Patil",
-    email: "sneha@example.com",
-    bio: "Product designer who codes enough to be dangerous. Design systems, user research, and very opinionated about spacing.",
-    college: "NID Ahmedabad",
-    location: "Ahmedabad",
+    email: "cb.sc.u4csd25032@cb.students.amrita.edu",
+    bio: "Computer Science and Design, second year. Design systems, user research, and very opinionated about spacing.",
     availability: "OPEN",
     skills: [["Figma", "EXPERT"], ["UI/UX Research", "EXPERT"], ["Prototyping", "EXPERT"], ["Adobe XD", "INTERMEDIATE"], ["Photoshop", "INTERMEDIATE"], ["Presentation", "INTERMEDIATE"]],
     roles: ["UI/UX Designer", "Pitcher/Presenter"],
@@ -186,16 +179,13 @@ const USERS: DemoUser[] = [
     linkedin: "https://linkedin.com/in/snehapatil",
     activeDaysAgo: 1,
     achievements: [
-      { title: "Winner – Design Sprint, TechFest 2025", eventName: "TechFest 2025", organizer: "IIT Bombay", position: "WINNER", daysAgo: 130, status: "VERIFIED", description: "Redesigned a public health reporting flow; judged best on usability." },
+      { title: "Winner – Design Sprint, Anokha 2026", eventName: "Anokha 2026", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 130, status: "VERIFIED", description: "Redesigned a public health reporting flow; judged best on usability." },
     ],
   },
   {
-    username: "vikram",
     name: "Vikram Singh",
-    email: "vikram@example.com",
-    bio: "Infrastructure person. I make things deploy, stay up, and cost less. Kubernetes and AWS all day.",
-    college: "IIIT Hyderabad",
-    location: "Hyderabad",
+    email: "cb.en.u4ece24312@cb.students.amrita.edu",
+    bio: "Third-year ECE who drifted into infrastructure. I make things deploy, stay up, and cost less.",
     availability: "OPEN",
     skills: [["Docker", "EXPERT"], ["Kubernetes", "EXPERT"], ["AWS", "EXPERT"], ["CI/CD", "INTERMEDIATE"], ["Go", "INTERMEDIATE"], ["PostgreSQL", "INTERMEDIATE"]],
     roles: ["DevOps Engineer", "Backend Developer"],
@@ -203,29 +193,46 @@ const USERS: DemoUser[] = [
     activeDaysAgo: 5,
   },
   {
-    username: "fatima",
-    name: "Fatima Khan",
-    email: "fatima@example.com",
-    bio: "Flutter developer. Shipped two apps on the Play Store with 10k+ installs between them.",
-    college: "Jamia Millia Islamia",
-    location: "New Delhi",
+    name: "Zoya Sheikh",
+    email: "cb.sc.u4cys24089@cb.students.amrita.edu",
+    bio: "Cyber security branch, third year. I break things carefully and then fix them. InCTF regular.",
     availability: "OPEN",
-    skills: [["Flutter", "EXPERT"], ["Kotlin", "INTERMEDIATE"], ["Firebase", "EXPERT"], ["React Native", "BEGINNER"], ["Figma", "BEGINNER"]],
-    roles: ["Mobile Developer", "Frontend Developer"],
-    github: "https://github.com/fatimak",
-    portfolio: "https://fatima.app",
-    activeDaysAgo: 2,
+    skills: [["Cybersecurity", "EXPERT"], ["Python", "INTERMEDIATE"], ["Node.js", "INTERMEDIATE"], ["React", "INTERMEDIATE"], ["Docker", "BEGINNER"]],
+    roles: ["Full Stack Developer", "DevOps Engineer"],
+    github: "https://github.com/zoyasheikh",
+    activeDaysAgo: 7,
     achievements: [
-      { title: "Runner-up – Google DevFest Hack", eventName: "DevFest Delhi 2025", organizer: "GDG Delhi", position: "RUNNER_UP", daysAgo: 110, status: "VERIFIED" },
+      { title: "Finalist – InCTF Nationals", eventName: "InCTF 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "FINALIST", daysAgo: 140, status: "VERIFIED" },
     ],
   },
   {
-    username: "karthik",
+    name: "Nisha Gupta",
+    email: "cb.sc.u4aie24207@cb.students.amrita.edu",
+    bio: "AIE third year. NLP in training — I spend most of my time on retrieval and evaluation.",
+    availability: "EVENTS_ONLY",
+    skills: [["Python", "EXPERT"], ["NLP", "EXPERT"], ["LangChain", "INTERMEDIATE"], ["PyTorch", "INTERMEDIATE"], ["FastAPI", "BEGINNER"]],
+    roles: ["ML/AI Engineer"],
+    github: "https://github.com/nishagupta",
+    portfolio: "https://nisha.page",
+    activeDaysAgo: 6,
+    achievements: [
+      { title: "Finalist – Inter-IIT Tech Meet ML Challenge", eventName: "Inter-IIT Tech Meet 14.0", organizer: "IIT Kanpur", position: "FINALIST", daysAgo: 160, status: "VERIFIED" },
+    ],
+  },
+  {
+    name: "Dev Patel",
+    email: "cb.sc.u4cse26077@cb.students.amrita.edu",
+    bio: "First-year CSE, already shipping. Mostly Next.js and Postgres. Building a habit tracker nobody asked for.",
+    availability: "OPEN",
+    skills: [["Next.js", "INTERMEDIATE"], ["React", "EXPERT"], ["Node.js", "INTERMEDIATE"], ["PostgreSQL", "BEGINNER"], ["Prisma", "BEGINNER"], ["Tailwind CSS", "EXPERT"]],
+    roles: ["Full Stack Developer", "Frontend Developer"],
+    github: "https://github.com/devpatel",
+    activeDaysAgo: 1,
+  },
+  {
     name: "Karthik Reddy",
-    email: "karthik@example.com",
-    bio: "Blockchain developer. Solidity, audits, and a healthy scepticism about most web3 pitches.",
-    college: "SRM Institute of Science and Technology",
-    location: "Chennai",
+    email: "cb.en.u4eee23275@cb.students.amrita.edu",
+    bio: "Final-year EEE, blockchain developer by night. Solidity, audits, and a healthy scepticism about most web3 pitches.",
     availability: "OPEN",
     skills: [["Solidity", "EXPERT"], ["Blockchain", "EXPERT"], ["TypeScript", "INTERMEDIATE"], ["Node.js", "INTERMEDIATE"], ["Cybersecurity", "INTERMEDIATE"]],
     roles: ["Blockchain Developer", "Backend Developer"],
@@ -237,12 +244,9 @@ const USERS: DemoUser[] = [
     ],
   },
   {
-    username: "ananya",
     name: "Ananya Iyer",
-    email: "ananya@example.com",
-    bio: "Data analyst who likes making messy datasets tell a clear story. Pandas, SQL, and dashboards.",
-    college: "Christ University, Bengaluru",
-    location: "Bengaluru",
+    email: "cb.sc.u4cse24290@cb.students.amrita.edu",
+    bio: "Third-year CSE. I like making messy datasets tell a clear story. Pandas, SQL and dashboards.",
     availability: "OPEN",
     skills: [["Python", "INTERMEDIATE"], ["Pandas", "EXPERT"], ["MySQL", "INTERMEDIATE"], ["Scikit-learn", "INTERMEDIATE"], ["Technical Writing", "INTERMEDIATE"]],
     roles: ["Data Analyst", "ML/AI Engineer"],
@@ -250,88 +254,50 @@ const USERS: DemoUser[] = [
     activeDaysAgo: 8,
   },
   {
-    username: "dev",
-    name: "Dev Patel",
-    email: "dev@example.com",
-    bio: "Full stack dev, mostly Next.js and Postgres. Building a habit tracker nobody asked for.",
-    college: "DA-IICT Gandhinagar",
-    location: "Gandhinagar",
-    availability: "OPEN",
-    skills: [["Next.js", "EXPERT"], ["React", "EXPERT"], ["Node.js", "INTERMEDIATE"], ["PostgreSQL", "INTERMEDIATE"], ["Prisma", "INTERMEDIATE"], ["Tailwind CSS", "EXPERT"]],
-    roles: ["Full Stack Developer", "Frontend Developer"],
-    github: "https://github.com/devpatel",
-    activeDaysAgo: 1,
-  },
-  {
-    username: "nisha",
-    name: "Nisha Gupta",
-    email: "nisha@example.com",
-    bio: "NLP researcher in training. I spend most of my time on retrieval and evaluation.",
-    college: "IIT Kanpur",
-    location: "Kanpur",
-    availability: "EVENTS_ONLY",
-    skills: [["Python", "EXPERT"], ["NLP", "EXPERT"], ["LangChain", "INTERMEDIATE"], ["PyTorch", "INTERMEDIATE"], ["FastAPI", "BEGINNER"]],
-    roles: ["ML/AI Engineer"],
-    github: "https://github.com/nishagupta",
-    portfolio: "https://nisha.page",
-    activeDaysAgo: 6,
-    achievements: [
-      { title: "Finalist – Inter-IIT Tech Meet ML Challenge", eventName: "Inter-IIT Tech Meet 13.0", organizer: "IIT Kanpur", position: "FINALIST", daysAgo: 160, status: "VERIFIED" },
-    ],
-  },
-  {
-    username: "ishaan",
     name: "Ishaan Bose",
-    email: "ishaan@example.com",
-    bio: "Hardware and IoT. Sensors, ESP32 boards, and the occasional soldering burn.",
-    college: "Jadavpur University",
-    location: "Kolkata",
+    email: "cb.en.u4mec24401@cb.students.amrita.edu",
+    bio: "Mechanical third year, hardware and IoT person. Sensors, ESP32 boards, and the occasional soldering burn.",
     availability: "OPEN",
     skills: [["IoT", "EXPERT"], ["Python", "INTERMEDIATE"], ["AR/VR", "BEGINNER"], ["Computer Vision", "BEGINNER"]],
     roles: ["Hardware/IoT Engineer"],
     activeDaysAgo: 12,
   },
   {
-    username: "tanvi",
     name: "Tanvi Joshi",
-    email: "tanvi@example.com",
-    bio: "I pitch. Ten slides, five minutes, no filler. Also handle business models and market sizing.",
-    college: "Symbiosis, Pune",
-    location: "Pune",
+    email: "cb.sc.p2cse25007@cb.students.amrita.edu",
+    bio: "M.Tech CSE. I pitch — ten slides, five minutes, no filler. Also handle business models and market sizing.",
     availability: "OPEN",
     skills: [["Pitching", "EXPERT"], ["Presentation", "EXPERT"], ["Project Management", "INTERMEDIATE"], ["Technical Writing", "INTERMEDIATE"]],
     roles: ["Pitcher/Presenter", "Team Lead/Project Manager"],
     linkedin: "https://linkedin.com/in/tanvijoshi",
     activeDaysAgo: 3,
     achievements: [
-      { title: "Winner – Best Pitch, Startup Weekend Pune", eventName: "Startup Weekend Pune 2025", organizer: "Techstars", position: "WINNER", daysAgo: 90, status: "VERIFIED" },
+      { title: "Winner – Best Pitch, Startup Weekend Coimbatore", eventName: "Startup Weekend Coimbatore 2026", organizer: "Techstars", position: "WINNER", daysAgo: 90, status: "VERIFIED" },
     ],
   },
   {
-    username: "rohan",
+    name: "Fatima Khan",
+    email: "cb.sc.u4aie25163@cb.students.amrita.edu",
+    bio: "Second-year AIE. Flutter developer — shipped two apps on the Play Store with 10k+ installs between them.",
+    availability: "OPEN",
+    skills: [["Flutter", "EXPERT"], ["Kotlin", "INTERMEDIATE"], ["Firebase", "EXPERT"], ["React Native", "BEGINNER"], ["Figma", "BEGINNER"]],
+    roles: ["Mobile Developer", "Frontend Developer"],
+    github: "https://github.com/fatimak",
+    portfolio: "https://fatima.app",
+    activeDaysAgo: 2,
+    achievements: [
+      { title: "Runner-up – Google DevFest Hack", eventName: "DevFest Coimbatore 2025", organizer: "GDG Coimbatore", position: "RUNNER_UP", daysAgo: 110, status: "VERIFIED" },
+    ],
+  },
+  {
     name: "Rohan Das",
-    email: "rohan@example.com",
-    bio: "Backend engineer, Go and Postgres. Currently heads-down on my thesis, so not taking on events.",
-    college: "NIT Rourkela",
-    location: "Rourkela",
+    email: "cb.sc.u4cse23188@cb.students.amrita.edu",
+    bio: "Final-year CSE, Go and Postgres. Heads-down on my thesis this semester, so not taking on events.",
     availability: "NOT_AVAILABLE",
     skills: [["Go", "EXPERT"], ["PostgreSQL", "EXPERT"], ["Redis", "INTERMEDIATE"], ["Docker", "INTERMEDIATE"]],
     roles: ["Backend Developer"],
     github: "https://github.com/rohandas",
     activeDaysAgo: 40,
-  },
-  {
-    username: "zoya",
-    name: "Zoya Sheikh",
-    email: "zoya@example.com",
-    bio: "Security-minded full stack developer. I break things carefully and then fix them.",
-    college: "Manipal Institute of Technology",
-    location: "Manipal",
-    availability: "OPEN",
-    skills: [["Cybersecurity", "EXPERT"], ["Node.js", "INTERMEDIATE"], ["React", "INTERMEDIATE"], ["Docker", "BEGINNER"], ["Python", "INTERMEDIATE"]],
-    roles: ["Full Stack Developer", "DevOps Engineer"],
-    github: "https://github.com/zoyasheikh",
-    activeDaysAgo: 7,
   },
 ];
 
@@ -346,7 +312,7 @@ const EVENTS = [
     endDate: fromNow(47),
     registrationDeadline: fromNow(21),
     mode: "OFFLINE",
-    location: "Chennai (regional centre)",
+    location: "Coimbatore (regional centre)",
     minTeamSize: 4,
     maxTeamSize: 6,
     themes: "Smart Automation, Healthcare, Agriculture, Clean Energy, Transport",
@@ -372,21 +338,21 @@ const EVENTS = [
     status: "APPROVED",
   },
   {
-    name: "Kurukshetra '26 Hackathon",
-    slug: "kurukshetra-26-hackathon",
-    organizer: "Anna University, CEG Campus",
+    name: "Anokha 2027 Hackathon",
+    slug: "anokha-2027-hackathon",
+    organizer: "Amrita Vishwa Vidyapeetham, Coimbatore",
     description:
-      "The flagship 24-hour hackathon at Kurukshetra, Anna University's national techno-management fest. Open to all undergraduate students.",
+      "The flagship 24-hour hackathon at Anokha, Amrita's national techfest. Open to all Amrita students across campuses.",
     startDate: fromNow(30),
     endDate: fromNow(31),
     registrationDeadline: fromNow(16),
     mode: "OFFLINE",
-    location: "CEG Campus, Guindy, Chennai",
+    location: "Amrita School of Engineering, Ettimadai, Coimbatore",
     minTeamSize: 2,
     maxTeamSize: 4,
     themes: "Civic Tech, EdTech, Accessibility, Sustainability",
     prize: "₹50,000 prize pool",
-    registrationLink: "https://example.com/kurukshetra",
+    registrationLink: "https://anokha.amrita.edu",
     status: "APPROVED",
   },
   {
@@ -425,16 +391,16 @@ const EVENTS = [
     status: "APPROVED",
   },
   {
-    name: "Campus Code Carnival 2026",
-    slug: "campus-code-carnival-2026",
-    organizer: "Coding Club, BITS Pilani",
+    name: "CSE Department Codeathon 2027",
+    slug: "cse-department-codeathon-2027",
+    organizer: "Department of CSE, Amrita Coimbatore",
     description:
-      "An inter-college hackathon and coding carnival. Submitted for review — waiting on admin approval.",
+      "An intra-department codeathon for CSE and AIE students. Submitted for review — waiting on admin approval.",
     startDate: fromNow(75),
     endDate: fromNow(76),
     registrationDeadline: fromNow(55),
     mode: "OFFLINE",
-    location: "BITS Pilani, Rajasthan",
+    location: "Amrita School of Computing, Coimbatore",
     minTeamSize: 2,
     maxTeamSize: 4,
     themes: "Open Innovation",
@@ -445,6 +411,14 @@ const EVENTS = [
 
 async function main() {
   console.log("Seeding FindMyTeammate...");
+
+  // Earlier versions of this seed used @example.com addresses. Since access is
+  // now limited to Amrita student addresses, clear those out so search results
+  // are not polluted by accounts nobody can sign in to.
+  const legacy = await db.user.deleteMany({
+    where: { email: { endsWith: "@example.com" } },
+  });
+  if (legacy.count) console.log(`  removed ${legacy.count} superseded demo accounts`);
 
   // --- master tables ------------------------------------------------------
   for (const [name, category] of SKILLS) {
@@ -472,15 +446,28 @@ async function main() {
   console.log(`  ${skillByName.size} skills, ${roleByName.size} roles`);
 
   // --- users --------------------------------------------------------------
+  // Keyed by first name, which is what the participation and team tables below
+  // refer to.
   const userByUsername = new Map<string, string>();
 
+  // One hash reused for every demo account — hashing is deliberately slow.
+  const demoPasswordHash = await hashPassword(DEMO_PASSWORD);
+
   for (const u of USERS) {
+    const identity = parseStudentEmail(u.email);
+    if (!identity) throw new Error(`Seed email is not a valid roll address: ${u.email}`);
+
+    // Everything academic comes from the address itself.
+    const college = `Amrita Vishwa Vidyapeetham, ${identity.campus}`;
+    const location = identity.campus;
+    const username = `${identity.branchCode}${String(identity.joiningYear).slice(-2)}${identity.rollNumber}`;
+
     const completeness = profileCompleteness({
       name: u.name,
       image: null,
       bio: u.bio,
-      college: u.college,
-      location: u.location,
+      college,
+      location,
       skillCount: u.skills.length,
       roleCount: u.roles.length,
       githubUrl: u.github,
@@ -493,11 +480,20 @@ async function main() {
       update: {},
       create: {
         name: u.name,
-        username: u.username,
+        username,
         email: u.email,
         bio: u.bio,
-        college: u.college,
-        location: u.location,
+        college,
+        location,
+        passwordHash: demoPasswordHash,
+        emailVerifiedAt: new Date(Date.now() - 30 * day),
+        campusCode: identity.campusCode,
+        schoolCode: identity.schoolCode,
+        programCode: identity.programCode,
+        programYears: identity.programYears,
+        branchCode: identity.branchCode,
+        joiningYear: identity.joiningYear,
+        rollNumber: identity.rollNumber,
         availability: u.availability,
         availabilityUpdatedAt: new Date(Date.now() - (u.activeDaysAgo ?? 3) * day),
         role: u.role ?? "USER",
@@ -507,12 +503,11 @@ async function main() {
         portfolioUrl: u.portfolio,
         profileCompleteness: completeness,
         lastActiveAt: new Date(Date.now() - (u.activeDaysAgo ?? 3) * day),
-        accounts: {
-          create: { provider: "demo", providerAccountId: u.email },
-        },
       },
     });
-    userByUsername.set(u.username, user.id);
+
+    const key = u.name.split(" ")[0]!.toLowerCase();
+    userByUsername.set(key, user.id);
 
     for (const [skillName, level] of u.skills) {
       const skillId = skillByName.get(skillName);
@@ -556,7 +551,7 @@ async function main() {
               ? new Date(Date.now() - (a.daysAgo - 5) * day)
               : null,
           reviewedBy:
-            a.status === "VERIFIED" || a.status === "REJECTED" ? "Aditi Rao" : null,
+            a.status === "VERIFIED" || a.status === "REJECTED" ? "Parthiv Surya" : null,
         },
       });
     }
@@ -567,13 +562,15 @@ async function main() {
   const eventBySlug = new Map<string, string>();
   for (const e of EVENTS) {
     const createdById =
-      e.slug === "campus-code-carnival-2026" || e.slug === "kurukshetra-26-hackathon"
-        ? (userByUsername.get(e.slug.startsWith("campus") ? "rahul" : "priya") ?? null)
-        : (userByUsername.get("aditi") ?? null);
+      e.slug === "cse-department-codeathon-2027"
+        ? (userByUsername.get("rahul") ?? null)
+        : e.slug === "anokha-2027-hackathon"
+          ? (userByUsername.get("priya") ?? null)
+          : (userByUsername.get("parthiv") ?? null);
 
     const event = await db.event.upsert({
       where: { slug: e.slug },
-      update: {},
+      update: { createdById },
       create: { ...e, createdById },
     });
     eventBySlug.set(e.slug, event.id);
@@ -594,10 +591,10 @@ async function main() {
     ["dev", "global-ai-hackathon-2026", "TEAM_LOOKING_FOR_MEMBERS"],
     ["ananya", "global-ai-hackathon-2026", "LOOKING_FOR_TEAM"],
     ["arjun", "global-ai-hackathon-2026", "LOOKING_FOR_TEAM"],
-    ["rahul", "kurukshetra-26-hackathon", "TEAM_LOOKING_FOR_MEMBERS"],
-    ["arjun", "kurukshetra-26-hackathon", "LOOKING_FOR_TEAM"],
-    ["fatima", "kurukshetra-26-hackathon", "LOOKING_FOR_TEAM"],
-    ["zoya", "kurukshetra-26-hackathon", "LOOKING_FOR_TEAM"],
+    ["rahul", "anokha-2027-hackathon", "TEAM_LOOKING_FOR_MEMBERS"],
+    ["arjun", "anokha-2027-hackathon", "LOOKING_FOR_TEAM"],
+    ["fatima", "anokha-2027-hackathon", "LOOKING_FOR_TEAM"],
+    ["zoya", "anokha-2027-hackathon", "LOOKING_FOR_TEAM"],
     ["karthik", "web3-winter-jam", "TEAM_LOOKING_FOR_MEMBERS"],
     ["zoya", "web3-winter-jam", "LOOKING_FOR_TEAM"],
     ["dev", "web3-winter-jam", "LOOKING_FOR_TEAM"],
@@ -642,7 +639,7 @@ async function main() {
     },
     {
       name: "PitchPerfect",
-      slug: "kurukshetra-26-hackathon",
+      slug: "anokha-2027-hackathon",
       leader: "rahul",
       idea: "A practice tool for student founders: record a pitch, get structured feedback on pace, filler words and slide density.",
       slots: [
@@ -790,8 +787,11 @@ async function main() {
   }
 
   console.log("Seed complete.\n");
-  console.log("Demo sign-in (no OAuth needed): priya@example.com, meera@example.com,");
-  console.log("arjun@example.com, rahul@example.com, or aditi@example.com (admin).");
+  console.log("Sign in with any seeded Amrita address, password: " + DEMO_PASSWORD);
+  console.log("  cb.sc.u4cse24535@cb.students.amrita.edu  Parthiv Surya  CSE 2024  (admin)");
+  console.log("  cb.sc.u4cse24118@cb.students.amrita.edu  Priya Sharma   CSE 2024");
+  console.log("  cb.sc.u4aie23156@cb.students.amrita.edu  Meera Krishnan AIE 2023");
+  console.log("  cb.sc.u4cse25211@cb.students.amrita.edu  Arjun Menon    CSE 2025");
 }
 
 main()
