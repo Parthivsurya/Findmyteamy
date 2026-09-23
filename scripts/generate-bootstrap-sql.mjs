@@ -11,7 +11,7 @@
  */
 
 import { execFileSync } from "node:child_process";
-import { randomBytes } from "node:crypto";
+import { createHash } from "node:crypto";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
@@ -80,9 +80,17 @@ if (skills.length === 0 || roles.length === 0) {
   process.exit(1);
 }
 
-/** cuid-shaped id, since Prisma generates these client-side, not in the database. */
-function cuid() {
-  return `c${randomBytes(12).toString("hex")}`;
+/**
+ * A cuid-shaped id derived from the row's own name.
+ *
+ * Prisma generates cuids client-side, so the columns have no database default
+ * and these inserts must supply their own. Deriving them from the name instead
+ * of randomising keeps this generated file byte-identical between runs, so
+ * regenerating after an unrelated schema change produces a one-line diff
+ * rather than 67 changed ids.
+ */
+function idFor(kind, name) {
+  return `c${createHash("sha256").update(`${kind}:${name}`).digest("hex").slice(0, 24)}`;
 }
 
 const escape = (value) => value.replace(/'/g, "''");
@@ -97,12 +105,12 @@ const inserts = [
   skills
     .map(
       (s) =>
-        `  ('${cuid()}', '${escape(s.name)}', '${s.category}', true, CURRENT_TIMESTAMP)`,
+        `  ('${idFor("skill", s.name)}', '${escape(s.name)}', '${s.category}', true, CURRENT_TIMESTAMP)`,
     )
     .join(",\n") + "\nON CONFLICT (\"name\") DO NOTHING;",
   "",
   "INSERT INTO \"Role\" (\"id\", \"name\") VALUES",
-  roles.map((name) => `  ('${cuid()}', '${escape(name)}')`).join(",\n") +
+  roles.map((name) => `  ('${idFor("role", name)}', '${escape(name)}')`).join(",\n") +
     "\nON CONFLICT (\"name\") DO NOTHING;",
   "",
 ];

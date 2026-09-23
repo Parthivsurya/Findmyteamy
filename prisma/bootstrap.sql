@@ -59,6 +59,17 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "OtpRequestLog" (
+    "id" TEXT NOT NULL,
+    "ip" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "purpose" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "OtpRequestLog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "EmailOtp" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
@@ -288,6 +299,12 @@ CREATE INDEX "User_joiningYear_idx" ON "User"("joiningYear");
 CREATE INDEX "User_campusCode_branchCode_joiningYear_idx" ON "User"("campusCode", "branchCode", "joiningYear");
 
 -- CreateIndex
+CREATE INDEX "OtpRequestLog_ip_createdAt_idx" ON "OtpRequestLog"("ip", "createdAt");
+
+-- CreateIndex
+CREATE INDEX "OtpRequestLog_createdAt_idx" ON "OtpRequestLog"("createdAt");
+
+-- CreateIndex
 CREATE INDEX "EmailOtp_email_purpose_idx" ON "EmailOtp"("email", "purpose");
 
 -- CreateIndex
@@ -450,75 +467,75 @@ ALTER TABLE "_SlotRequiredSkills" ADD CONSTRAINT "_SlotRequiredSkills_B_fkey" FO
 -- ---------------------------------------------------------------------------
 
 INSERT INTO "Skill" ("id", "name", "category", "approved", "createdAt") VALUES
-  ('c9abfa40b041b5742e7df2580', 'HTML', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('cc9a20c7c75ee0c20d7f1af71', 'CSS', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('c4f30c4a57ea4e04895c652d6', 'JavaScript', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('cfde56546db94aacc004d1752', 'TypeScript', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('caab198d44b45dfc56ee06429', 'React', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('c4f8c2b7590fe23a0807e986c', 'Next.js', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('ca3718e72b62690b26dd5010a', 'Angular', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('cec7e527c70b3e56ba19e0cf7', 'Vue', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('c2e725ac8aa5fb5f7dae9bb33', 'Tailwind CSS', 'FRONTEND', true, CURRENT_TIMESTAMP),
-  ('cca1580222244bda2fdb03307', 'Node.js', 'BACKEND', true, CURRENT_TIMESTAMP),
-  ('caf2dcc3493f28cec1db3f6d7', 'Express', 'BACKEND', true, CURRENT_TIMESTAMP),
-  ('c6aea0c619d8f9f1e404cbf27', 'Django', 'BACKEND', true, CURRENT_TIMESTAMP),
-  ('c64404facba8fae08d84c55f2', 'Flask', 'BACKEND', true, CURRENT_TIMESTAMP),
-  ('c97043609875464030d18d08f', 'FastAPI', 'BACKEND', true, CURRENT_TIMESTAMP),
-  ('c0d17441c7eef6b0b4086cded', 'Spring Boot', 'BACKEND', true, CURRENT_TIMESTAMP),
-  ('c90e287163da9a6e15d312dae', 'Go', 'BACKEND', true, CURRENT_TIMESTAMP),
-  ('c99d100b4c66af87b44f3611c', 'GraphQL', 'BACKEND', true, CURRENT_TIMESTAMP),
-  ('c5107c4b10e0cd5efb1cfe5cd', 'Flutter', 'MOBILE', true, CURRENT_TIMESTAMP),
-  ('c4941f5ae9ee82ef3abf1d6bf', 'React Native', 'MOBILE', true, CURRENT_TIMESTAMP),
-  ('cbf6579159bbac768eea66bef', 'Kotlin', 'MOBILE', true, CURRENT_TIMESTAMP),
-  ('cbdd2c26fe5a32eff483ed259', 'Swift', 'MOBILE', true, CURRENT_TIMESTAMP),
-  ('c7420e5735161e89ddd661708', 'Python', 'DATA_AI', true, CURRENT_TIMESTAMP),
-  ('c1aebfee62992d181871c2e6a', 'Pandas', 'DATA_AI', true, CURRENT_TIMESTAMP),
-  ('ceb30b35dc53971a21fae25a3', 'TensorFlow', 'DATA_AI', true, CURRENT_TIMESTAMP),
-  ('ce7acc7bf82836402238e940e', 'PyTorch', 'DATA_AI', true, CURRENT_TIMESTAMP),
-  ('cc1914934104c81b77fb2882f', 'Scikit-learn', 'DATA_AI', true, CURRENT_TIMESTAMP),
-  ('c9d22ff0ae373b9eed248ad9e', 'NLP', 'DATA_AI', true, CURRENT_TIMESTAMP),
-  ('cd9fd25fee4cbf63d08b84eff', 'Computer Vision', 'DATA_AI', true, CURRENT_TIMESTAMP),
-  ('ce83ca04556f0b5cca1a84927', 'LangChain', 'DATA_AI', true, CURRENT_TIMESTAMP),
-  ('c15c93e64ee542396df35ba1e', 'MySQL', 'DATABASE', true, CURRENT_TIMESTAMP),
-  ('ce41c247649f5293e2186da43', 'PostgreSQL', 'DATABASE', true, CURRENT_TIMESTAMP),
-  ('c05aa6388f519fdf6d178f786', 'MongoDB', 'DATABASE', true, CURRENT_TIMESTAMP),
-  ('cf9fa894e1cf60f9dba13210e', 'Firebase', 'DATABASE', true, CURRENT_TIMESTAMP),
-  ('c937f9afdf668bf78cdcb70ff', 'Redis', 'DATABASE', true, CURRENT_TIMESTAMP),
-  ('c70b9d1b55cc8195e0fe6efb7', 'Prisma', 'DATABASE', true, CURRENT_TIMESTAMP),
-  ('c502459956c173c06a42f9c10', 'AWS', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
-  ('cf1015c662ccf943ab13f5e36', 'Azure', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
-  ('cd6f61c00e6217e7db36591f1', 'GCP', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
-  ('cd9ab3fe57dcf1ad442d788fd', 'Docker', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
-  ('c96c612eff0ef1540ac8ab86b', 'Kubernetes', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
-  ('cd0f3fb37f1656ff0c66193ab', 'CI/CD', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
-  ('c50806be4311c448a977c75a5', 'Figma', 'DESIGN', true, CURRENT_TIMESTAMP),
-  ('c6368849d888f3f341507e0fc', 'Adobe XD', 'DESIGN', true, CURRENT_TIMESTAMP),
-  ('c4f9ac1ff2f665d8c27f5e3bf', 'Photoshop', 'DESIGN', true, CURRENT_TIMESTAMP),
-  ('c2efe9e5697576821326e9b57', 'UI/UX Research', 'DESIGN', true, CURRENT_TIMESTAMP),
-  ('c2e8c1fdeb9ae3c3e268eb6fe', 'Prototyping', 'DESIGN', true, CURRENT_TIMESTAMP),
-  ('ce0041d4735cb8b20df3a1f85', 'Blockchain', 'EMERGING', true, CURRENT_TIMESTAMP),
-  ('c261af2d8007d58ab69d57197', 'Solidity', 'EMERGING', true, CURRENT_TIMESTAMP),
-  ('ccbc1bba909f8be04479a4d98', 'IoT', 'EMERGING', true, CURRENT_TIMESTAMP),
-  ('c050fbf7bc337f86f03820682', 'AR/VR', 'EMERGING', true, CURRENT_TIMESTAMP),
-  ('c079447ab4fb7b4bacca140b8', 'Cybersecurity', 'EMERGING', true, CURRENT_TIMESTAMP),
-  ('cf7973c2d3d948e6ac58791cc', 'Presentation', 'SOFT', true, CURRENT_TIMESTAMP),
-  ('cc5a13f8121c76f65d4546309', 'Pitching', 'SOFT', true, CURRENT_TIMESTAMP),
-  ('c02b21b060017b97eda27680e', 'Project Management', 'SOFT', true, CURRENT_TIMESTAMP),
-  ('cac7e945f034a29f0443c754a', 'Technical Writing', 'SOFT', true, CURRENT_TIMESTAMP)
+  ('c9f4c186a3fd76a643788f5b2', 'HTML', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('cd6d9fcbf999da7bac3e64bbb', 'CSS', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('ce55fc1bd19b4c053a9f67967', 'JavaScript', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('c3b66e05b56c2d09ca0285271', 'TypeScript', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('c5b71f1de68042b4925b1c454', 'React', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('c60e7c079348914b505360dc1', 'Next.js', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('cc088dfd15a660b413c157db4', 'Angular', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('cdc33069899eb2668c348f6d7', 'Vue', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('ca235eb2ec4955f7d9a63e8aa', 'Tailwind CSS', 'FRONTEND', true, CURRENT_TIMESTAMP),
+  ('c9f7f27d92bf690622c2cce88', 'Node.js', 'BACKEND', true, CURRENT_TIMESTAMP),
+  ('cedb8d83a72925ad178cea26d', 'Express', 'BACKEND', true, CURRENT_TIMESTAMP),
+  ('c1a516618be0a985cf6476022', 'Django', 'BACKEND', true, CURRENT_TIMESTAMP),
+  ('c4f4c701f082812c128b53782', 'Flask', 'BACKEND', true, CURRENT_TIMESTAMP),
+  ('cbaf67c1cab10e840eb14b608', 'FastAPI', 'BACKEND', true, CURRENT_TIMESTAMP),
+  ('c5b4610f3d0b303942a8c7e3d', 'Spring Boot', 'BACKEND', true, CURRENT_TIMESTAMP),
+  ('c9ab58b821eb3beab771c2ce7', 'Go', 'BACKEND', true, CURRENT_TIMESTAMP),
+  ('ce41790e64eb880e714fa8efe', 'GraphQL', 'BACKEND', true, CURRENT_TIMESTAMP),
+  ('cd2aa453788c310b57669f713', 'Flutter', 'MOBILE', true, CURRENT_TIMESTAMP),
+  ('cd76ee8221949622ca757bd9b', 'React Native', 'MOBILE', true, CURRENT_TIMESTAMP),
+  ('c9e93d1ecd5729e7ad3ed5072', 'Kotlin', 'MOBILE', true, CURRENT_TIMESTAMP),
+  ('cb66000bc2b74fc31b87bb654', 'Swift', 'MOBILE', true, CURRENT_TIMESTAMP),
+  ('cbb50d6d625862abb5cf37bbe', 'Python', 'DATA_AI', true, CURRENT_TIMESTAMP),
+  ('c0f97d510f9bcafc0118ce3b6', 'Pandas', 'DATA_AI', true, CURRENT_TIMESTAMP),
+  ('cc3c14ed89c1c81d146f6f7a0', 'TensorFlow', 'DATA_AI', true, CURRENT_TIMESTAMP),
+  ('c3d48b88b3109e1c2ff9fd481', 'PyTorch', 'DATA_AI', true, CURRENT_TIMESTAMP),
+  ('c926b2538b73df0a650ac662d', 'Scikit-learn', 'DATA_AI', true, CURRENT_TIMESTAMP),
+  ('ca28181bfa610d1131bc34744', 'NLP', 'DATA_AI', true, CURRENT_TIMESTAMP),
+  ('c61d3b6cb16ef3f2686671f59', 'Computer Vision', 'DATA_AI', true, CURRENT_TIMESTAMP),
+  ('c0683ecd29a0888883366709f', 'LangChain', 'DATA_AI', true, CURRENT_TIMESTAMP),
+  ('c65b5adf0468082f774ccfa83', 'MySQL', 'DATABASE', true, CURRENT_TIMESTAMP),
+  ('c16404d80f77a8a4e1c2c656d', 'PostgreSQL', 'DATABASE', true, CURRENT_TIMESTAMP),
+  ('cb1d009124392c1aa547a3ca3', 'MongoDB', 'DATABASE', true, CURRENT_TIMESTAMP),
+  ('cd414b628859daf404be471c0', 'Firebase', 'DATABASE', true, CURRENT_TIMESTAMP),
+  ('ca4f56b7b68d0fd869ee3bd5f', 'Redis', 'DATABASE', true, CURRENT_TIMESTAMP),
+  ('cfa7eec78949657bd7638f29d', 'Prisma', 'DATABASE', true, CURRENT_TIMESTAMP),
+  ('ca383674d908eade31aef1db6', 'AWS', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
+  ('cae2d7190650d04f2b4ccfc3f', 'Azure', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
+  ('c187e773d84fadedbd1f1ad28', 'GCP', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
+  ('c1a98d63000e1d37aa01f435c', 'Docker', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
+  ('cebdb8e6cfd1300f69c793d7a', 'Kubernetes', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
+  ('c1fbbf838939b2db64d80606a', 'CI/CD', 'CLOUD_DEVOPS', true, CURRENT_TIMESTAMP),
+  ('cf78366461611967b8ddcc063', 'Figma', 'DESIGN', true, CURRENT_TIMESTAMP),
+  ('c892228280e2eb4e76c2d5ded', 'Adobe XD', 'DESIGN', true, CURRENT_TIMESTAMP),
+  ('c99083f57eb2684451e23acce', 'Photoshop', 'DESIGN', true, CURRENT_TIMESTAMP),
+  ('cdc66bca4ae308ff323f6c882', 'UI/UX Research', 'DESIGN', true, CURRENT_TIMESTAMP),
+  ('c8da94f66e1470ebd47a5c55c', 'Prototyping', 'DESIGN', true, CURRENT_TIMESTAMP),
+  ('c1ac67521cfb8d0b218ddeaec', 'Blockchain', 'EMERGING', true, CURRENT_TIMESTAMP),
+  ('c17feb359d76c8abb163e9017', 'Solidity', 'EMERGING', true, CURRENT_TIMESTAMP),
+  ('ce4927c716c56f2386c92bde4', 'IoT', 'EMERGING', true, CURRENT_TIMESTAMP),
+  ('c4f00f15fabe23bab1e862cc1', 'AR/VR', 'EMERGING', true, CURRENT_TIMESTAMP),
+  ('c77ba3cbe45c62be370bb58ab', 'Cybersecurity', 'EMERGING', true, CURRENT_TIMESTAMP),
+  ('c3d60e27d2bf31860e4a0f28c', 'Presentation', 'SOFT', true, CURRENT_TIMESTAMP),
+  ('cf3fb1c5a252c0f60df8b162e', 'Pitching', 'SOFT', true, CURRENT_TIMESTAMP),
+  ('ce8c3800454dc2c6df4903b26', 'Project Management', 'SOFT', true, CURRENT_TIMESTAMP),
+  ('c4fd369bf10d8104c78094dba', 'Technical Writing', 'SOFT', true, CURRENT_TIMESTAMP)
 ON CONFLICT ("name") DO NOTHING;
 
 INSERT INTO "Role" ("id", "name") VALUES
-  ('ce75a71eb582521061ba2afb3', 'Frontend Developer'),
-  ('c3adc166cbe31c2775658ea64', 'Backend Developer'),
-  ('c8635e618a7f4767b05e83971', 'Full Stack Developer'),
-  ('c4fb3319d48698ff8fa297334', 'Mobile Developer'),
-  ('c09397d328191f49c41661879', 'ML/AI Engineer'),
-  ('c35a9d0b33cd21e7bea217b25', 'Data Analyst'),
-  ('c0908b06faefb4c6db30c9573', 'UI/UX Designer'),
-  ('c994894dd719fe583e4036b57', 'DevOps Engineer'),
-  ('c99eee9118ceeb3445aa7562e', 'Blockchain Developer'),
-  ('c53567295539e1db94a1a943a', 'Hardware/IoT Engineer'),
-  ('c092f9d0ba4ce798c83816e9d', 'Pitcher/Presenter'),
-  ('c2b7b2eb4a4beaafb5e6557fb', 'Team Lead/Project Manager')
+  ('c53172d7555c833d9f1a6a8f8', 'Frontend Developer'),
+  ('c1de9ea11c7e70d8b3b921d93', 'Backend Developer'),
+  ('c00b06e06199fb425d4931863', 'Full Stack Developer'),
+  ('cb60d3d0a06d5141c7600384a', 'Mobile Developer'),
+  ('c8f6aac71a8d57416024ca423', 'ML/AI Engineer'),
+  ('cc52f21e087e85a6922dec3b4', 'Data Analyst'),
+  ('cb45ce052faeeee1e7c6555e1', 'UI/UX Designer'),
+  ('c937a997a76e36108fd53971f', 'DevOps Engineer'),
+  ('c1c461cd440a7f55a557ffe97', 'Blockchain Developer'),
+  ('c26d22ae39acd50f573ba8000', 'Hardware/IoT Engineer'),
+  ('cad3790bd8735354fdb1b50fe', 'Pitcher/Presenter'),
+  ('c157cdd0389604aea171892b5', 'Team Lead/Project Manager')
 ON CONFLICT ("name") DO NOTHING;
 
