@@ -420,6 +420,13 @@ async function main() {
   });
   if (legacy.count) console.log(`  removed ${legacy.count} superseded demo accounts`);
 
+  // Events are keyed by slug, so renaming one in this file would otherwise
+  // leave the old row behind. Drop any demo event that is no longer listed.
+  const staleEvents = await db.event.deleteMany({
+    where: { slug: { notIn: EVENTS.map((e) => e.slug) } },
+  });
+  if (staleEvents.count) console.log(`  removed ${staleEvents.count} renamed demo events`);
+
   // --- master tables ------------------------------------------------------
   for (const [name, category] of SKILLS) {
     await db.skill.upsert({

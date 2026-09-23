@@ -24,3 +24,7 @@ next-env.d.ts
 tsconfig.tsbuildinfo
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# project documentation (kept locally, not published)
+FindMyTeammate_Project_Documentation.docx
+*.docx

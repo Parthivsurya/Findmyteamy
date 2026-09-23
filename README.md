@@ -125,8 +125,3 @@ account password.
 5. Add `mode: "insensitive"` to the `contains` filters in
    `src/lib/services/search.ts` and `events.ts` — SQLite is already
    case-insensitive for ASCII, PostgreSQL is not.
-
-## Documentation
-
-The original product requirements, system design and implementation plan are in
-`FindMyTeammate_Project_Documentation.docx`.
