@@ -160,6 +160,12 @@ Mondays. It is one entry on purpose: Hobby plans allow only a small number of
 cron jobs at a low frequency, and a single trigger stays inside those limits on
 any plan. Vercel sends `Authorization: Bearer $CRON_SECRET` automatically.
 
+Note that Vercel validates `vercel.json` strictly: a cron entry accepts only
+`path` and `schedule`, and any other property — including a `comment` used to
+explain the schedule — fails the build with
+`crons[0] should NOT have additional property`. Keep notes here rather than in
+that file.
+
 ### Costs
 
 Vercel Hobby, Neon free tier and Resend free tier cover a campus pilot at no

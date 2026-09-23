@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "comment": "One job covers everything. Hobby plans allow few cron entries at a low frequency, and the weekly digest gates itself on the day of the week.",
       "path": "/api/cron/daily",
       "schedule": "0 4 * * *"
     }
