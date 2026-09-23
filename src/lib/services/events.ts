@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { containsText } from "@/lib/db-text";
 import { HttpError } from "@/lib/api";
 import { slugify } from "@/lib/utils";
 
@@ -192,12 +193,11 @@ export async function listEvents({
   if (when === "past") where.endDate = { lt: now };
   if (mode) where.mode = mode;
   if (q) {
-    // SQLite LIKE is case-insensitive for ASCII; add mode:"insensitive" on Postgres.
     where.OR = [
-      { name: { contains: q } },
-      { organizer: { contains: q } },
-      { themes: { contains: q } },
-      { location: { contains: q } },
+      { name: containsText(q) },
+      { organizer: containsText(q) },
+      { themes: containsText(q) },
+      { location: containsText(q) },
     ];
   }
 

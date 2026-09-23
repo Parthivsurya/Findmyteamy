@@ -137,6 +137,10 @@ export async function finishSignup(rawEmail: string, code: string) {
   return { userId: user.id, onboarded: user.onboarded };
 }
 
+/** Failures allowed before the account is locked, and for how long. */
+const MAX_FAILED_LOGINS = 8;
+const LOCKOUT_MINUTES = 15;
+
 export async function signIn(rawEmail: string, password: string) {
   const email = rawEmail.trim().toLowerCase();
 
@@ -147,6 +151,8 @@ export async function signIn(rawEmail: string, password: string) {
       passwordHash: true,
       emailVerifiedAt: true,
       onboarded: true,
+      failedLoginCount: true,
+      lockedUntil: true,
     },
   });
 
@@ -155,8 +161,41 @@ export async function signIn(rawEmail: string, password: string) {
   const invalid = new HttpError(401, "That email address or password is not right");
   if (!user?.passwordHash) throw invalid;
 
+  if (user.lockedUntil && user.lockedUntil > new Date()) {
+    const minutes = Math.max(
+      1,
+      Math.ceil((user.lockedUntil.getTime() - Date.now()) / 60_000),
+    );
+    throw new HttpError(
+      429,
+      `Too many failed attempts. Try again in ${minutes} ${minutes === 1 ? "minute" : "minutes"}, or reset your password.`,
+    );
+  }
+
   const ok = await verifyPassword(password, user.passwordHash);
-  if (!ok) throw invalid;
+
+  if (!ok) {
+    const failures = user.failedLoginCount + 1;
+    const lock = failures >= MAX_FAILED_LOGINS;
+
+    await db.user.update({
+      where: { id: user.id },
+      data: {
+        failedLoginCount: lock ? 0 : failures,
+        lockedUntil: lock
+          ? new Date(Date.now() + LOCKOUT_MINUTES * 60_000)
+          : null,
+      },
+    });
+
+    if (lock) {
+      throw new HttpError(
+        429,
+        `Too many failed attempts. Try again in ${LOCKOUT_MINUTES} minutes, or reset your password.`,
+      );
+    }
+    throw invalid;
+  }
 
   if (!user.emailVerifiedAt) {
     // Send a fresh code so the unverified route is actually completable.
@@ -169,7 +208,8 @@ export async function signIn(rawEmail: string, password: string) {
 
   await db.user.update({
     where: { id: user.id },
-    data: { lastActiveAt: new Date() },
+    // A successful sign-in clears the failure counter.
+    data: { lastActiveAt: new Date(), failedLoginCount: 0, lockedUntil: null },
   });
 
   return { userId: user.id, onboarded: user.onboarded };
@@ -218,9 +258,11 @@ export async function finishPasswordReset(
     where: { id: user.id },
     data: {
       passwordHash: await hashPassword(newPassword),
-      // Completing a reset proves control of the mailbox.
+      // Completing a reset proves control of the mailbox, and clears any lock.
       emailVerifiedAt: new Date(),
       lastActiveAt: new Date(),
+      failedLoginCount: 0,
+      lockedUntil: null,
     },
   });
 

@@ -113,15 +113,10 @@ account password.
 | `npm run db:studio` | browse the database in Prisma Studio |
 | `npm run typecheck` | TypeScript check |
 
-## Going to production
+## Deploying
 
-1. Change the `datasource` provider in `prisma/schema.prisma` to `postgresql`
-   and point `DATABASE_URL` at Neon or Supabase. The enum-valued columns are
-   stored as strings for SQLite's sake and can become real Postgres enums; the
-   application code does not change.
-2. Set a strong `AUTH_SECRET` (`openssl rand -base64 32`).
-3. Configure `SMTP_*` so codes are actually delivered.
-4. Set `ALLOW_DEMO_LOGIN="false"`.
-5. Add `mode: "insensitive"` to the `contains` filters in
-   `src/lib/services/search.ts` and `events.ts` — SQLite is already
-   case-insensitive for ASCII, PostgreSQL is not.
+See **[DEPLOY.md](DEPLOY.md)** for the full guide — Vercel + Neon, or your own
+server with Docker, nginx and cron. Four settings are mandatory in production:
+a PostgreSQL `DATABASE_URL`, a real `AUTH_SECRET`, working `SMTP_*` (without it
+nobody can register), and `ALLOW_DEMO_LOGIN=false`. After deploying, `/api/health`
+reports on exactly those.

@@ -38,6 +38,12 @@ model User {
   passwordHash    String?
   emailVerifiedAt DateTime?
 
+  // Brute-force protection: consecutive failures lock the account briefly.
+  // Stored on the row rather than in memory so the limit holds across
+  // serverless instances and restarts.
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+
   // --- academic identity, derived from the Amrita email --------------------
   // cb.sc.u4cse24535@cb.students.amrita.edu
   //  ^campus ^school ^programme ^branch ^joining year + roll

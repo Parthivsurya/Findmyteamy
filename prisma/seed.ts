@@ -1,15 +1,19 @@
 /**
- * Seeds the master tables (skills and roles) plus a demo dataset — Amrita
- * students, events, teams, achievements and requests — so that search, Team
- * Builder and the event pages have something real to show on a fresh clone.
+ * Database seed, in two modes.
  *
- * Every demo account is a real-shaped Amrita roll address, spread across
- * branches (CSE, AIE, CYS, CSD, ECE, EEE, MEC) and joining years, so the
- * "same year" and "same branch" filters on the home page are demonstrable.
+ *   npm run db:seed        master data only — the 56 skills and 12 team roles.
+ *                          This is what production needs, and it is safe to
+ *                          re-run: everything is upserted.
  *
- * All demo accounts share one password: Amrita@2026
+ *   npm run db:seed:demo   the above plus a demo dataset — 16 Amrita students,
+ *                          events, teams, achievements and live requests — so
+ *                          search, Team Builder and the event pages have
+ *                          something real to show on a fresh clone.
  *
- * Run with:  npm run db:seed
+ * Demo accounts are real-shaped Amrita roll addresses spread across branches
+ * (CSE, AIE, CYS, CSD, ECE, EEE, MEC) and joining years, so the "same year" and
+ * "same branch" filters are demonstrable. They all share one password:
+ * Amrita@2026 — which is exactly why they must never be seeded in production.
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -409,24 +413,29 @@ const EVENTS = [
   },
 ];
 
+const WANT_DEMO =
+  process.argv.includes("--demo") || process.env.SEED_DEMO === "true";
+
 async function main() {
-  console.log("Seeding FindMyTeammate...");
+  console.log(
+    WANT_DEMO
+      ? "Seeding FindMyTeammate (master data + demo dataset)..."
+      : "Seeding FindMyTeammate (master data only)...",
+  );
 
-  // Earlier versions of this seed used @example.com addresses. Since access is
-  // now limited to Amrita student addresses, clear those out so search results
-  // are not polluted by accounts nobody can sign in to.
-  const legacy = await db.user.deleteMany({
-    where: { email: { endsWith: "@example.com" } },
-  });
-  if (legacy.count) console.log(`  removed ${legacy.count} superseded demo accounts`);
+  await seedMasterData();
 
-  // Events are keyed by slug, so renaming one in this file would otherwise
-  // leave the old row behind. Drop any demo event that is no longer listed.
-  const staleEvents = await db.event.deleteMany({
-    where: { slug: { notIn: EVENTS.map((e) => e.slug) } },
-  });
-  if (staleEvents.count) console.log(`  removed ${staleEvents.count} renamed demo events`);
+  if (!WANT_DEMO) {
+    console.log("\nDone. Master data only — no demo accounts were created.");
+    console.log("Run `npm run db:seed:demo` if you want the sample students.");
+    return;
+  }
 
+  await seedDemoData();
+}
+
+/** Skills and roles. Safe for production, and safe to re-run. */
+async function seedMasterData() {
   // --- master tables ------------------------------------------------------
   for (const [name, category] of SKILLS) {
     await db.skill.upsert({
@@ -446,11 +455,32 @@ async function main() {
     await db.role.upsert({ where: { name }, update: {}, create: { name } });
   }
 
+  const skillCount = await db.skill.count();
+  const roleCount = await db.role.count();
+  console.log(`  ${skillCount} skills, ${roleCount} roles`);
+}
+
+/** Demo students, events, teams and requests. Never run this in production. */
+async function seedDemoData() {
   const skillByName = new Map(
     (await db.skill.findMany()).map((s) => [s.name, s.id]),
   );
   const roleByName = new Map((await db.role.findMany()).map((r) => [r.name, r.id]));
-  console.log(`  ${skillByName.size} skills, ${roleByName.size} roles`);
+
+  // Earlier versions of this seed used @example.com addresses. Since access is
+  // now limited to Amrita student addresses, clear those out so search results
+  // are not polluted by accounts nobody can sign in to.
+  const legacy = await db.user.deleteMany({
+    where: { email: { endsWith: "@example.com" } },
+  });
+  if (legacy.count) console.log(`  removed ${legacy.count} superseded demo accounts`);
+
+  // Events are keyed by slug, so renaming one in this file would otherwise
+  // leave the old row behind. Drop any demo event that is no longer listed.
+  const staleEvents = await db.event.deleteMany({
+    where: { slug: { notIn: EVENTS.map((e) => e.slug) } },
+  });
+  if (staleEvents.count) console.log(`  removed ${staleEvents.count} renamed demo events`);
 
   // --- users --------------------------------------------------------------
   // Keyed by first name, which is what the participation and team tables below

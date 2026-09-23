@@ -1,4 +1,5 @@
 import { db } from "@/lib/db";
+import { containsText } from "@/lib/db-text";
 import { SKILL_LEVELS, type SkillLevel } from "@/lib/enums";
 import { matchReasons, matchScore, type SearchNeed } from "@/lib/matching";
 import type { SearchQuery } from "@/lib/validators";
@@ -136,20 +137,19 @@ export async function searchPeople(
     and.push({ achievements: { some: { status: "VERIFIED" } } });
   }
 
-  // Note: SQLite's LIKE is already case-insensitive for ASCII. On PostgreSQL,
-  // add `mode: "insensitive"` to each of these.
-  if (query.college) and.push({ college: { contains: query.college } });
-  if (query.location) and.push({ location: { contains: query.location } });
+  // containsText() adds mode:"insensitive" only where the database needs it.
+  if (query.college) and.push({ college: containsText(query.college) });
+  if (query.location) and.push({ location: containsText(query.location) });
 
   if (query.q) {
     and.push({
       OR: [
-        { name: { contains: query.q } },
-        { username: { contains: query.q } },
-        { college: { contains: query.q } },
-        { bio: { contains: query.q } },
-        { skills: { some: { skill: { name: { contains: query.q } } } } },
-        { roles: { some: { role: { name: { contains: query.q } } } } },
+        { name: containsText(query.q) },
+        { username: containsText(query.q) },
+        { college: containsText(query.q) },
+        { bio: containsText(query.q) },
+        { skills: { some: { skill: { name: containsText(query.q) } } } },
+        { roles: { some: { role: { name: containsText(query.q) } } } },
       ],
     });
   }

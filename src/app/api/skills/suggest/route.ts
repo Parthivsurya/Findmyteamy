@@ -1,5 +1,6 @@
 import { conflict, ok, parseBody, requireSession, route } from "@/lib/api";
 import { db } from "@/lib/db";
+import { containsText } from "@/lib/db-text";
 import { skillSuggestSchema } from "@/lib/validators";
 
 /**
@@ -12,8 +13,9 @@ export const POST = route(async (request) => {
   const { name, category } = await parseBody(request, skillSuggestSchema);
 
   const existing = await db.skill.findFirst({
-    where: { name: { equals: name } },
-    select: { id: true, approved: true },
+    // A suggestion must not create a second "React" differing only in case.
+    where: { name: containsText(name) },
+    select: { id: true, approved: true, name: true },
   });
 
   if (existing) {
