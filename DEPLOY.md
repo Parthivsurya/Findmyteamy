@@ -366,12 +366,35 @@ being left open.
 
 Postgres holds everything; there is no other state to preserve.
 
-```cron
-0 3 * * * docker exec fmt-db pg_dump -U postgres findmyteammate | gzip > /var/backups/fmt-$(date +\%F).sql.gz
+`scripts/fmt-backup.sh` is the script running in production. Install it on the
+database host and schedule it from root's crontab:
+
+```bash
+sudo install -m 750 scripts/fmt-backup.sh /usr/local/bin/fmt-backup.sh
+sudo install -d -o opc -g opc -m 750 /home/opc/backups
+sudo /usr/local/bin/fmt-backup.sh          # prove it works before trusting it
+
+( sudo crontab -l 2>/dev/null || true; \
+  echo '15 3 * * * /usr/local/bin/fmt-backup.sh >> /var/log/fmt-backup.log 2>&1' \
+) | sudo crontab -
 ```
 
-Neon and Supabase both do this for you on paid tiers; on free tiers take your
-own dump on the same schedule.
+It writes to a `.partial` file first and only renames it after confirming the
+dump ends with PostgreSQL's completion marker, so an interrupted run cannot
+leave a truncated file that looks like a good backup. It keeps the most recent
+14 and prunes the rest.
+
+Two caveats worth being honest about:
+
+- **A backup on the same disk is not a backup.** It protects against a bad
+  migration or an accidental delete, not against losing the instance. Copy the
+  dumps somewhere else periodically — `rsync` to another host, or object
+  storage.
+- **The dumps contain every student's email address.** They are written
+  `chmod 600`, and the directory is `750`. Keep it that way.
+
+On a managed database instead, Neon and Supabase take their own backups on paid
+tiers; on free tiers run this same script against the remote `DATABASE_URL`.
 
 ---
 
