@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { appUrl } from "@/lib/env";
+import { notificationEmail } from "@/lib/email-templates";
 import { sendMail } from "@/lib/mailer";
 import type { NotificationType } from "@/lib/enums";
 
@@ -50,19 +50,36 @@ export async function notify(input: NotifyInput): Promise<void> {
 
   await sendMail({
     to: recipient.email,
-    subject: input.title,
-    text: [
-      `Hi ${recipient.name.split(" ")[0]},`,
-      "",
-      input.body ?? input.title,
-      input.href ? `\n${appUrl()}${input.href}` : "",
-      "",
-      "— FindMyTeammate",
-    ].join("\n"),
+    ...notificationEmail({
+      firstName: recipient.name.split(" ")[0] ?? "there",
+      heading: input.title,
+      body: input.body,
+      href: input.href,
+      ctaLabel: ctaLabelFor(input.type),
+    }),
   });
 }
 
-
+/** A button label that matches what the reader is being asked to do. */
+function ctaLabelFor(type: NotificationType): string {
+  switch (type) {
+    case "INVITE":
+    case "JOIN_REQUEST":
+      return "View the request";
+    case "REQUEST_ACCEPTED":
+    case "TEAM_COMPLETE":
+      return "View the team";
+    case "REQUEST_DECLINED":
+      return "View your requests";
+    case "ACHIEVEMENT_VERIFIED":
+    case "ACHIEVEMENT_REJECTED":
+      return "View your achievements";
+    case "AVAILABILITY_REMINDER":
+      return "Confirm your availability";
+    default:
+      return "Open FindMyTeammate";
+  }
+}
 
 export async function markNotificationsRead(
   userId: string,

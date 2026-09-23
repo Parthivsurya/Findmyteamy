@@ -1,7 +1,7 @@
 import { ok, route } from "@/lib/api";
 import { assertCronRequest } from "@/lib/cron";
 import { db } from "@/lib/db";
-import { appUrl } from "@/lib/env";
+import { digestEmail } from "@/lib/email-templates";
 import { sendMail } from "@/lib/mailer";
 import { buildTeam } from "@/lib/services/search";
 
@@ -53,30 +53,22 @@ export const GET = route(async (request) => {
     const withCandidates = groups.filter((group) => group.candidates.length);
     if (withCandidates.length === 0) continue;
 
-    const lines = [
-      `Hi ${team.leader.name.split(" ")[0]},`,
-      "",
-      `${team.name} still has open roles for ${team.event.name}. Here are this week's best matches:`,
-      "",
-      ...withCandidates.flatMap((group) => [
-        `${group.roleName}:`,
-        ...group.candidates.map(
-          (candidate) =>
-            `  • ${candidate.name} (${candidate.score} match) — ${candidate.reasons[0] ?? "profile match"}`,
-        ),
-        "",
-      ]),
-      `Invite them: ${appUrl()}/team-builder?team=${team.id}`,
-      "",
-      "— FindMyTeammate",
-      "",
-      "To stop these, turn off the weekly digest in Settings.",
-    ];
-
     await sendMail({
       to: team.leader.email,
-      subject: `${withCandidates.reduce((n, g) => n + g.candidates.length, 0)} people match your open roles on ${team.name}`,
-      text: lines.join("\n"),
+      ...digestEmail({
+        firstName: team.leader.name.split(" ")[0] ?? "there",
+        teamName: team.name,
+        eventName: team.event.name,
+        teamId: team.id,
+        groups: withCandidates.map((group) => ({
+          roleName: group.roleName,
+          candidates: group.candidates.map((candidate) => ({
+            name: candidate.name,
+            score: candidate.score,
+            reason: candidate.reasons[0],
+          })),
+        })),
+      }),
     });
     sent++;
   }

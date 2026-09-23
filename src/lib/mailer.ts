@@ -141,33 +141,3 @@ async function sendViaSmtp(mail: Mail): Promise<SendResult> {
     return { sent: false, via: "smtp", error: "Could not send the email. Please try again." };
   }
 }
-
-/** The one-time code email. Plain and short, because it is read on a phone. */
-export function otpEmail(
-  code: string,
-  minutes: number,
-): Pick<Mail, "subject" | "text" | "html"> {
-  const subject = `${code} is your FindMyTeammate code`;
-
-  const text = [
-    `Your FindMyTeammate verification code is ${code}.`,
-    "",
-    `It expires in ${minutes} minutes. If you did not request it, you can ignore this email.`,
-    "",
-    "— FindMyTeammate, Amrita Vishwa Vidyapeetham",
-  ].join("\n");
-
-  const html = `
-    <div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1c1f">
-      <h1 style="margin:0 0 4px;font-size:18px">FindMyTeammate</h1>
-      <p style="margin:0 0 20px;color:#6b7078;font-size:13px">Amrita Vishwa Vidyapeetham</p>
-      <p style="font-size:14px;margin:0 0 12px">Your verification code is</p>
-      <p style="font-size:32px;font-weight:700;letter-spacing:8px;margin:0 0 16px;color:#2373F4">${code}</p>
-      <p style="font-size:13px;color:#6b7078;margin:0">
-        It expires in ${minutes} minutes. If you did not request this, you can ignore the email.
-      </p>
-    </div>
-  `;
-
-  return { subject, text, html };
-}

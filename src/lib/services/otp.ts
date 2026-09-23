@@ -2,7 +2,8 @@ import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { HttpError } from "@/lib/api";
 import { db } from "@/lib/db";
 import { envText } from "@/lib/env";
-import { otpEmail, sendMail } from "@/lib/mailer";
+import { otpEmail } from "@/lib/email-templates";
+import { sendMail } from "@/lib/mailer";
 
 /**
  * Emailed one-time codes.
