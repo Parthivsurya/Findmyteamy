@@ -88,3 +88,35 @@ export function parseThemes(themes: string): string[] {
     .map((t) => t.trim())
     .filter(Boolean);
 }
+
+/**
+ * Builds a URL that keeps the current query string and overrides only the
+ * given keys — used by sort controls, tabs and pagination.
+ */
+export function withParams(
+  basePath: string,
+  current: Record<string, string | string[] | undefined>,
+  overrides: Record<string, string | number | boolean | null | undefined>,
+): string {
+  const params = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(current)) {
+    if (value === undefined) continue;
+    if (Array.isArray(value)) {
+      for (const item of value) params.append(key, item);
+    } else {
+      params.set(key, value);
+    }
+  }
+
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value === null || value === undefined || value === "" || value === false) {
+      params.delete(key);
+    } else {
+      params.set(key, String(value));
+    }
+  }
+
+  const query = params.toString();
+  return query ? `${basePath}?${query}` : basePath;
+}
