@@ -1,0 +1,337 @@
+// FindMyTeammate — database schema
+//
+// Local development runs on SQLite so the project works with no external
+// services. To deploy on PostgreSQL (Neon / Supabase), change the provider
+// below to "postgresql" and point DATABASE_URL at the connection string.
+//
+// Note: SQLite does not support native enums or Json columns, so enum-valued
+// fields are stored as String and validated through the union types in
+// src/lib/enums.ts (which are also the Zod schemas used by every API route).
+// On PostgreSQL these can become real `enum` blocks without touching app code.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Users and accounts
+// ---------------------------------------------------------------------------
+
+model User {
+  id       String  @id @default(cuid())
+  name     String
+  username String  @unique
+  email    String  @unique // never exposed publicly
+  image    String?
+  bio      String? // max 300 chars, enforced by Zod
+  college  String?
+  location String?
+
+  githubUrl    String?
+  linkedinUrl  String?
+  portfolioUrl String?
+  resumeUrl    String?
+
+  // Which links the user wants shown publicly
+  showGithub    Boolean @default(true)
+  showLinkedin  Boolean @default(true)
+  showPortfolio Boolean @default(true)
+
+  // "OPEN" | "EVENTS_ONLY" | "NOT_AVAILABLE"
+  availability          String   @default("OPEN")
+  availabilityUpdatedAt DateTime @default(now())
+
+  profileCompleteness Int     @default(0)
+  role                String  @default("USER") // "USER" | "ADMIN"
+  onboarded           Boolean @default(false)
+
+  emailOnRequests     Boolean @default(true)
+  emailOnVerification Boolean @default(true)
+  emailWeeklyDigest   Boolean @default(true)
+
+  lastActiveAt DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  accounts       Account[]
+  skills         UserSkill[]
+  roles          UserRole[]
+  achievements   Achievement[]
+  participations EventParticipation[]
+  notifications  Notification[]
+
+  createdEvents  Event[]      @relation("EventCreator")
+  ledTeams       Team[]       @relation("TeamLeader")
+  filledSlots    TeamSlot[]   @relation("SlotFilledBy")
+  sentRequests   TeamRequest[] @relation("RequestFrom")
+  inboxRequests  TeamRequest[] @relation("RequestTo")
+
+  reportsMade     Report[] @relation("Reporter")
+  reportsAgainst  Report[] @relation("Reported")
+  blocksMade      Block[]  @relation("Blocker")
+  blockedBy       Block[]  @relation("Blocked")
+
+  @@index([username])
+  @@index([availability])
+  @@index([lastActiveAt])
+}
+
+/// Links a user to an OAuth provider identity (GitHub / Google).
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  provider          String // "github" | "google" | "demo"
+  providerAccountId String
+  createdAt         DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Skills and roles (master tables, so "React" / "ReactJS" never diverge)
+// ---------------------------------------------------------------------------
+
+model Skill {
+  id       String  @id @default(cuid())
+  name     String  @unique
+  category String // FRONTEND | BACKEND | MOBILE | DATA_AI | DATABASE | CLOUD_DEVOPS | DESIGN | EMERGING | SOFT
+  approved Boolean @default(true) // false while a user suggestion awaits review
+
+  createdAt DateTime @default(now())
+
+  users         UserSkill[]
+  requiredBySlots TeamSlot[] @relation("SlotRequiredSkills")
+
+  @@index([category])
+  @@index([approved])
+}
+
+model UserSkill {
+  userId  String
+  skillId String
+  level   String @default("INTERMEDIATE") // BEGINNER | INTERMEDIATE | EXPERT
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@id([userId, skillId])
+  @@index([skillId])
+}
+
+model Role {
+  id   String @id @default(cuid())
+  name String @unique
+
+  users UserRole[]
+  slots TeamSlot[]
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@index([roleId])
+}
+
+// ---------------------------------------------------------------------------
+// Achievements and verification
+// ---------------------------------------------------------------------------
+
+model Achievement {
+  id          String    @id @default(cuid())
+  userId      String
+  title       String
+  eventName   String
+  organizer   String?
+  position    String // WINNER | RUNNER_UP | FINALIST | PARTICIPANT | OTHER
+  date        DateTime
+  description String?
+  proofUrl    String?
+  status      String    @default("UNVERIFIED") // UNVERIFIED | PENDING | VERIFIED | REJECTED
+  reviewedBy  String?
+  reviewNote  String?
+  reviewedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+model Event {
+  id                  String    @id @default(cuid())
+  name                String
+  slug                String    @unique
+  organizer           String
+  description         String?
+  startDate           DateTime
+  endDate             DateTime
+  registrationDeadline DateTime?
+  mode                String // ONLINE | OFFLINE | HYBRID
+  location            String?
+  minTeamSize         Int       @default(2)
+  maxTeamSize         Int       @default(4)
+  themes              String    @default("") // comma separated
+  prize               String?
+  registrationLink    String?
+  bannerUrl           String?
+  status              String    @default("PENDING") // PENDING | APPROVED | REJECTED
+  createdById         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy      User?                @relation("EventCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  participations EventParticipation[]
+  teams          Team[]
+
+  @@index([status, startDate])
+  @@index([slug])
+}
+
+model EventParticipation {
+  userId    String
+  eventId   String
+  status    String   @default("LOOKING_FOR_TEAM") // LOOKING_FOR_TEAM | IN_TEAM | TEAM_LOOKING_FOR_MEMBERS
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@id([userId, eventId])
+  @@index([eventId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Teams
+// ---------------------------------------------------------------------------
+
+model Team {
+  id         String  @id @default(cuid())
+  name       String
+  idea       String?
+  eventId    String
+  leaderId   String
+  isComplete Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  event    Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  leader   User          @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: Cascade)
+  slots    TeamSlot[]
+  requests TeamRequest[]
+
+  @@index([eventId, isComplete])
+  @@index([leaderId])
+}
+
+model TeamSlot {
+  id         String  @id @default(cuid())
+  teamId     String
+  roleId     String
+  filledById String?
+  note       String?
+
+  createdAt DateTime @default(now())
+
+  team           Team          @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  role           Role          @relation(fields: [roleId], references: [id])
+  filledBy       User?         @relation("SlotFilledBy", fields: [filledById], references: [id], onDelete: SetNull)
+  requiredSkills Skill[]       @relation("SlotRequiredSkills")
+  requests       TeamRequest[]
+
+  @@index([teamId])
+  @@index([filledById])
+}
+
+model TeamRequest {
+  id         String  @id @default(cuid())
+  type       String // INVITE | JOIN_REQUEST
+  teamId     String
+  slotId     String?
+  fromUserId String
+  toUserId   String
+  message    String?
+  status     String  @default("PENDING") // PENDING | ACCEPTED | DECLINED | CANCELLED | EXPIRED
+
+  createdAt   DateTime  @default(now())
+  respondedAt DateTime?
+
+  team     Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  slot     TeamSlot? @relation(fields: [slotId], references: [id], onDelete: SetNull)
+  fromUser User      @relation("RequestFrom", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User      @relation("RequestTo", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@index([toUserId, status])
+  @@index([fromUserId, status])
+  @@index([teamId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications and moderation
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id     String  @id @default(cuid())
+  userId String
+  type   String // INVITE | JOIN_REQUEST | REQUEST_ACCEPTED | REQUEST_DECLINED | ACHIEVEMENT_VERIFIED | ACHIEVEMENT_REJECTED | EVENT_SOON | AVAILABILITY_REMINDER
+  title  String
+  body   String?
+  href   String?
+  data   String  @default("{}") // JSON payload
+  read   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, read])
+}
+
+model Report {
+  id             String @id @default(cuid())
+  reporterId     String
+  reportedUserId String
+  reason         String
+  status         String @default("OPEN") // OPEN | RESOLVED
+
+  createdAt DateTime @default(now())
+
+  reporter User @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported User @relation("Reported", fields: [reportedUserId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+model Block {
+  blockerId String
+  blockedId String
+  createdAt DateTime @default(now())
+
+  blocker User @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+}
