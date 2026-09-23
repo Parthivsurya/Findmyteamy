@@ -1,13 +1,13 @@
 import { db } from "@/lib/db";
+import { sendMail } from "@/lib/mailer";
 import type { NotificationType } from "@/lib/enums";
 
 /**
  * Notifications and transactional email.
  *
- * In-app notifications are always written. Email is sent through whichever
- * provider is configured (Resend or SendGrid); with no API key present the
- * message is logged instead, so local development never needs credentials and
- * nothing silently fails.
+ * In-app notifications are always written. Email goes through the single
+ * transport in src/lib/mailer.ts (Resend, or SMTP, or the console in
+ * development), and a failure to send never fails the action that caused it.
  */
 
 export type NotifyInput = {
@@ -47,7 +47,7 @@ export async function notify(input: NotifyInput): Promise<void> {
   });
   if (!recipient || !recipient[input.emailPref]) return;
 
-  await sendEmail({
+  await sendMail({
     to: recipient.email,
     subject: input.title,
     text: [
@@ -63,46 +63,6 @@ export async function notify(input: NotifyInput): Promise<void> {
 
 function appUrl(): string {
   return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
-}
-
-export async function sendEmail({
-  to,
-  subject,
-  text,
-}: {
-  to: string;
-  subject: string;
-  text: string;
-}): Promise<void> {
-  const resendKey = process.env.RESEND_API_KEY;
-
-  if (!resendKey) {
-    // Development: log rather than pretend to have sent something.
-    console.info(`[email] to=${to} subject="${subject}"`);
-    return;
-  }
-
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${resendKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: process.env.EMAIL_FROM ?? "FindMyTeammate <noreply@findmyteammate.com>",
-        to,
-        subject,
-        text,
-      }),
-    });
-    if (!response.ok) {
-      console.error("[email] provider rejected the message", await response.text());
-    }
-  } catch (error) {
-    // A failed email must never fail the action that triggered it.
-    console.error("[email] send failed", error);
-  }
 }
 
 export async function markNotificationsRead(

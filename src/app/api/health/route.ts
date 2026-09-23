@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { isSmtpConfigured } from "@/lib/mailer";
+import { emailTransport, isEmailConfigured } from "@/lib/mailer";
 
 /**
  * Health check for uptime monitoring and for confirming a deployment is wired
@@ -22,7 +22,9 @@ export async function GET() {
     databaseProvider: process.env.DATABASE_PROVIDER ?? "sqlite",
     // Warn loudly about the two settings that are unsafe in production.
     config: {
-      smtp: isSmtpConfigured() ? "configured" : "missing (sign-up will not work)",
+      email: isEmailConfigured()
+        ? `configured (${emailTransport()})`
+        : "missing (sign-up will not work)",
       authSecret:
         (process.env.AUTH_SECRET ?? "").includes("change-me") ||
         (process.env.AUTH_SECRET ?? "").length < 16

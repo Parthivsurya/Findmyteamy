@@ -11,7 +11,7 @@ Both need the same four things done first.
 | --- | --- |
 | `DATABASE_PROVIDER=postgresql` + a real `DATABASE_URL` | SQLite cannot be used on Vercel (the filesystem is ephemeral). On your own server SQLite would survive, but Postgres handles concurrent writes properly. |
 | `AUTH_SECRET` = 32 random bytes | Sessions and one-time codes are signed with it. The committed default is a public placeholder — anyone could forge a session cookie. Generate with `openssl rand -base64 32`. |
-| `SMTP_*` filled in | **Registration is impossible without it.** The fallback that prints codes to the console is disabled when `NODE_ENV=production`, so with no SMTP a student signs up and no code ever arrives. |
+| An email transport — `RESEND_API_KEY` **or** `SMTP_*` | **Registration is impossible without one.** The fallback that prints codes to the console is disabled when `NODE_ENV=production`, so a student would sign up and no code would ever arrive. |
 | `ALLOW_DEMO_LOGIN=false` | When true, the sign-in page lists real accounts *and* their shared password. |
 
 Optional but recommended: `CRON_SECRET` (`openssl rand -hex 24`) to enable the
@@ -24,7 +24,7 @@ After deploying, open `/api/health` — it reports on exactly these settings:
   "status": "ok",
   "database": "ok",
   "config": {
-    "smtp": "configured",
+    "email": "configured (resend)",
     "authSecret": "set",
     "demoLogin": "disabled",
     "cron": "configured"
@@ -36,62 +36,102 @@ If `authSecret` says `INSECURE` or `demoLogin` says `ENABLED`, stop and fix it.
 
 ---
 
-## 2. Option A — Vercel + Neon
+## 2. Option A — entirely on Vercel (recommended)
 
-Neon's free tier is enough for a pilot.
+No server to run or patch. Vercel does not host databases itself, but you
+provision managed Postgres from inside the Vercel dashboard, so there is still
+nothing for you to maintain.
 
-1. **Create the database.** At [neon.tech](https://neon.tech), make a project
-   and copy the pooled connection string (it ends `?sslmode=require`).
+### a. Import the repository
 
-2. **Import the repo** at [vercel.com/new](https://vercel.com/new). Framework
-   detection handles the rest; do not override the build command.
+At [vercel.com/new](https://vercel.com/new), import
+`Parthivsurya/Findmyteamy`. Framework detection handles the build — do not
+override the build command.
 
-3. **Set the environment variables** in Vercel → Settings → Environment
-   Variables (Production *and* Preview):
+### b. Add Postgres from the Vercel dashboard
 
-   ```
-   DATABASE_PROVIDER = postgresql
-   DATABASE_URL      = postgresql://...  (from Neon)
-   AUTH_SECRET       = <openssl rand -base64 32>
-   NEXT_PUBLIC_APP_URL = https://your-app.vercel.app
-   SMTP_HOST = smtp.gmail.com
-   SMTP_PORT = 587
-   SMTP_USER = you@gmail.com
-   SMTP_PASS = <Google app password>
-   SMTP_FROM = FindMyTeammate <you@gmail.com>
-   CRON_SECRET = <openssl rand -hex 24>
-   ALLOW_DEMO_LOGIN = false
-   ```
+Project → **Storage** → create a **Neon** Postgres database. Vercel injects the
+connection variables into the project automatically.
 
-4. **Create the tables.** From your laptop, pointing at the production database:
+Two details that matter:
 
-   ```bash
-   DATABASE_PROVIDER=postgresql DATABASE_URL="postgresql://..." npm run db:push
-   DATABASE_PROVIDER=postgresql DATABASE_URL="postgresql://..." npm run db:seed
-   ```
+- **Use the pooled connection string.** Its host contains `-pooler`. Each
+  serverless invocation opens its own connection, and an unpooled string will
+  exhaust Postgres connection limits under any real traffic.
+- **The variable must be named `DATABASE_URL`.** The integration may only set
+  `POSTGRES_URL` / `POSTGRES_PRISMA_URL`. If `DATABASE_URL` is not present, add
+  it yourself with the same pooled value — Prisma reads that name.
 
-   `db:seed` loads **only** the 56 skills and 12 roles. Never run
-   `db:seed:demo` against production — it creates sixteen fake students who all
-   share one password.
+### c. Set the remaining environment variables
 
-5. **Deploy**, then visit `/api/health`.
+Project → Settings → Environment Variables (Production **and** Preview):
 
-6. **Make yourself admin.** Sign up on the live site with your Amrita address,
-   confirm the emailed code, then:
+```
+DATABASE_PROVIDER = postgresql
+AUTH_SECRET       = <openssl rand -base64 32>
+NEXT_PUBLIC_APP_URL = https://your-app.vercel.app
+RESEND_API_KEY    = re_...
+EMAIL_FROM        = FindMyTeammate <onboarding@resend.dev>
+CRON_SECRET       = <openssl rand -hex 24>
+ALLOW_DEMO_LOGIN  = false
+```
 
-   ```bash
-   DATABASE_PROVIDER=postgresql DATABASE_URL="postgresql://..." \
-     npm run make-admin -- cb.sc.u4cse24535@cb.students.amrita.edu
-   ```
+**Use Resend rather than SMTP here.** Serverless functions handle an HTTP API
+call much better than holding an SMTP connection open, which competes with the
+function timeout and is unreliable across cold starts. Resend's free tier is
+ample for a campus pilot, and `onboarding@resend.dev` works as the sender until
+you verify your own domain.
 
-Cron is already declared in `vercel.json`, so the three jobs register
-automatically. Vercel sends `Authorization: Bearer $CRON_SECRET`.
+### d. Create the tables
+
+Run this from your laptop against the production database — Vercel's build does
+not migrate for you:
+
+```bash
+DATABASE_PROVIDER=postgresql DATABASE_URL="<pooled url>" npm run db:push
+DATABASE_PROVIDER=postgresql DATABASE_URL="<pooled url>" npm run db:seed
+```
+
+`db:seed` loads **only** the 56 skills and 12 roles. Never run `db:seed:demo`
+against production — it creates sixteen fake students who all share one
+password.
+
+### e. Deploy, then check `/api/health`
+
+It must report `email: configured (resend)`, `authSecret: set` and
+`demoLogin: disabled`. If it does not, fix that before going further.
+
+### f. Make yourself admin
+
+Sign up on the live site with your Amrita address, confirm the emailed code,
+then:
+
+```bash
+DATABASE_PROVIDER=postgresql DATABASE_URL="<pooled url>" \
+  npm run make-admin -- cb.sc.u4cse24535@cb.students.amrita.edu
+```
+
+### g. Cron
+
+`vercel.json` declares a single daily job, `/api/cron/daily`, which does the
+housekeeping and availability reminders every day and the weekly digest on
+Mondays. It is one entry on purpose: Hobby plans allow only a small number of
+cron jobs at a low frequency, and a single trigger stays inside those limits on
+any plan. Vercel sends `Authorization: Bearer $CRON_SECRET` automatically.
+
+### Costs
+
+Vercel Hobby, Neon free tier and Resend free tier cover a campus pilot at no
+cost. A domain is the only likely expense (roughly ₹800–1,000 a year), and it
+is optional — `your-app.vercel.app` works fine.
 
 ---
 
 ## 3. Option B — your own server
 
-Assumes Ubuntu/Debian with Docker. Postgres can run on the same box.
+Only needed if you would rather not depend on managed free tiers, or you want
+the app and database on one box you control. Assumes Ubuntu/Debian with Docker;
+Postgres can run on the same machine.
 
 ### With Docker
 
@@ -178,6 +218,15 @@ point at the wrong host.
 
 ### Scheduled jobs via crontab
 
+A real cron has no job limit, so you can either use the single combined
+endpoint:
+
+```cron
+0 4 * * * curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://your-host/api/cron/daily >/dev/null
+```
+
+or schedule each job separately for finer control:
+
 ```cron
 0 4 * * *  curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://your-host/api/cron/availability-reminders >/dev/null
 30 4 * * * curl -fsS -H "Authorization: Bearer $CRON_SECRET" https://your-host/api/cron/cleanup >/dev/null
@@ -190,6 +239,7 @@ point at the wrong host.
 
 | Endpoint | Schedule | Effect |
 | --- | --- | --- |
+| `/api/cron/daily` | daily | Everything below in one call; the digest part runs only on Mondays. This is what `vercel.json` uses. |
 | `/api/cron/availability-reminders` | daily | Prompts anyone whose availability is over 30 days old, at most once a fortnight, so search results stay truthful. |
 | `/api/cron/cleanup` | daily | Purges spent one-time codes, expires requests older than 30 days, clears finished login lockouts. |
 | `/api/cron/weekly-digest` | Mondays | Emails team leaders with open roles a ranked shortlist per role. Respects each leader's digest preference. |
