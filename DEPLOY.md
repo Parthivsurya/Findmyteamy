@@ -146,6 +146,44 @@ DATABASE_PROVIDER=postgresql DATABASE_URL="<pooled url>" npm run db:seed
 against production — it creates sixteen fake students who all share one
 password.
 
+### d2. If `prisma db push` cannot reach the database
+
+`P1001: Can't reach database server at …:5432` is usually not a problem with
+the database. Postgres uses port 5432, and many campus and office networks
+block that outbound. Neon's compute also sleeps on the free tier, so the very
+first connection can time out while it wakes.
+
+Work through it in this order:
+
+```bash
+# 1. Can you open a TCP connection at all?
+nc -zv ep-something-pooler.c-2.us-east-1.aws.neon.tech 5432
+```
+
+- `Operation timed out` → the port is blocked on your network. Try a phone
+  hotspot, or use the browser route below.
+- `succeeded` → connectivity is fine, so it is the URL or a sleeping compute.
+
+```bash
+# 2. Drop channel_binding, which Prisma's connector does not always accept
+export PGURL="postgresql://user:pass@host-pooler.../neondb?sslmode=require"
+```
+
+3. Open the Neon console once and run `SELECT 1` in the SQL editor. That wakes
+   the compute, after which connections are quick.
+
+**The browser route — works on any network.** Everything can be done over
+HTTPS instead:
+
+```bash
+npm run db:sql        # writes prisma/bootstrap.sql
+```
+
+Paste the whole of `prisma/bootstrap.sql` into Neon's **SQL Editor** and run
+it. It contains the full schema plus the 55 skills and 12 team roles, and no
+demo accounts. It is safe to re-run — the inserts use
+`ON CONFLICT DO NOTHING`. Regenerate it whenever the Prisma schema changes.
+
 ### e. Deploy, then check `/api/health`
 
 It must report `email: configured (resend)`, `authSecret: set` and

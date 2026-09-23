@@ -17,7 +17,8 @@
     "db:seed:demo": "tsx prisma/seed.ts --demo",
     "db:studio": "prisma studio",
     "db:provider": "node scripts/set-db-provider.mjs",
-    "make-admin": "node scripts/make-admin.mjs"
+    "make-admin": "node scripts/make-admin.mjs",
+    "db:sql": "node scripts/generate-bootstrap-sql.mjs"
   },
   "dependencies": {
     "@prisma/client": "6.19.3",
