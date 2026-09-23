@@ -199,6 +199,25 @@ DATABASE_PROVIDER=postgresql DATABASE_URL="<pooled url>" \
   npm run make-admin -- cb.sc.u4cse24535@cb.students.amrita.edu
 ```
 
+### f2. Function region
+
+`vercel.json` pins `regions: ["bom1"]` (Mumbai). This is not a preference — it
+is the difference between a usable app and an unusable one when the database is
+in India:
+
+| Functions | Database | Per query | A page making ~6 queries |
+| --- | --- | --- | --- |
+| `iad1` Washington | Hyderabad | ~440 ms | over 2 seconds |
+| `bom1` Mumbai | Hyderabad | ~20 ms | well under 200 ms |
+
+Measured: 220 ms just to open a TCP connection from Hyderabad to `iad1`. Every
+route in this app is server-rendered on demand, so there is no static edge
+caching to hide the distance. Hobby plans allow a single region, which `bom1`
+uses.
+
+If the database is instead hosted in the United States (Neon `us-east`), remove
+the `regions` key so functions run in `iad1` beside it.
+
 ### g. Cron
 
 `vercel.json` declares a single daily job, `/api/cron/daily`, which does the
