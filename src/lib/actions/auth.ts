@@ -12,6 +12,7 @@ import {
   startSignup,
 } from "@/lib/services/accounts";
 import { issueOtp } from "@/lib/services/otp";
+import { clientIp } from "@/lib/request-ip";
 import { field, guard, type FormResult } from "./shared";
 
 /**
@@ -46,7 +47,7 @@ export async function signupAction(
 
   let devCode: string | undefined;
   const result = await guard(
-    () => startSignup({ email, name, password }),
+    async () => startSignup({ email, name, password, ip: await clientIp() }),
     (issued) => {
       devCode = issued.devCode;
       return { ok: true };
@@ -98,7 +99,7 @@ export async function resendCodeAction(
 
   let devCode: string | undefined;
   const result = await guard(
-    () => issueOtp(email, purpose),
+    async () => issueOtp(email, purpose, await clientIp()),
     (issued) => {
       devCode = issued.devCode;
       return {
@@ -132,7 +133,7 @@ export async function loginAction(
   let userId: string | undefined;
 
   const result = await guard(
-    () => signIn(email, password),
+    async () => signIn(email, password, await clientIp()),
     (session) => {
       userId = session.userId;
       destination = session.onboarded ? (next ?? "/dashboard") : "/onboarding";
@@ -161,7 +162,7 @@ export async function forgotPasswordAction(
 
   let devCode: string | undefined;
   const result = await guard(
-    () => startPasswordReset(email),
+    async () => startPasswordReset(email, await clientIp()),
     (issued) => {
       devCode = issued.devCode;
       return { ok: true };

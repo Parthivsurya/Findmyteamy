@@ -114,6 +114,20 @@ model User {
   @@index([campusCode, branchCode, joiningYear])
 }
 
+/// One request for a one-time code, kept so the rate limiter can count a
+/// sliding window per network and per address. Purged by the cleanup job.
+model OtpRequestLog {
+  id        String   @id @default(cuid())
+  /// Client IP as seen by the proxy. "unknown" when no header is present.
+  ip        String
+  email     String
+  purpose   String
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+  @@index([createdAt])
+}
+
 /// One-time codes emailed for sign-up confirmation and password resets.
 model EmailOtp {
   id        String    @id @default(cuid())

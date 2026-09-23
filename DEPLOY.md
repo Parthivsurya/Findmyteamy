@@ -408,6 +408,32 @@ with no results is a worse first impression than launching a week later. So:
 3. Aim the first announcement at a specific upcoming hackathon, so people
    arrive with a reason to search rather than just to look around.
 
+## 6b. Abuse limits
+
+| Limit | Default | Where |
+| --- | --- | --- |
+| Codes per address | one per 60 seconds | fixed, not configurable |
+| Wrong-code attempts | 5, then the code dies | fixed |
+| Codes per network per hour | 20 | `OTP_IP_LIMIT_HOUR` |
+| Codes per network per day | 60 | `OTP_IP_LIMIT_DAY` |
+| Distinct addresses per network per day | 40 | `OTP_IP_EMAILS_DAY` |
+| Failed sign-ins per account | 8, then a 15-minute lock | fixed |
+| Team requests sent per user per day | 30 | fixed |
+
+The per-network limits are deliberately loose. Every student on campus wifi
+shares one public IP, so a tight limit would lock out a whole classroom during
+a sign-up drive — and that failure looks identical to the site being broken.
+The per-address cooldown is what protects an individual mailbox; the network
+limits exist to stop a script walking through thousands of addresses and
+burning the mail provider's daily quota.
+
+If you run a sign-up drive in one room and students start seeing *"Too many
+codes have been requested from this network"*, raise `OTP_IP_LIMIT_HOUR` for
+the day rather than removing the limit.
+
+Requests are logged in `OtpRequestLog` and pruned by the cleanup job after two
+days, which is longer than the widest window consulted.
+
 ## 7. Known gaps
 
 - **Certificate uploads are not built.** Achievement proof is a URL field, so

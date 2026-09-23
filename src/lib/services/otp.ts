@@ -1,7 +1,7 @@
 import { createHmac, randomInt, timingSafeEqual } from "node:crypto";
 import { HttpError } from "@/lib/api";
 import { db } from "@/lib/db";
-import { envText } from "@/lib/env";
+import { envNumber, envText } from "@/lib/env";
 import { otpEmail } from "@/lib/email-templates";
 import { sendMail } from "@/lib/mailer";
 
@@ -16,6 +16,22 @@ import { sendMail } from "@/lib/mailer";
 export const OTP_TTL_MINUTES = 10;
 const RESEND_COOLDOWN_SECONDS = 60;
 const MAX_ATTEMPTS = 5;
+
+/**
+ * Per-network send limits, on top of the per-address cooldown.
+ *
+ * These are deliberately generous. On campus wifi every student shares one
+ * public IP, so a tight limit would lock out a whole classroom during a
+ * sign-up drive — a failure that looks exactly like the site being broken.
+ * The per-address cooldown is what stops someone hammering one mailbox; these
+ * stop a script walking through thousands of addresses and burning the mail
+ * quota. Tune with OTP_IP_LIMIT_HOUR / OTP_IP_LIMIT_DAY.
+ */
+const IP_LIMIT_HOUR = envNumber("OTP_IP_LIMIT_HOUR", 20);
+const IP_LIMIT_DAY = envNumber("OTP_IP_LIMIT_DAY", 60);
+
+/** Distinct addresses one network may request codes for in a day. */
+const IP_DISTINCT_EMAILS_DAY = envNumber("OTP_IP_EMAILS_DAY", 40);
 
 export type OtpPurpose = "SIGNUP" | "LOGIN" | "RESET";
 
@@ -36,11 +52,74 @@ export type IssueResult = {
   devCode?: string;
 };
 
+/** Rounds a count of minutes up to something worth telling a person. */
+function waitMessage(minutes: number): string {
+  if (minutes <= 1) return "a minute";
+  if (minutes < 60) return `${minutes} minutes`;
+  const hours = Math.ceil(minutes / 60);
+  return `${hours} ${hours === 1 ? "hour" : "hours"}`;
+}
+
+/**
+ * Counts recent sends from one network and refuses when either window is full.
+ * Skipped entirely for "unknown", which is only local development.
+ */
+async function assertNetworkUnderLimit(ip: string): Promise<void> {
+  if (ip === "unknown") return;
+
+  const hourAgo = new Date(Date.now() - 3_600_000);
+  const dayAgo = new Date(Date.now() - 86_400_000);
+
+  const [lastHour, lastDay] = await Promise.all([
+    db.otpRequestLog.count({ where: { ip, createdAt: { gte: hourAgo } } }),
+    db.otpRequestLog.count({ where: { ip, createdAt: { gte: dayAgo } } }),
+  ]);
+
+  if (lastHour >= IP_LIMIT_HOUR) {
+    // Tell them roughly when the window frees up rather than just "later".
+    const oldest = await db.otpRequestLog.findFirst({
+      where: { ip, createdAt: { gte: hourAgo } },
+      orderBy: { createdAt: "asc" },
+      select: { createdAt: true },
+    });
+    const freesAt = oldest ? oldest.createdAt.getTime() + 3_600_000 : Date.now() + 3_600_000;
+    const minutes = Math.max(1, Math.ceil((freesAt - Date.now()) / 60_000));
+    throw new HttpError(
+      429,
+      `Too many codes have been requested from this network. Try again in ${waitMessage(minutes)}.`,
+    );
+  }
+
+  if (lastDay >= IP_LIMIT_DAY) {
+    throw new HttpError(
+      429,
+      "This network has requested too many codes today. Try again tomorrow, or use mobile data.",
+    );
+  }
+
+  // A script walking through addresses looks different from a busy classroom:
+  // many students share an IP but each asks for their own address once.
+  const distinct = await db.otpRequestLog.findMany({
+    where: { ip, createdAt: { gte: dayAgo } },
+    distinct: ["email"],
+    select: { email: true },
+  });
+  if (distinct.length >= IP_DISTINCT_EMAILS_DAY) {
+    throw new HttpError(
+      429,
+      "This network has requested codes for too many different addresses today.",
+    );
+  }
+}
+
 export async function issueOtp(
   rawEmail: string,
   purpose: OtpPurpose,
+  ip = "unknown",
 ): Promise<IssueResult> {
   const email = rawEmail.trim().toLowerCase();
+
+  await assertNetworkUnderLimit(ip);
 
   const latest = await db.emailOtp.findFirst({
     where: { email, purpose, consumedAt: null },
@@ -75,6 +154,8 @@ export async function issueOtp(
       expiresAt,
     },
   });
+
+  await db.otpRequestLog.create({ data: { ip, email, purpose } });
 
   const { sent } = await sendMail({ to: email, ...otpEmail(code, OTP_TTL_MINUTES) });
 
@@ -144,8 +225,14 @@ export async function verifyOtp(
 
 /** Housekeeping for the scheduled job. */
 export async function purgeExpiredOtps(): Promise<number> {
-  const result = await db.emailOtp.deleteMany({
-    where: { expiresAt: { lt: new Date(Date.now() - 86_400_000) } },
-  });
-  return result.count;
+  const [codes, logs] = await Promise.all([
+    db.emailOtp.deleteMany({
+      where: { expiresAt: { lt: new Date(Date.now() - 86_400_000) } },
+    }),
+    // Nothing older than the widest rate-limit window is ever consulted.
+    db.otpRequestLog.deleteMany({
+      where: { createdAt: { lt: new Date(Date.now() - 2 * 86_400_000) } },
+    }),
+  ]);
+  return codes.count + logs.count;
 }

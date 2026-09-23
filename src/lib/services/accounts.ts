@@ -59,6 +59,8 @@ export type SignupInput = {
   email: string;
   name: string;
   password: string;
+  /** Client IP, for the per-network send limit. */
+  ip?: string;
 };
 
 /**
@@ -110,7 +112,7 @@ export async function startSignup(input: SignupInput) {
     });
   }
 
-  return issueOtp(email, "SIGNUP");
+  return issueOtp(email, "SIGNUP", input.ip);
 }
 
 /** Step two of sign-up: confirm the code and mark the address verified. */
@@ -141,7 +143,7 @@ export async function finishSignup(rawEmail: string, code: string) {
 const MAX_FAILED_LOGINS = 8;
 const LOCKOUT_MINUTES = 15;
 
-export async function signIn(rawEmail: string, password: string) {
+export async function signIn(rawEmail: string, password: string, ip?: string) {
   const email = rawEmail.trim().toLowerCase();
 
   const user = await db.user.findUnique({
@@ -199,7 +201,7 @@ export async function signIn(rawEmail: string, password: string) {
 
   if (!user.emailVerifiedAt) {
     // Send a fresh code so the unverified route is actually completable.
-    await issueOtp(email, "SIGNUP").catch(() => undefined);
+    await issueOtp(email, "SIGNUP", ip).catch(() => undefined);
     throw new HttpError(
       403,
       "Your address is not confirmed yet. We have emailed you a new code.",
@@ -216,7 +218,7 @@ export async function signIn(rawEmail: string, password: string) {
 }
 
 /** Password reset, step one. Never reveals whether the address exists. */
-export async function startPasswordReset(rawEmail: string) {
+export async function startPasswordReset(rawEmail: string, ip?: string) {
   const email = rawEmail.trim().toLowerCase();
 
   const emailProblem = studentEmailProblem(email);
@@ -232,7 +234,7 @@ export async function startPasswordReset(rawEmail: string) {
     return { expiresAt: new Date(Date.now() + 600_000), emailed: true };
   }
 
-  return issueOtp(email, "RESET");
+  return issueOtp(email, "RESET", ip);
 }
 
 /** Password reset, step two. */
