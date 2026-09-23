@@ -514,7 +514,9 @@ async function seedDemoData() {
 
     const user = await db.user.upsert({
       where: { email: u.email },
-      update: {},
+      // Applied on update as well, so rows created by an earlier seed still
+      // get flagged rather than silently staying unmarked.
+      update: { isDemo: true },
       create: {
         name: u.name,
         username,
@@ -524,6 +526,7 @@ async function seedDemoData() {
         location,
         passwordHash: demoPasswordHash,
         emailVerifiedAt: new Date(Date.now() - 30 * day),
+        isDemo: true,
         campusCode: identity.campusCode,
         schoolCode: identity.schoolCode,
         programCode: identity.programCode,

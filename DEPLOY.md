@@ -42,13 +42,54 @@ No server to run or patch. Vercel does not host databases itself, but you
 provision managed Postgres from inside the Vercel dashboard, so there is still
 nothing for you to maintain.
 
+### a. The import screen, field by field
+
+**Root Directory** → leave it as `Findmyteamy (root)`. The app is not a
+monorepo; `prisma/`, `src/`, `public/` and `scripts/` are all part of one
+project.
+
+**Environment Variables — "14 Detected"** → Vercel reads `.env.example` and
+offers to pre-fill from it. **Do not accept those values.** They are the
+development defaults, and three of them are actively wrong for production:
+
+| Detected value | Why it must not be used |
+| --- | --- |
+| `DATABASE_PROVIDER="sqlite"` | Must be `postgresql`. |
+| `DATABASE_URL="file:./dev.db"` | Points at a local file that will not exist. |
+| `AUTH_SECRET="dev-secret-change-me..."` | Publicly known — anyone could forge a session cookie. The app now refuses to start a session with it when `NODE_ENV=production`, so a deploy carrying it will error rather than run insecurely. |
+| `ALLOW_DEMO_LOGIN="true"` | Ignored in production builds regardless, but set it to `false` so the intent is explicit. |
+
+Clear the detected list and enter the values in section **c** instead.
+
+**Optional Integrations → Prisma Postgres** → you can skip this. See the note
+below on which database to pick.
+
+### a2. Which Postgres: Neon or Prisma Postgres?
+
+The import flow offers **Prisma Postgres**. Either works, but they are not
+equivalent for this project:
+
+- **Neon (recommended).** Gives a standard `postgresql://…-pooler…` connection
+  string, which is exactly what this app was built and tested against — the
+  full migration was verified end to end on PostgreSQL 14. Add it from
+  Project → **Storage** after the first deploy.
+- **Prisma Postgres.** Its default connection string is a
+  `prisma+postgres://accelerate.prisma-data.net/?api_key=…` URL, which is
+  Prisma Accelerate over HTTP rather than a normal Postgres connection. Using
+  it means either taking that database's *direct* connection string instead, or
+  adding `@prisma/extension-accelerate` and generating the client with
+  `--no-engine`. Neither is hard, but neither has been tested here.
+
+If you have no preference, choose Neon and skip the Prisma Postgres
+integration.
+
 ### a. Import the repository
 
 At [vercel.com/new](https://vercel.com/new), import
 `Parthivsurya/Findmyteamy`. Framework detection handles the build — do not
 override the build command.
 
-### b. Add Postgres from the Vercel dashboard
+### b. Add Postgres
 
 Project → **Storage** → create a **Neon** Postgres database. Vercel injects the
 connection variables into the project automatically.

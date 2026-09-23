@@ -75,6 +75,10 @@ model User {
   role                String  @default("USER") // "USER" | "ADMIN"
   onboarded           Boolean @default(false)
 
+  // True only for accounts created by `db:seed:demo`. The sign-in page lists
+  // these as hints in development; real accounts must never be listed there.
+  isDemo Boolean @default(false)
+
   emailOnRequests     Boolean @default(true)
   emailOnVerification Boolean @default(true)
   emailWeeklyDigest   Boolean @default(true)

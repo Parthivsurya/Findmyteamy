@@ -1,3 +1,4 @@
+import { authSecretProblem } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { emailTransport, isEmailConfigured } from "@/lib/mailer";
 
@@ -25,14 +26,12 @@ export async function GET() {
       email: isEmailConfigured()
         ? `configured (${emailTransport()})`
         : "missing (sign-up will not work)",
-      authSecret:
-        (process.env.AUTH_SECRET ?? "").includes("change-me") ||
-        (process.env.AUTH_SECRET ?? "").length < 16
-          ? "INSECURE — still the development placeholder"
-          : "set",
+      authSecret: authSecretProblem() ?? "set",
       demoLogin:
         process.env.ALLOW_DEMO_LOGIN === "true"
-          ? "ENABLED — disable before a public launch"
+          ? process.env.NODE_ENV === "production"
+            ? "requested but ignored (never listed in production builds)"
+            : "ENABLED — development only"
           : "disabled",
       cron: process.env.CRON_SECRET ? "configured" : "disabled",
     },

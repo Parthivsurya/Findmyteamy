@@ -29,12 +29,17 @@ export default async function LoginPage({
   const user = await getCurrentUser();
   if (user) redirect(user.onboarded ? (next ?? "/dashboard") : "/onboarding");
 
-  // Local exploration: the seed gives every demo account the same password.
-  const demoAllowed = process.env.ALLOW_DEMO_LOGIN === "true";
+  // Local exploration only. Two guards, because listing accounts on a public
+  // sign-in page would otherwise expose real students' email addresses:
+  //   1. never in a production build, whatever ALLOW_DEMO_LOGIN says;
+  //   2. only accounts created by `db:seed:demo`, which carry isDemo.
+  const demoAllowed =
+    process.env.ALLOW_DEMO_LOGIN === "true" &&
+    process.env.NODE_ENV !== "production";
   const demoPassword = process.env.DEMO_PASSWORD ?? "Amrita@2026";
   const demoAccounts = demoAllowed
     ? await db.user.findMany({
-        where: { emailVerifiedAt: { not: null }, onboarded: true },
+        where: { isDemo: true, emailVerifiedAt: { not: null }, onboarded: true },
         orderBy: [{ role: "desc" }, { profileCompleteness: "desc" }],
         take: 4,
         select: {

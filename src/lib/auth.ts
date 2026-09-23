@@ -17,15 +17,52 @@ const SESSION_DAYS = 30;
 
 type SessionPayload = { uid: string; iat: number; exp: number };
 
-function getSecret(): string {
+/**
+ * Values that must never sign a real session. The committed placeholder is long
+ * enough to pass a naive length check, so it is rejected by name — otherwise a
+ * deployment that imported .env.example would run with a publicly known key and
+ * anyone could forge a session cookie.
+ */
+function isPlaceholderSecret(secret: string): boolean {
+  const normalised = secret.toLowerCase();
+  return (
+    normalised.includes("change-me") ||
+    normalised.includes("changeme") ||
+    normalised.includes("dev-secret") ||
+    normalised.includes("insecure") ||
+    normalised.includes("your-secret") ||
+    normalised === "secret"
+  );
+}
+
+export function authSecretProblem(): string | null {
   const secret = process.env.AUTH_SECRET;
   if (!secret || secret.length < 16) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("AUTH_SECRET must be set to a strong value in production");
-    }
-    return "findmyteammate-insecure-development-secret";
+    return "AUTH_SECRET is missing or too short (needs 16+ characters)";
   }
-  return secret;
+  if (isPlaceholderSecret(secret)) {
+    return "AUTH_SECRET is still a development placeholder";
+  }
+  return null;
+}
+
+function getSecret(): string {
+  const secret = process.env.AUTH_SECRET;
+  const problem = authSecretProblem();
+
+  if (problem) {
+    if (process.env.NODE_ENV === "production") {
+      // Fail loudly at the first session operation rather than silently
+      // accepting forgeable cookies.
+      throw new Error(
+        `${problem}. Generate one with: openssl rand -base64 32`,
+      );
+    }
+    return secret && !isPlaceholderSecret(secret)
+      ? secret
+      : "findmyteammate-insecure-development-secret";
+  }
+  return secret!;
 }
 
 function sign(body: string): string {
