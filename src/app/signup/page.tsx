@@ -38,7 +38,7 @@ export default async function SignupPage() {
               How your address is read
             </p>
             <p className="mt-2 break-all font-mono text-[0.78rem] text-ink-2">
-              cb.sc.u4cse24535@cb.students.amrita.edu
+              cb.sc.u4cse24000@cb.students.amrita.edu
             </p>
             <ul className="mt-2.5 space-y-1 text-[0.78rem] text-ink-muted">
               <li>

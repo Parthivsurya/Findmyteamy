@@ -31,7 +31,7 @@ branch — and invite people directly into a specific open role.
 ## How the email address is read
 
 ```
-cb.sc.u4cse24535@cb.students.amrita.edu
+cb.sc.u4cse24000@cb.students.amrita.edu
 │  │  ││  │  │
 │  │  ││  │  └── 535  roll number within the batch
 │  │  ││  └───── 24   joined in 2024
@@ -85,7 +85,7 @@ They all share one password, and a few are listed on the sign-in page:
 
 | Address | Student | Branch / batch |
 | --- | --- | --- |
-| `cb.sc.u4cse24535@cb.students.amrita.edu` | Parthiv Surya (admin) | CSE 2024 |
+| `cb.sc.u4cse24001@cb.students.amrita.edu` | Aditi Nair (admin) | CSE 2024 |
 | `cb.sc.u4cse24118@cb.students.amrita.edu` | Priya Sharma | CSE 2024 |
 | `cb.sc.u4aie23156@cb.students.amrita.edu` | Meera Krishnan | AIE 2023 |
 | `cb.sc.u4cse25211@cb.students.amrita.edu` | Arjun Menon | CSE 2025 |

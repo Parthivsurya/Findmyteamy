@@ -3,9 +3,9 @@
  *
  * Every Amrita student address encodes who the student is, for example:
  *
- *     cb.sc.u4cse24535@cb.students.amrita.edu
+ *     cb.sc.u4cse24000@cb.students.amrita.edu
  *     │  │  ││  │  │
- *     │  │  ││  │  └── 535  roll number within the batch
+ *     │  │  ││  │  └── 000  roll number within the batch
  *     │  │  ││  └───── 24   joined in 2024
  *     │  │  │└──────── cse  branch
  *     │  │  └───────── u4   undergraduate, four years
@@ -230,7 +230,7 @@ export function studentEmailProblem(rawEmail: string): string | null {
     return "Use your Amrita student address, ending in students.amrita.edu";
   }
   if (!parseStudentEmail(email)) {
-    return "That does not look like a student roll address (example: cb.sc.u4cse24535@cb.students.amrita.edu)";
+    return "That does not look like a student roll address (example: cb.sc.u4cse24000@cb.students.amrita.edu)";
   }
   return null;
 }

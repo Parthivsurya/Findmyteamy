@@ -97,14 +97,14 @@ type DemoUser = {
 
 const USERS: DemoUser[] = [
   {
-    name: "Parthiv Surya",
-    email: "cb.sc.u4cse24535@cb.students.amrita.edu",
+    name: "Aditi Nair",
+    email: "cb.sc.u4cse24001@cb.students.amrita.edu",
     bio: "Third-year CSE at Amrita Coimbatore. I build web apps and I am usually the one organising the team. Platform admin here.",
     availability: "OPEN",
     role: "ADMIN",
     skills: [["TypeScript", "EXPERT"], ["Next.js", "EXPERT"], ["React", "EXPERT"], ["Node.js", "INTERMEDIATE"], ["PostgreSQL", "INTERMEDIATE"], ["Prisma", "INTERMEDIATE"], ["Project Management", "INTERMEDIATE"]],
     roles: ["Full Stack Developer", "Team Lead/Project Manager"],
-    github: "https://github.com/Parthivsurya",
+    github: "https://github.com/aditinair",
     activeDaysAgo: 0,
     achievements: [
       { title: "Finalist – Anokha Hackathon 2025", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "FINALIST", daysAgo: 120, status: "VERIFIED", description: "Built a campus lost-and-found platform with image matching." },
@@ -591,7 +591,7 @@ async function seedDemoData() {
               ? new Date(Date.now() - (a.daysAgo - 5) * day)
               : null,
           reviewedBy:
-            a.status === "VERIFIED" || a.status === "REJECTED" ? "Parthiv Surya" : null,
+            a.status === "VERIFIED" || a.status === "REJECTED" ? "Aditi Nair" : null,
         },
       });
     }
@@ -828,7 +828,7 @@ async function seedDemoData() {
 
   console.log("Seed complete.\n");
   console.log("Sign in with any seeded Amrita address, password: " + DEMO_PASSWORD);
-  console.log("  cb.sc.u4cse24535@cb.students.amrita.edu  Parthiv Surya  CSE 2024  (admin)");
+  console.log("  cb.sc.u4cse24001@cb.students.amrita.edu  Aditi Nair     CSE 2024  (admin)");
   console.log("  cb.sc.u4cse24118@cb.students.amrita.edu  Priya Sharma   CSE 2024");
   console.log("  cb.sc.u4aie23156@cb.students.amrita.edu  Meera Krishnan AIE 2023");
   console.log("  cb.sc.u4cse25211@cb.students.amrita.edu  Arjun Menon    CSE 2025");

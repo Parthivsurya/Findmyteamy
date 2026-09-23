@@ -60,7 +60,7 @@ export function LoginForm({ next }: { next?: string }) {
           autoComplete="username"
           spellCheck={false}
           className="field font-mono text-[0.85rem]"
-          placeholder="cb.sc.u4cse24535@cb.students.amrita.edu"
+          placeholder="cb.xx.xx.xxx.xxxxx@cb.students.amrita.edu"
         />
       </div>
 
@@ -119,7 +119,7 @@ export function SignupForm() {
           required
           autoComplete="name"
           className="field"
-          placeholder="Parthiv Surya"
+          placeholder="Ananya Nair"
         />
       </div>
 
@@ -137,7 +137,7 @@ export function SignupForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="field font-mono text-[0.85rem]"
-          placeholder="cb.sc.u4cse24535@cb.students.amrita.edu"
+          placeholder="cb.xx.xx.xxx.xxxxx@cb.students.amrita.edu"
         />
         {emailHint ? (
           <p className="field-error">{emailHint}</p>
@@ -291,7 +291,7 @@ export function ForgotPasswordForm() {
           required
           spellCheck={false}
           className="field font-mono text-[0.85rem]"
-          placeholder="cb.sc.u4cse24535@cb.students.amrita.edu"
+          placeholder="cb.xx.xx.xxx.xxxxx@cb.students.amrita.edu"
         />
       </div>
 

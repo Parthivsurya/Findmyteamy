@@ -196,7 +196,7 @@ then:
 
 ```bash
 DATABASE_PROVIDER=postgresql DATABASE_URL="<pooled url>" \
-  npm run make-admin -- cb.sc.u4cse24535@cb.students.amrita.edu
+  npm run make-admin -- cb.xx.xx.xxx.xxxxx@cb.students.amrita.edu
 ```
 
 ### f2. Function region
