@@ -107,13 +107,13 @@ const USERS: DemoUser[] = [
     github: "https://github.com/aditinair",
     activeDaysAgo: 0,
     achievements: [
-      { title: "Finalist – Anokha Hackathon 2025", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "FINALIST", daysAgo: 120, status: "VERIFIED", description: "Built a campus lost-and-found platform with image matching." },
+      { title: "Finalist: Anokha Hackathon 2025", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "FINALIST", daysAgo: 120, status: "VERIFIED", description: "Built a campus lost-and-found platform with image matching." },
     ],
   },
   {
     name: "Priya Sharma",
     email: "cb.sc.u4cse24118@cb.students.amrita.edu",
-    bio: "Backend developer, third year CSE. Working on an accessible transport app for Smart India Hackathon — looking for an ML engineer and a designer.",
+    bio: "Backend developer, third year CSE. Working on an accessible transport app for Smart India Hackathon. Looking for an ML engineer and a designer.",
     availability: "OPEN",
     skills: [["Node.js", "EXPERT"], ["PostgreSQL", "EXPERT"], ["Express", "INTERMEDIATE"], ["Docker", "INTERMEDIATE"], ["TypeScript", "INTERMEDIATE"], ["Project Management", "INTERMEDIATE"]],
     roles: ["Backend Developer", "Team Lead/Project Manager"],
@@ -122,14 +122,14 @@ const USERS: DemoUser[] = [
     portfolio: "https://priya.dev",
     activeDaysAgo: 0,
     achievements: [
-      { title: "Runner-up – Anokha Hackathon 2025", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "RUNNER_UP", daysAgo: 220, status: "VERIFIED", description: "Crowd-sourced pothole reporting platform. Second of 180 teams." },
-      { title: "Finalist – Coimbatore Civic Tech Challenge", eventName: "Coimbatore Civic Tech Challenge", organizer: "Coimbatore Smart City", position: "FINALIST", daysAgo: 95, status: "PENDING" },
+      { title: "Runner-up: Anokha Hackathon 2025", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "RUNNER_UP", daysAgo: 220, status: "VERIFIED", description: "Crowd-sourced pothole reporting platform. Second of 180 teams." },
+      { title: "Finalist: Coimbatore Civic Tech Challenge", eventName: "Coimbatore Civic Tech Challenge", organizer: "Coimbatore Smart City", position: "FINALIST", daysAgo: 95, status: "PENDING" },
     ],
   },
   {
     name: "Meera Krishnan",
     email: "cb.sc.u4aie23156@cb.students.amrita.edu",
-    bio: "Final-year AIE, three-time hackathon winner. Applied ML — vision and NLP. I only join teams that actually ship a demo.",
+    bio: "Final-year AIE, three-time hackathon winner. Applied ML, mostly vision and NLP. I only join teams that actually ship a demo.",
     availability: "EVENTS_ONLY",
     skills: [["Python", "EXPERT"], ["PyTorch", "EXPERT"], ["Computer Vision", "EXPERT"], ["TensorFlow", "INTERMEDIATE"], ["NLP", "INTERMEDIATE"], ["FastAPI", "INTERMEDIATE"], ["LangChain", "INTERMEDIATE"]],
     roles: ["ML/AI Engineer", "Data Analyst"],
@@ -138,16 +138,16 @@ const USERS: DemoUser[] = [
     portfolio: "https://meera.ml",
     activeDaysAgo: 2,
     achievements: [
-      { title: "Winner – Smart India Hackathon 2025", eventName: "Smart India Hackathon 2025", organizer: "Ministry of Education, Govt. of India", position: "WINNER", daysAgo: 300, status: "VERIFIED", description: "Crop disease detection from phone photos, piloted with 2,000 farmers." },
-      { title: "Winner – Anokha Techfest AI Challenge", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 180, status: "VERIFIED", description: "Real-time sign language translation running fully on-device." },
-      { title: "Winner – Google Solution Challenge Regional", eventName: "Google Solution Challenge 2025", organizer: "Google Developers", position: "WINNER", daysAgo: 420, status: "VERIFIED" },
-      { title: "Finalist – Amazon ML Challenge", eventName: "Amazon ML Challenge 2026", organizer: "Amazon", position: "FINALIST", daysAgo: 60, status: "PENDING" },
+      { title: "Winner: Smart India Hackathon 2025", eventName: "Smart India Hackathon 2025", organizer: "Ministry of Education, Govt. of India", position: "WINNER", daysAgo: 300, status: "VERIFIED", description: "Crop disease detection from phone photos, piloted with 2,000 farmers." },
+      { title: "Winner: Anokha Techfest AI Challenge", eventName: "Anokha 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 180, status: "VERIFIED", description: "Real-time sign language translation running fully on-device." },
+      { title: "Winner: Google Solution Challenge Regional", eventName: "Google Solution Challenge 2025", organizer: "Google Developers", position: "WINNER", daysAgo: 420, status: "VERIFIED" },
+      { title: "Finalist: Amazon ML Challenge", eventName: "Amazon ML Challenge 2026", organizer: "Amazon", position: "FINALIST", daysAgo: 60, status: "PENDING" },
     ],
   },
   {
     name: "Arjun Menon",
     email: "cb.sc.u4cse25211@cb.students.amrita.edu",
-    bio: "Second-year CSE who loves shipping clean interfaces. React and Figma are my home turf. No team yet — happy to join one that moves fast.",
+    bio: "Second-year CSE who loves shipping clean interfaces. React and Figma are my home turf. No team yet, and happy to join one that moves fast.",
     availability: "OPEN",
     skills: [["React", "EXPERT"], ["Figma", "EXPERT"], ["Tailwind CSS", "INTERMEDIATE"], ["JavaScript", "INTERMEDIATE"], ["Next.js", "INTERMEDIATE"], ["Prototyping", "INTERMEDIATE"]],
     roles: ["Frontend Developer", "UI/UX Designer"],
@@ -155,7 +155,7 @@ const USERS: DemoUser[] = [
     linkedin: "https://linkedin.com/in/arjunmenon",
     activeDaysAgo: 1,
     achievements: [
-      { title: "Participant – HackCBS 6.0", eventName: "HackCBS 6.0", organizer: "SSCBS, Delhi University", position: "PARTICIPANT", daysAgo: 150, status: "UNVERIFIED" },
+      { title: "Participant: HackCBS 6.0", eventName: "HackCBS 6.0", organizer: "SSCBS, Delhi University", position: "PARTICIPANT", daysAgo: 150, status: "UNVERIFIED" },
     ],
   },
   {
@@ -169,7 +169,7 @@ const USERS: DemoUser[] = [
     linkedin: "https://linkedin.com/in/rahulverma",
     activeDaysAgo: 3,
     achievements: [
-      { title: "Winner – Anokha Hackathon 2024", eventName: "Anokha 2024", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 240, status: "VERIFIED" },
+      { title: "Winner: Anokha Hackathon 2024", eventName: "Anokha 2024", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 240, status: "VERIFIED" },
     ],
   },
   {
@@ -183,7 +183,7 @@ const USERS: DemoUser[] = [
     linkedin: "https://linkedin.com/in/snehapatil",
     activeDaysAgo: 1,
     achievements: [
-      { title: "Winner – Design Sprint, Anokha 2026", eventName: "Anokha 2026", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 130, status: "VERIFIED", description: "Redesigned a public health reporting flow; judged best on usability." },
+      { title: "Winner: Design Sprint, Anokha 2026", eventName: "Anokha 2026", organizer: "Amrita Vishwa Vidyapeetham", position: "WINNER", daysAgo: 130, status: "VERIFIED", description: "Redesigned a public health reporting flow; judged best on usability." },
     ],
   },
   {
@@ -206,13 +206,13 @@ const USERS: DemoUser[] = [
     github: "https://github.com/zoyasheikh",
     activeDaysAgo: 7,
     achievements: [
-      { title: "Finalist – InCTF Nationals", eventName: "InCTF 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "FINALIST", daysAgo: 140, status: "VERIFIED" },
+      { title: "Finalist: InCTF Nationals", eventName: "InCTF 2025", organizer: "Amrita Vishwa Vidyapeetham", position: "FINALIST", daysAgo: 140, status: "VERIFIED" },
     ],
   },
   {
     name: "Nisha Gupta",
     email: "cb.sc.u4aie24207@cb.students.amrita.edu",
-    bio: "AIE third year. NLP in training — I spend most of my time on retrieval and evaluation.",
+    bio: "AIE third year. NLP in training. I spend most of my time on retrieval and evaluation.",
     availability: "EVENTS_ONLY",
     skills: [["Python", "EXPERT"], ["NLP", "EXPERT"], ["LangChain", "INTERMEDIATE"], ["PyTorch", "INTERMEDIATE"], ["FastAPI", "BEGINNER"]],
     roles: ["ML/AI Engineer"],
@@ -220,7 +220,7 @@ const USERS: DemoUser[] = [
     portfolio: "https://nisha.page",
     activeDaysAgo: 6,
     achievements: [
-      { title: "Finalist – Inter-IIT Tech Meet ML Challenge", eventName: "Inter-IIT Tech Meet 14.0", organizer: "IIT Kanpur", position: "FINALIST", daysAgo: 160, status: "VERIFIED" },
+      { title: "Finalist: Inter-IIT Tech Meet ML Challenge", eventName: "Inter-IIT Tech Meet 14.0", organizer: "IIT Kanpur", position: "FINALIST", daysAgo: 160, status: "VERIFIED" },
     ],
   },
   {
@@ -243,8 +243,8 @@ const USERS: DemoUser[] = [
     github: "https://github.com/karthikreddy",
     activeDaysAgo: 4,
     achievements: [
-      { title: "Winner – ETHIndia Fellowship Track", eventName: "ETHIndia 2025", organizer: "Devfolio", position: "WINNER", daysAgo: 200, status: "VERIFIED" },
-      { title: "Winner – Polygon Buildathon", eventName: "Polygon Buildathon 2024", organizer: "Polygon Labs", position: "WINNER", daysAgo: 500, status: "REJECTED", reviewNote: "The certificate uploaded belonged to a different participant name." },
+      { title: "Winner: ETHIndia Fellowship Track", eventName: "ETHIndia 2025", organizer: "Devfolio", position: "WINNER", daysAgo: 200, status: "VERIFIED" },
+      { title: "Winner: Polygon Buildathon", eventName: "Polygon Buildathon 2024", organizer: "Polygon Labs", position: "WINNER", daysAgo: 500, status: "REJECTED", reviewNote: "The certificate uploaded belonged to a different participant name." },
     ],
   },
   {
@@ -269,20 +269,20 @@ const USERS: DemoUser[] = [
   {
     name: "Tanvi Joshi",
     email: "cb.sc.p2cse25007@cb.students.amrita.edu",
-    bio: "M.Tech CSE. I pitch — ten slides, five minutes, no filler. Also handle business models and market sizing.",
+    bio: "M.Tech CSE. I pitch: ten slides, five minutes, no filler. Also handle business models and market sizing.",
     availability: "OPEN",
     skills: [["Pitching", "EXPERT"], ["Presentation", "EXPERT"], ["Project Management", "INTERMEDIATE"], ["Technical Writing", "INTERMEDIATE"]],
     roles: ["Pitcher/Presenter", "Team Lead/Project Manager"],
     linkedin: "https://linkedin.com/in/tanvijoshi",
     activeDaysAgo: 3,
     achievements: [
-      { title: "Winner – Best Pitch, Startup Weekend Coimbatore", eventName: "Startup Weekend Coimbatore 2026", organizer: "Techstars", position: "WINNER", daysAgo: 90, status: "VERIFIED" },
+      { title: "Winner: Best Pitch, Startup Weekend Coimbatore", eventName: "Startup Weekend Coimbatore 2026", organizer: "Techstars", position: "WINNER", daysAgo: 90, status: "VERIFIED" },
     ],
   },
   {
     name: "Fatima Khan",
     email: "cb.sc.u4aie25163@cb.students.amrita.edu",
-    bio: "Second-year AIE. Flutter developer — shipped two apps on the Play Store with 10k+ installs between them.",
+    bio: "Second-year AIE. Flutter developer. I have shipped two apps on the Play Store with 10k+ installs between them.",
     availability: "OPEN",
     skills: [["Flutter", "EXPERT"], ["Kotlin", "INTERMEDIATE"], ["Firebase", "EXPERT"], ["React Native", "BEGINNER"], ["Figma", "BEGINNER"]],
     roles: ["Mobile Developer", "Frontend Developer"],
@@ -290,7 +290,7 @@ const USERS: DemoUser[] = [
     portfolio: "https://fatima.app",
     activeDaysAgo: 2,
     achievements: [
-      { title: "Runner-up – Google DevFest Hack", eventName: "DevFest Coimbatore 2025", organizer: "GDG Coimbatore", position: "RUNNER_UP", daysAgo: 110, status: "VERIFIED" },
+      { title: "Runner-up: Google DevFest Hack", eventName: "DevFest Coimbatore 2025", organizer: "GDG Coimbatore", position: "RUNNER_UP", daysAgo: 110, status: "VERIFIED" },
     ],
   },
   {
@@ -329,7 +329,7 @@ const EVENTS = [
     slug: "global-ai-hackathon-2026",
     organizer: "OpenBuild Community",
     description:
-      "A fully online, 48-hour AI hackathon. Build anything with an LLM, a vision model, or classical ML — judged on usefulness, technical depth and the quality of the demo.",
+      "A fully online, 48-hour AI hackathon. Build anything with an LLM, a vision model, or classical ML. Judged on usefulness, technical depth and the quality of the demo.",
     startDate: fromNow(18),
     endDate: fromNow(20),
     registrationDeadline: fromNow(12),
@@ -399,7 +399,7 @@ const EVENTS = [
     slug: "cse-department-codeathon-2027",
     organizer: "Department of CSE, Amrita Coimbatore",
     description:
-      "An intra-department codeathon for CSE and AIE students. Submitted for review — waiting on admin approval.",
+      "An intra-department codeathon for CSE and AIE students. Submitted for review, waiting on admin approval.",
     startDate: fromNow(75),
     endDate: fromNow(76),
     registrationDeadline: fromNow(55),
@@ -426,7 +426,7 @@ async function main() {
   await seedMasterData();
 
   if (!WANT_DEMO) {
-    console.log("\nDone. Master data only — no demo accounts were created.");
+    console.log("\nDone. Master data only, no demo accounts were created.");
     console.log("Run `npm run db:seed:demo` if you want the sample students.");
     return;
   }
@@ -482,6 +482,16 @@ async function seedDemoData() {
   });
   if (staleEvents.count) console.log(`  removed ${staleEvents.count} renamed demo events`);
 
+  // Achievements are matched by title below, so renaming one here would leave
+  // the old row next to the new one. Same treatment as the events above.
+  const seededTitles = USERS.flatMap((u) => (u.achievements ?? []).map((a) => a.title));
+  const staleAchievements = await db.achievement.deleteMany({
+    where: { user: { isDemo: true }, title: { notIn: seededTitles } },
+  });
+  if (staleAchievements.count) {
+    console.log(`  removed ${staleAchievements.count} renamed demo achievements`);
+  }
+
   // --- users --------------------------------------------------------------
   // Keyed by first name, which is what the participation and team tables below
   // refer to.
@@ -514,9 +524,24 @@ async function seedDemoData() {
 
     const user = await db.user.upsert({
       where: { email: u.email },
-      // Applied on update as well, so rows created by an earlier seed still
-      // get flagged rather than silently staying unmarked.
-      update: { isDemo: true },
+      // The display fields are applied on update too, not just on create.
+      // Without this, editing a bio or a link in this file changed nothing on
+      // a database that had already been seeded once, which made the header's
+      // "everything is upserted" claim false and cost a debugging session.
+      // Credentials and timestamps are deliberately left alone.
+      update: {
+        isDemo: true,
+        name: u.name,
+        bio: u.bio,
+        college,
+        location,
+        availability: u.availability,
+        role: u.role ?? "USER",
+        githubUrl: u.github,
+        linkedinUrl: u.linkedin,
+        portfolioUrl: u.portfolio,
+        profileCompleteness: completeness,
+      },
       create: {
         name: u.name,
         username,
@@ -673,7 +698,7 @@ async function seedDemoData() {
       slots: [
         { role: "ML/AI Engineer", skills: ["Computer Vision", "PyTorch"], note: "Crowd density estimation from video" },
         { role: "UI/UX Designer", skills: ["Figma", "UI/UX Research"], note: "Accessibility-first mobile flows" },
-        { role: "Hardware/IoT Engineer", skills: ["IoT"], note: "Optional — edge device at bus stops" },
+        { role: "Hardware/IoT Engineer", skills: ["IoT"], note: "Optional, edge device at bus stops" },
         { role: "Backend Developer", skills: ["Node.js", "PostgreSQL"], filledBy: "priya" },
       ],
     },
@@ -702,7 +727,7 @@ async function seedDemoData() {
       name: "LedgerLens",
       slug: "global-ai-hackathon-2026",
       leader: "dev",
-      idea: "Point your camera at any receipt and get a clean, categorised expense entry — works offline on mid-range phones.",
+      idea: "Point your camera at any receipt and get a clean, categorised expense entry that works offline on mid-range phones.",
       slots: [
         { role: "ML/AI Engineer", skills: ["Computer Vision", "Python"], note: "On-device OCR" },
         { role: "Mobile Developer", skills: ["Flutter"] },
@@ -777,7 +802,7 @@ async function seedDemoData() {
           fromUserId: priyaId,
           toUserId: meeraId,
           message:
-            "Hi Meera — we are building an accessible transport app for SIH and your on-device vision work is exactly what we need. Would you join as our ML engineer?",
+            "Hi Meera, we are building an accessible transport app for SIH and your on-device vision work is exactly what we need. Would you join as our ML engineer?",
         },
       });
       await db.notification.create({
@@ -800,7 +825,7 @@ async function seedDemoData() {
           fromUserId: arjunId,
           toUserId: rahulId,
           message:
-            "I would love to take the frontend slot — I have shipped three React apps and can also help with the Figma work.",
+            "I would love to take the frontend slot. I have shipped three React apps and can also help with the Figma work.",
         },
       });
       await db.notification.create({
@@ -819,7 +844,7 @@ async function seedDemoData() {
         userId: priyaId,
         type: "ACHIEVEMENT_VERIFIED",
         title: "Your achievement was verified",
-        body: "Runner-up – Kurukshetra Hackathon 2025 now shows a verified badge.",
+        body: "Runner-up: Kurukshetra Hackathon 2025 now shows a verified badge.",
         href: "/u/priya",
         read: true,
       },
