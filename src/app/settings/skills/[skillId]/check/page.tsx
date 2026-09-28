@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/empty";
 import { SkillCheckForm } from "@/components/settings/skill-check";
 import { requireOnboardedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { isOpenRouterConfigured } from "@/lib/openrouter";
+import { isSkillCheckEnabled } from "@/lib/services/skill-assessment";
 
 export const metadata: Metadata = { title: "Skill check", robots: { index: false } };
 
@@ -25,12 +25,12 @@ export default async function SkillCheckPage({
   });
   if (!claim) notFound();
 
-  if (!isOpenRouterConfigured()) {
+  if (!isSkillCheckEnabled()) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6">
         <EmptyState
           title="Skill checks are not switched on"
-          description="This deployment has no OPENROUTER_API_KEY configured, so questions cannot be prepared."
+          description="This deployment has neither TYPESAFE_API_KEY nor OPENROUTER_API_KEY configured, so answers cannot be judged."
           action={
             <Link href="/settings/skills" className={btn("outline", "md")}>
               Back to skills

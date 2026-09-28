@@ -3,6 +3,14 @@ import { db } from "@/lib/db";
 import { envNumber } from "@/lib/env";
 import { SKILL_LEVELS, type SkillLevel } from "@/lib/enums";
 import { chatJson, isOpenRouterConfigured, openRouterModel } from "@/lib/openrouter";
+import {
+  askSystemOne,
+  confidencePercent,
+  isTypeSafeConfigured,
+  noulPercent,
+  typeSafeModel,
+  type Question,
+} from "@/lib/typesafe";
 
 /**
  * Skill assessment, in the three steps the product asks for:
@@ -42,10 +50,34 @@ const minConfidence = () => envNumber("ASSESSMENT_MIN_CONFIDENCE", 60);
  * when…" is harder to answer convincingly from documentation than "what does
  * X do", and it is what actually distinguishes someone who has used a tool.
  */
+/**
+ * Whether skill checks are available at all. Either provider is enough: the
+ * judgements need TypeSafe or OpenRouter, and the question falls back to a
+ * template when nothing can generate one.
+ */
+export function isSkillCheckEnabled(): boolean {
+  return isTypeSafeConfigured() || isOpenRouterConfigured();
+}
+
+/**
+ * A question that needs no generative model.
+ *
+ * System One answers questions about text; it does not write text. So when
+ * only TypeSafe is configured there is nothing to generate a question with,
+ * and this template stands in. It is deliberately the same shape the model is
+ * asked to produce — one remembered moment, with an escape hatch.
+ */
+export function templateQuestion(skillName: string): string {
+  return `Tell me about a time something in ${skillName} did not behave the way you expected. What turned out to be going on, and how did you work it out? If that has not happened to you, tell me about the closest thing.`;
+}
+
 export async function generateQuestion(
   skillName: string,
   claimedLevel: SkillLevel,
 ): Promise<string> {
+  // No generative model available: fall back rather than refuse the feature.
+  if (!isOpenRouterConfigured()) return templateQuestion(skillName);
+
   const result = await chatJson<{ question: string }>(
     [
       {
@@ -227,6 +259,105 @@ export async function rankSkillLevel({
 }
 
 // ---------------------------------------------------------------------------
+// Steps 2 and 3 together, on System One
+// ---------------------------------------------------------------------------
+
+const LEVEL_CRITERIA: Record<SkillLevel, string> = {
+  BEGINNER:
+    "Has followed tutorials. Describes the happy path only, with no sense of failure modes or trade-offs.",
+  INTERMEDIATE:
+    "Has built something real. Names a concrete problem they hit and what they did about it.",
+  EXPERT:
+    "Reasons about trade-offs, edge cases, performance or failure modes unprompted, with specifics such as numbers, versions, tools or error messages.",
+};
+
+/**
+ * Both judgements in one request.
+ *
+ * Preferred over the chat path when TYPESAFE_API_KEY is set: the probabilities
+ * come back calibrated rather than self-reported by a chat model, there is no
+ * JSON to recover from prose, and batching the questions is what TypeSafe's
+ * own measurements say is cheapest and fastest.
+ */
+async function judgeWithSystemOne({
+  skillName,
+  question,
+  answer,
+}: {
+  skillName: string;
+  question: string;
+  answer: string;
+}): Promise<{ authorship: AuthorshipJudgement; ranking: LevelJudgement; model: string }> {
+  const questions: Record<string, Question> = {
+    machine_written: {
+      type: "noul",
+      instructions: [
+        "The ANSWER was written by a language model rather than by the student from their own experience.",
+        "Not evidence of machine writing: non-native English, grammar or spelling mistakes, brevity, bullet points, a plain register, or simply being correct.",
+        "Evidence of machine writing: textbook completeness with no specifics of the writer's own situation; even-handed 'it depends on your use case' framing; answering a more general question than the one asked; polished rhythm with no concrete numbers, versions, tools or error messages.",
+      ].join(" "),
+    },
+    addressed_question: {
+      type: "noul",
+      instructions:
+        "The ANSWER engages with what the QUESTION asked, or with closely related first-hand experience of the same technology. Answering about a different problem with the same technology still counts.",
+    },
+    level: {
+      type: "choice",
+      instructions: `How much hands-on experience with ${skillName} the ANSWER demonstrates. Judge substance, not fluency: a short, plain or non-native-English answer can still be expert. Ignore what the student claimed.`,
+      criteria: LEVEL_CRITERIA,
+    },
+  };
+
+  const state = `QUESTION ASKED:\n${question}\n\nANSWER GIVEN:\n${answer}`;
+  const result = await askSystemOne(state, questions);
+  if (!result.ok) throw new HttpError(503, `Could not judge the answer: ${result.error}`);
+
+  const machine = noulPercent(result.answers.machine_written);
+  const addressed = noulPercent(result.answers.addressed_question);
+  const levelAnswer = result.answers.level;
+
+  if (machine === null || addressed === null || levelAnswer?.type !== "choice") {
+    throw new HttpError(503, "The judgement came back in an unexpected shape");
+  }
+
+  const level = (SKILL_LEVELS as readonly string[]).includes(levelAnswer.choice)
+    ? (levelAnswer.choice as SkillLevel)
+    : null;
+  if (!level) throw new HttpError(503, "The judgement named an unknown level");
+
+  const confidence = confidencePercent(levelAnswer) ?? 50;
+  const addressedQuestion = addressed >= 50;
+
+  // System One returns judgements, not prose, so the explanation is assembled
+  // here from what it actually reported rather than being written by a model.
+  const spread = levelAnswer.probabilities
+    ? Object.entries(levelAnswer.probabilities)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3)
+        .map(([k, v]) => `${k.toLowerCase()} ${Math.round(v * 100)}%`)
+        .join(", ")
+    : "";
+
+  const rationale = [
+    `Your answer reads as ${level.toLowerCase()} level`,
+    spread ? ` (${spread})` : "",
+    `, judged with ${confidence}% confidence.`,
+    addressedQuestion ? "" : " It answered a different question than the one asked.",
+  ].join("");
+
+  return {
+    model: result.model,
+    authorship: {
+      likelihood: machine,
+      verdict: machine >= 75 ? "LIKELY_AI" : machine >= 35 ? "UNCERTAIN" : "LIKELY_HUMAN",
+      signals: [],
+    },
+    ranking: { level, confidence, rationale, addressedQuestion },
+  };
+}
+
+// ---------------------------------------------------------------------------
 // Orchestration
 // ---------------------------------------------------------------------------
 
@@ -241,7 +372,7 @@ export async function startAssessment({
   userId: string;
   skillId: string;
 }) {
-  if (!isOpenRouterConfigured()) {
+  if (!isOpenRouterConfigured() && !isTypeSafeConfigured()) {
     throw new HttpError(503, "Skill checks are not available right now");
   }
 
@@ -276,7 +407,7 @@ export async function startAssessment({
       claimedLevel: claim.level,
       question,
       answer: "",
-      model: openRouterModel(),
+      model: isTypeSafeConfigured() ? typeSafeModel() : openRouterModel(),
     },
   });
 }
@@ -309,18 +440,33 @@ export async function submitAssessment({
   }
 
   try {
-    // Steps 2 and 3 judge the same answer without needing each other's
-    // output, so they go out together. Sequentially this took ~14s of the
-    // ~22s a check spent waiting.
-    const [authorship, ranking] = await Promise.all([
-      detectAiAuthorship(attempt.question, trimmed),
-      rankSkillLevel({
+    // System One answers both judgements in one calibrated request. The chat
+    // path remains for deployments with only an OpenRouter key; there the two
+    // judgements go out in parallel, since neither needs the other's output.
+    let authorship: AuthorshipJudgement;
+    let ranking: LevelJudgement;
+    let judgedBy = attempt.model;
+
+    if (isTypeSafeConfigured()) {
+      const judged = await judgeWithSystemOne({
         skillName: attempt.skill.name,
-        claimedLevel: attempt.claimedLevel as SkillLevel,
         question: attempt.question,
         answer: trimmed,
-      }),
-    ]);
+      });
+      authorship = judged.authorship;
+      ranking = judged.ranking;
+      judgedBy = judged.model;
+    } else {
+      [authorship, ranking] = await Promise.all([
+        detectAiAuthorship(attempt.question, trimmed),
+        rankSkillLevel({
+          skillName: attempt.skill.name,
+          claimedLevel: attempt.claimedLevel as SkillLevel,
+          question: attempt.question,
+          answer: trimmed,
+        }),
+      ]);
+    }
 
     // Past the threshold the attempt goes to an admin rather than being acted
     // on automatically, and the level is still recorded either way.
@@ -339,6 +485,7 @@ export async function submitAssessment({
         aiVerdict: authorship.verdict,
         aiSignals: JSON.stringify(authorship.signals),
         status: flagged ? "FLAGGED" : "ASSESSED",
+        model: judgedBy,
         completedAt: new Date(),
       },
     });

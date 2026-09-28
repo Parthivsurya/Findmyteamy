@@ -5,7 +5,7 @@ import { AssessedBadge, StartSkillCheckButton } from "@/components/settings/skil
 import { requireOnboardedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { SKILL_LEVEL_LABEL, type SkillLevel } from "@/lib/enums";
-import { isOpenRouterConfigured } from "@/lib/openrouter";
+import { isSkillCheckEnabled } from "@/lib/services/skill-assessment";
 import { getRoles, getSkills } from "@/lib/services/catalog";
 import { relativeTime } from "@/lib/utils";
 
@@ -56,7 +56,7 @@ export default async function SkillsSettingsPage() {
       </Card>
 
       {/* A claimed level is self-reported; a check makes it evidenced. */}
-      {isOpenRouterConfigured() && user.skills.length > 0 ? (
+      {isSkillCheckEnabled() && user.skills.length > 0 ? (
         <Card>
           <CardHead
             title="Skill checks"
