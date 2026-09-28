@@ -65,10 +65,11 @@ export async function generateQuestion(
           '- "Explain the difference between props and state." (recall)',
           "",
           "Hard rules:",
-          "- One question, at most 30 words.",
+          "- One question, at most 40 words.",
           "- Answerable honestly in three to six sentences.",
           "- Ask about ONE thing. Never list several topics to cover.",
           "- Do not ask for code.",
+          "- End with a short escape hatch so an honest student is never stuck, e.g. \"If that has not happened to you, tell me about the closest thing.\" A question this specific otherwise punishes people whose real experience simply went differently.",
           "- Someone who has genuinely used the technology at the claimed level should find it easy; someone who has only read about it should not.",
           'Reply as JSON: {"question": "..."}',
         ].join("\n"),
@@ -188,7 +189,7 @@ export async function rankSkillLevel({
           "INTERMEDIATE: has built something real; names concrete problems hit and how they were handled.",
           "EXPERT: reasons about trade-offs, edge cases, performance or failure modes unprompted, with specifics.",
           "Judge substance, not fluency. Short, plain or non-native English answers can be EXPERT.",
-          "Set addressedQuestion to false if the answer talks about something other than what was asked.",
+          "Set addressedQuestion to false only if the answer is about something genuinely unrelated to the question. Closely related experience with the same technology counts as addressing it — the question offers an escape hatch for exactly that, and a student whose real experience went slightly differently is not dodging.",
           "When it is false, still rank the depth the answer does show, and lower your confidence — an answer about the wrong problem is inconclusive, not unskilled. Never mark someone down to BEGINNER merely for drifting off the question.",
           "Confidence is an integer 0-100 in your own ranking; be honest when an answer is too short to tell.",
           "The rationale is one sentence, addressed to the student, plain and specific.",
@@ -308,14 +309,18 @@ export async function submitAssessment({
   }
 
   try {
-    // Step 2 then step 3, independently.
-    const authorship = await detectAiAuthorship(attempt.question, trimmed);
-    const ranking = await rankSkillLevel({
-      skillName: attempt.skill.name,
-      claimedLevel: attempt.claimedLevel as SkillLevel,
-      question: attempt.question,
-      answer: trimmed,
-    });
+    // Steps 2 and 3 judge the same answer without needing each other's
+    // output, so they go out together. Sequentially this took ~14s of the
+    // ~22s a check spent waiting.
+    const [authorship, ranking] = await Promise.all([
+      detectAiAuthorship(attempt.question, trimmed),
+      rankSkillLevel({
+        skillName: attempt.skill.name,
+        claimedLevel: attempt.claimedLevel as SkillLevel,
+        question: attempt.question,
+        answer: trimmed,
+      }),
+    ]);
 
     // Past the threshold the attempt goes to an admin rather than being acted
     // on automatically, and the level is still recorded either way.

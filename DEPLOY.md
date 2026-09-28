@@ -459,8 +459,11 @@ The failure is in the router's decision step, which runs before a model is
 chosen, so OpenRouter's own `models` fallback cannot rescue it. The client
 therefore retries the primary twice and then asks a concrete model from
 `OPENROUTER_FALLBACK_MODELS` instead, which took a 6-call sample from 3/6 to
-6/6. Expect 4–14 seconds per call; the slow end is the router timing out
-before the fallback answers.
+6/6. Expect 4–14 seconds per call. The two judgements are issued in parallel, since
+neither needs the other's output, which took the judging phase from about 14
+seconds to 8; a whole check lands around 13–22 seconds. Measured cost is
+roughly $0.002 per completed check, so the spend is not the constraint — the
+wait is.
 
 Two other things worth knowing, both found by running it rather than reading
 it. Reasoning is switched off for these calls: reasoning tokens come out of
@@ -475,6 +478,12 @@ asked. That last condition exists because an earlier version ranked a
 detailed, clearly expert answer as BEGINNER at 85% confidence purely for
 describing a different problem than the one asked. Drifting off the question
 now means inconclusive, not unskilled.
+
+Questions end with an escape hatch — "if that has not happened to you, tell me
+about the closest thing" — because they are otherwise specific enough to
+punish an honest student whose experience simply went differently. Without it,
+a genuine Docker answer about build-cache layering was marked as not
+addressing a question about runtime differences, and went unapplied.
 
 **How the machine-written score is used matters.** LLM-based AI-text detection
 is unreliable, and worst precisely here: short technical answers written by
