@@ -27,11 +27,11 @@ const MAX_ATTEMPTS = 5;
  * stop a script walking through thousands of addresses and burning the mail
  * quota. Tune with OTP_IP_LIMIT_HOUR / OTP_IP_LIMIT_DAY.
  */
-const IP_LIMIT_HOUR = envNumber("OTP_IP_LIMIT_HOUR", 20);
-const IP_LIMIT_DAY = envNumber("OTP_IP_LIMIT_DAY", 60);
+const ipLimitHour = () => envNumber("OTP_IP_LIMIT_HOUR", 20);
+const ipLimitDay = () => envNumber("OTP_IP_LIMIT_DAY", 60);
 
 /** Distinct addresses one network may request codes for in a day. */
-const IP_DISTINCT_EMAILS_DAY = envNumber("OTP_IP_EMAILS_DAY", 40);
+const ipDistinctEmailsDay = () => envNumber("OTP_IP_EMAILS_DAY", 40);
 
 export type OtpPurpose = "SIGNUP" | "LOGIN" | "RESET";
 
@@ -75,7 +75,7 @@ async function assertNetworkUnderLimit(ip: string): Promise<void> {
     db.otpRequestLog.count({ where: { ip, createdAt: { gte: dayAgo } } }),
   ]);
 
-  if (lastHour >= IP_LIMIT_HOUR) {
+  if (lastHour >= ipLimitHour()) {
     // Tell them roughly when the window frees up rather than just "later".
     const oldest = await db.otpRequestLog.findFirst({
       where: { ip, createdAt: { gte: hourAgo } },
@@ -90,7 +90,7 @@ async function assertNetworkUnderLimit(ip: string): Promise<void> {
     );
   }
 
-  if (lastDay >= IP_LIMIT_DAY) {
+  if (lastDay >= ipLimitDay()) {
     throw new HttpError(
       429,
       "This network has requested too many codes today. Try again tomorrow, or use mobile data.",
@@ -104,7 +104,7 @@ async function assertNetworkUnderLimit(ip: string): Promise<void> {
     distinct: ["email"],
     select: { email: true },
   });
-  if (distinct.length >= IP_DISTINCT_EMAILS_DAY) {
+  if (distinct.length >= ipDistinctEmailsDay()) {
     throw new HttpError(
       429,
       "This network has requested codes for too many different addresses today.",

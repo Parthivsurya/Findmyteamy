@@ -89,6 +89,7 @@ model User {
 
   accounts       Account[]
   skills         UserSkill[]
+  assessments    SkillAssessment[]
   roles          UserRole[]
   achievements   Achievement[]
   participations EventParticipation[]
@@ -170,6 +171,7 @@ model Skill {
   createdAt DateTime @default(now())
 
   users         UserSkill[]
+  assessments   SkillAssessment[]
   requiredBySlots TeamSlot[] @relation("SlotRequiredSkills")
 
   @@index([category])
@@ -181,11 +183,58 @@ model UserSkill {
   skillId String
   level   String @default("INTERMEDIATE") // BEGINNER | INTERMEDIATE | EXPERT
 
+  // Result of the most recent assessment, if the student has taken one. Kept
+  // alongside the self-declared level rather than replacing it, so a profile
+  // can show both what was claimed and what was demonstrated.
+  assessedLevel String?
+  assessedAt    DateTime?
+
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
   skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
 
   @@id([userId, skillId])
   @@index([skillId])
+}
+
+/// One attempt at demonstrating a claimed skill: the question put to the
+/// student, their answer, and the model's two judgements on it.
+model SkillAssessment {
+  id           String @id @default(cuid())
+  userId       String
+  skillId      String
+  claimedLevel String
+
+  question String
+  answer   String
+
+  /// Demonstrated level, which may differ from what was claimed.
+  assessedLevel String?
+  /// How sure the model is about that level, 0-100.
+  confidence    Int?
+  rationale     String?
+
+  /// 0-100 estimate that the answer was machine-written. Deliberately stored
+  /// as a signal for an admin to weigh, not used to auto-reject: LLM-based
+  /// detection is unreliable on short technical answers and on non-native
+  /// English, and a false positive wrongly penalises a real student.
+  aiLikelihood Int?
+  aiVerdict    String? // LIKELY_HUMAN | UNCERTAIN | LIKELY_AI
+  aiSignals    String? // JSON array of what the model noticed
+
+  status String @default("PENDING") // PENDING | ASSESSED | FLAGGED | FAILED
+  /// Set when the run could not complete, so the student sees why.
+  error  String?
+  model  String?
+
+  createdAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@index([userId, skillId])
+  @@index([status])
+  @@index([createdAt])
 }
 
 model Role {

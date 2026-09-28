@@ -306,3 +306,20 @@ export const blockSchema = z.object({
 export const achievementStatusFilter = z.object({
   status: z.enum(ACHIEVEMENT_STATUSES).optional().default("PENDING"),
 });
+
+// ---------------------------------------------------------------------------
+// Skill checks
+// ---------------------------------------------------------------------------
+
+export const assessmentAnswerSchema = z.object({
+  assessmentId: z.string().min(1),
+  answer: z
+    .string()
+    .trim()
+    .min(60, "Write a little more — three or four sentences is plenty")
+    .max(4000, "That answer is too long"),
+});
+
+export const startAssessmentSchema = z.object({
+  skillId: z.string().min(1, "Pick a skill"),
+});

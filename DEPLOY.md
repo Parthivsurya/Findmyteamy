@@ -434,6 +434,32 @@ the day rather than removing the limit.
 Requests are logged in `OtpRequestLog` and pruned by the cleanup job after two
 days, which is longer than the widest window consulted.
 
+## 6c. Skill checks (optional)
+
+Set `OPENROUTER_API_KEY` to switch on skill verification. A student who claims
+a level for a skill can answer one experience-based question; the answer is
+then judged twice, independently — once for whether it reads as
+machine-written, once for the level it actually demonstrates. Without the key
+the feature does not appear anywhere in the UI.
+
+Model defaults to `typesafe/jev-router`, which routes each request to a
+suitable underlying model. Three calls per completed check: one to write the
+question, two to judge. Questions for an open attempt are reused on refresh so
+a student cannot reroll until an easier one appears.
+
+**How the machine-written score is used matters.** LLM-based AI-text detection
+is unreliable, and worst precisely here: short technical answers written by
+non-native English speakers. So it never rejects or downgrades anyone. Past
+`ASSESSMENT_AI_FLAG_THRESHOLD` (default 80) the attempt is held as `FLAGGED`
+for an admin to read on `/admin`, with the question, the answer and what the
+model noticed — and the profile is left untouched until a person decides. The
+judging prompt is also explicit that grammar slips, brevity and non-native
+phrasing are not evidence.
+
+It is also worth being clear-eyed that a determined student can paste the
+question into another tab. This raises the cost of faking a level; it does not
+make it impossible. Verified achievements remain the stronger signal.
+
 ## 7. Known gaps
 
 - **Certificate uploads are not built.** Achievement proof is a URL field, so

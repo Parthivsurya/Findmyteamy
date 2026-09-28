@@ -110,8 +110,33 @@ CREATE TABLE "UserSkill" (
     "userId" TEXT NOT NULL,
     "skillId" TEXT NOT NULL,
     "level" TEXT NOT NULL DEFAULT 'INTERMEDIATE',
+    "assessedLevel" TEXT,
+    "assessedAt" TIMESTAMP(3),
 
     CONSTRAINT "UserSkill_pkey" PRIMARY KEY ("userId","skillId")
+);
+
+-- CreateTable
+CREATE TABLE "SkillAssessment" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "skillId" TEXT NOT NULL,
+    "claimedLevel" TEXT NOT NULL,
+    "question" TEXT NOT NULL,
+    "answer" TEXT NOT NULL,
+    "assessedLevel" TEXT,
+    "confidence" INTEGER,
+    "rationale" TEXT,
+    "aiLikelihood" INTEGER,
+    "aiVerdict" TEXT,
+    "aiSignals" TEXT,
+    "status" TEXT NOT NULL DEFAULT 'PENDING',
+    "error" TEXT,
+    "model" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "completedAt" TIMESTAMP(3),
+
+    CONSTRAINT "SkillAssessment_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -329,6 +354,15 @@ CREATE INDEX "Skill_approved_idx" ON "Skill"("approved");
 CREATE INDEX "UserSkill_skillId_idx" ON "UserSkill"("skillId");
 
 -- CreateIndex
+CREATE INDEX "SkillAssessment_userId_skillId_idx" ON "SkillAssessment"("userId", "skillId");
+
+-- CreateIndex
+CREATE INDEX "SkillAssessment_status_idx" ON "SkillAssessment"("status");
+
+-- CreateIndex
+CREATE INDEX "SkillAssessment_createdAt_idx" ON "SkillAssessment"("createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Role_name_key" ON "Role"("name");
 
 -- CreateIndex
@@ -393,6 +427,12 @@ ALTER TABLE "UserSkill" ADD CONSTRAINT "UserSkill_userId_fkey" FOREIGN KEY ("use
 
 -- AddForeignKey
 ALTER TABLE "UserSkill" ADD CONSTRAINT "UserSkill_skillId_fkey" FOREIGN KEY ("skillId") REFERENCES "Skill"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SkillAssessment" ADD CONSTRAINT "SkillAssessment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "SkillAssessment" ADD CONSTRAINT "SkillAssessment_skillId_fkey" FOREIGN KEY ("skillId") REFERENCES "Skill"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UserRole" ADD CONSTRAINT "UserRole_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -13,6 +13,7 @@ import {
 } from "@/components/admin/review";
 import { ShieldIcon } from "@/components/icons";
 import { SKILL_CATEGORY_LABEL, type SkillCategory } from "@/lib/enums";
+import { listFlaggedAssessments } from "@/lib/services/skill-assessment";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDateRange, relativeTime } from "@/lib/utils";
@@ -30,6 +31,7 @@ export default async function AdminPage() {
     pendingEvents,
     suggestedSkills,
     openReports,
+    flaggedAssessments,
     stats,
   ] = await Promise.all([
     db.achievement.findMany({
@@ -68,6 +70,7 @@ export default async function AdminPage() {
       },
       take: 50,
     }),
+    listFlaggedAssessments(),
     Promise.all([
       db.user.count(),
       db.user.count({ where: { onboarded: true } }),
@@ -262,6 +265,67 @@ export default async function AdminPage() {
                       </p>
                     </div>
                     <ReviewSkill skillId={skill.id} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardBody>
+        </Card>
+
+        {/* --------------------------------- flagged skill checks */}
+        <Card>
+          <CardHead
+            title="Skill checks flagged for review"
+            description="Answers the model thought were probably machine-written. Treat the score as a hint, not a verdict — short answers and non-native English both trip it."
+          />
+          <CardBody>
+            {flaggedAssessments.length === 0 ? (
+              <p className="text-[0.85rem] text-ink-muted">Nothing flagged.</p>
+            ) : (
+              <ul className="space-y-3">
+                {flaggedAssessments.map((a) => (
+                  <li key={a.id} className="rounded border border-line p-3.5">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-[0.87rem]">
+                        <Link
+                          href={`/u/${a.user.username}`}
+                          className="font-semibold hover:text-brand"
+                        >
+                          {a.user.name}
+                        </Link>
+                        <span className="text-ink-muted">
+                          {" "}
+                          · {a.skill.name} · claimed {a.claimedLevel.toLowerCase()}
+                        </span>
+                      </p>
+                      <Badge tone="warn">
+                        {a.aiLikelihood}% likely machine-written
+                      </Badge>
+                    </div>
+
+                    <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-wider text-ink-muted">
+                      Question
+                    </p>
+                    <p className="text-[0.83rem] text-ink-2">{a.question}</p>
+
+                    <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-wider text-ink-muted">
+                      Answer
+                    </p>
+                    <p className="whitespace-pre-line rounded bg-surface-2 px-3 py-2 text-[0.83rem] leading-relaxed text-ink-2">
+                      {a.answer}
+                    </p>
+
+                    {a.aiSignals ? (
+                      <p className="mt-2 text-[0.78rem] text-ink-muted">
+                        Signals: {(JSON.parse(a.aiSignals) as string[]).join("; ")}
+                      </p>
+                    ) : null}
+                    {a.rationale ? (
+                      <p className="mt-1 text-[0.78rem] text-ink-muted">
+                        Would have been ranked {a.assessedLevel?.toLowerCase()} —{" "}
+                        {a.rationale}
+                      </p>
+                    ) : null}
                   </li>
                 ))}
               </ul>
