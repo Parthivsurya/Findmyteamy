@@ -2,7 +2,7 @@ import { HttpError } from "@/lib/api";
 import { db } from "@/lib/db";
 import { envNumber } from "@/lib/env";
 import { SKILL_LEVELS, type SkillLevel } from "@/lib/enums";
-import { chatJson, isOpenRouterConfigured, openRouterModel } from "@/lib/openrouter";
+import { questionFor, questionVariants } from "./skill-questions";
 import {
   askSystemOne,
   confidencePercent,
@@ -19,10 +19,16 @@ import {
  *   2. judge whether the answer looks machine-written
  *   3. rank the demonstrated level as beginner, intermediate or expert
  *
- * Two and three are separate model calls on purpose. Folding them together
- * lets the authorship judgement colour the level judgement — an answer read as
- * "AI-written" drags the level up, and a terse human answer drags it down —
- * and the two need to be weighed differently afterwards.
+ * Step one needs no model. System One answers questions about text but does
+ * not write text, and rather than keep a second provider around only to
+ * phrase a question, the questions are written by hand per skill category in
+ * ./skill-questions.ts. That is also what generation was losing to: the
+ * generated questions had to be argued down from essays, and each cost a
+ * 4-14 second call that could fail outright.
+ *
+ * Steps two and three go out as one request with separate named questions, so
+ * each judgement is made independently — folded together, an answer read as
+ * machine-written drags the level up and a terse human answer drags it down.
  *
  * On the authorship signal: LLM-based AI-text detection is not reliable enough
  * to decide anything on its own. It is worst exactly where this feature lives,
@@ -50,80 +56,25 @@ const minConfidence = () => envNumber("ASSESSMENT_MIN_CONFIDENCE", 60);
  * when…" is harder to answer convincingly from documentation than "what does
  * X do", and it is what actually distinguishes someone who has used a tool.
  */
-/**
- * Whether skill checks are available at all. Either provider is enough: the
- * judgements need TypeSafe or OpenRouter, and the question falls back to a
- * template when nothing can generate one.
- */
+/** Whether skill checks are available at all. */
 export function isSkillCheckEnabled(): boolean {
-  return isTypeSafeConfigured() || isOpenRouterConfigured();
+  return isTypeSafeConfigured();
 }
 
 /**
- * A question that needs no generative model.
- *
- * System One answers questions about text; it does not write text. So when
- * only TypeSafe is configured there is nothing to generate a question with,
- * and this template stands in. It is deliberately the same shape the model is
- * asked to produce — one remembered moment, with an escape hatch.
+ * The question for a claimed skill. No model call: see ./skill-questions.ts
+ * for why, and for the shape every question follows.
  */
-export function templateQuestion(skillName: string): string {
-  return `Tell me about a time something in ${skillName} did not behave the way you expected. What turned out to be going on, and how did you work it out? If that has not happened to you, tell me about the closest thing.`;
-}
-
-export async function generateQuestion(
+export function questionForSkill(
   skillName: string,
-  claimedLevel: SkillLevel,
-): Promise<string> {
-  // No generative model available: fall back rather than refuse the feature.
-  if (!isOpenRouterConfigured()) return templateQuestion(skillName);
-
-  const result = await chatJson<{ question: string }>(
-    [
-      {
-        role: "system",
-        content: [
-          "You set one short question that reveals whether a student has actually used a technology, for a university hackathon-team platform.",
-          "",
-          "The question must ask about their own past experience. Aim it at a specific moment: something that broke, something they had to choose between, something that surprised them.",
-          "",
-          "GOOD examples of the shape to aim for:",
-          '- "Tell me about a time something in React did not re-render when you expected it to. What was actually going on?"',
-          '- "What is the most annoying problem you have hit deploying with Docker, and what did you end up doing about it?"',
-          "",
-          "BAD examples, never write these:",
-          '- "How would you design a large-scale React application, covering architecture, state management, performance, testing and accessibility?" (an essay, not a question; nobody answers this in a paragraph)',
-          '- "What is the virtual DOM?" (recall; documentation answers it)',
-          '- "Explain the difference between props and state." (recall)',
-          "",
-          "Hard rules:",
-          "- One question, at most 40 words.",
-          "- Answerable honestly in three to six sentences.",
-          "- Ask about ONE thing. Never list several topics to cover.",
-          "- Do not ask for code.",
-          "- End with a short escape hatch so an honest student is never stuck, e.g. \"If that has not happened to you, tell me about the closest thing.\" A question this specific otherwise punishes people whose real experience simply went differently.",
-          "- Someone who has genuinely used the technology at the claimed level should find it easy; someone who has only read about it should not.",
-          'Reply as JSON: {"question": "..."}',
-        ].join("\n"),
-      },
-      {
-        role: "user",
-        content: `Technology: ${skillName}\nClaimed level: ${claimedLevel}`,
-      },
-    ],
-    (v) => {
-      const q = (v as { question?: unknown })?.question;
-      return typeof q === "string" && q.trim().length > 15 ? { question: q.trim() } : null;
-    },
-    { temperature: 0.7, maxTokens: 600 },
-  );
-
-  if (!result.ok) throw new HttpError(503, `Could not prepare a question: ${result.error}`);
-  return result.data.question;
+  category: string | null | undefined,
+  variant = 0,
+): string {
+  return questionFor(skillName, category, variant);
 }
 
 // ---------------------------------------------------------------------------
-// Step 2 — authorship signal
+// The two judgements
 // ---------------------------------------------------------------------------
 
 export type AuthorshipJudgement = {
@@ -131,58 +82,6 @@ export type AuthorshipJudgement = {
   verdict: "LIKELY_HUMAN" | "UNCERTAIN" | "LIKELY_AI";
   signals: string[];
 };
-
-export async function detectAiAuthorship(
-  question: string,
-  answer: string,
-): Promise<AuthorshipJudgement> {
-  const result = await chatJson<AuthorshipJudgement>(
-    [
-      {
-        role: "system",
-        content: [
-          "You estimate whether a short technical answer was written by a language model or by a person.",
-          "Be calibrated and conservative. Most answers are human.",
-          "Do NOT treat any of these as evidence of machine writing:",
-          "- non-native English, grammar slips, spelling mistakes, or unusual word order",
-          "- brevity, bullet points, or a plain factual register",
-          "- correct technical content, or confident phrasing",
-          "Signals that do suggest a language model:",
-          "- textbook completeness with no specifics of the writer's own situation",
-          "- hedging boilerplate and even-handed 'it depends on your use case' framing",
-          "- answering a different, more general question than the one asked",
-          "- polished rhythm with no concrete numbers, tool versions, error messages or anecdotes",
-          "Return likelihood as an integer 0-100 that a language model wrote it.",
-          "Use LIKELY_HUMAN below 35, UNCERTAIN from 35 to 74, LIKELY_AI at 75 or above.",
-          'Reply as JSON: {"likelihood": 0-100, "verdict": "LIKELY_HUMAN|UNCERTAIN|LIKELY_AI", "signals": ["..."]}',
-        ].join("\n"),
-      },
-      { role: "user", content: `Question asked:\n${question}\n\nAnswer given:\n${answer}` },
-    ],
-    (v) => {
-      const o = v as { likelihood?: unknown; verdict?: unknown; signals?: unknown };
-      const n = typeof o.likelihood === "number" ? Math.round(o.likelihood) : NaN;
-      const verdicts = ["LIKELY_HUMAN", "UNCERTAIN", "LIKELY_AI"];
-      if (!Number.isFinite(n) || n < 0 || n > 100) return null;
-      if (typeof o.verdict !== "string" || !verdicts.includes(o.verdict)) return null;
-      return {
-        likelihood: n,
-        verdict: o.verdict as AuthorshipJudgement["verdict"],
-        signals: Array.isArray(o.signals)
-          ? o.signals.filter((x): x is string => typeof x === "string").slice(0, 5)
-          : [],
-      };
-    },
-    { temperature: 0, maxTokens: 700 },
-  );
-
-  if (!result.ok) throw new HttpError(503, `Could not check the answer: ${result.error}`);
-  return result.data;
-}
-
-// ---------------------------------------------------------------------------
-// Step 3 — the ranking
-// ---------------------------------------------------------------------------
 
 export type LevelJudgement = {
   level: SkillLevel;
@@ -198,65 +97,6 @@ export type LevelJudgement = {
    */
   addressedQuestion: boolean;
 };
-
-export async function rankSkillLevel({
-  skillName,
-  claimedLevel,
-  question,
-  answer,
-}: {
-  skillName: string;
-  claimedLevel: SkillLevel;
-  question: string;
-  answer: string;
-}): Promise<LevelJudgement> {
-  const result = await chatJson<LevelJudgement>(
-    [
-      {
-        role: "system",
-        content: [
-          "You rank how much hands-on experience a short answer demonstrates, for a university hackathon-team platform.",
-          "Rank only what the answer shows. Ignore what the student claimed.",
-          "BEGINNER: has followed tutorials; describes the happy path; no sense of failure modes or trade-offs.",
-          "INTERMEDIATE: has built something real; names concrete problems hit and how they were handled.",
-          "EXPERT: reasons about trade-offs, edge cases, performance or failure modes unprompted, with specifics.",
-          "Judge substance, not fluency. Short, plain or non-native English answers can be EXPERT.",
-          "Set addressedQuestion to false only if the answer is about something genuinely unrelated to the question. Closely related experience with the same technology counts as addressing it — the question offers an escape hatch for exactly that, and a student whose real experience went slightly differently is not dodging.",
-          "When it is false, still rank the depth the answer does show, and lower your confidence — an answer about the wrong problem is inconclusive, not unskilled. Never mark someone down to BEGINNER merely for drifting off the question.",
-          "Confidence is an integer 0-100 in your own ranking; be honest when an answer is too short to tell.",
-          "The rationale is one sentence, addressed to the student, plain and specific.",
-          'Reply as JSON: {"level": "BEGINNER|INTERMEDIATE|EXPERT", "confidence": 0-100, "addressedQuestion": true|false, "rationale": "..."}',
-        ].join("\n"),
-      },
-      {
-        role: "user",
-        content: `Technology: ${skillName}\nThe student claimed: ${claimedLevel}\n\nQuestion asked:\n${question}\n\nAnswer given:\n${answer}`,
-      },
-    ],
-    (v) => {
-      const o = v as {
-        level?: unknown;
-        confidence?: unknown;
-        rationale?: unknown;
-        addressedQuestion?: unknown;
-      };
-      if (typeof o.level !== "string" || !(SKILL_LEVELS as readonly string[]).includes(o.level)) return null;
-      const c = typeof o.confidence === "number" ? Math.round(o.confidence) : NaN;
-      if (!Number.isFinite(c) || c < 0 || c > 100) return null;
-      return {
-        level: o.level as SkillLevel,
-        confidence: c,
-        rationale: typeof o.rationale === "string" ? o.rationale.trim().slice(0, 400) : "",
-        // Absent means we cannot tell, so assume it did rather than punish.
-        addressedQuestion: o.addressedQuestion !== false,
-      };
-    },
-    { temperature: 0, maxTokens: 700 },
-  );
-
-  if (!result.ok) throw new HttpError(503, `Could not rank the answer: ${result.error}`);
-  return result.data;
-}
 
 // ---------------------------------------------------------------------------
 // Steps 2 and 3 together, on System One
@@ -409,13 +249,13 @@ export async function startAssessment({
   userId: string;
   skillId: string;
 }) {
-  if (!isOpenRouterConfigured() && !isTypeSafeConfigured()) {
+  if (!isSkillCheckEnabled()) {
     throw new HttpError(503, "Skill checks are not available right now");
   }
 
   const claim = await db.userSkill.findUnique({
     where: { userId_skillId: { userId, skillId } },
-    include: { skill: { select: { name: true } } },
+    include: { skill: { select: { name: true, category: true } } },
   });
   if (!claim) throw new HttpError(404, "Add that skill to your profile first");
 
@@ -435,7 +275,14 @@ export async function startAssessment({
   });
   if (open) return open;
 
-  const question = await generateQuestion(claim.skill.name, claim.level as SkillLevel);
+  // Rotate the phrasing by how many checks this student has taken for this
+  // skill, so a retake is not the identical question.
+  const taken = await db.skillAssessment.count({ where: { userId, skillId } });
+  const question = questionForSkill(
+    claim.skill.name,
+    claim.skill.category,
+    taken % Math.max(1, questionVariants(claim.skill.category)),
+  );
 
   return db.skillAssessment.create({
     data: {
@@ -444,7 +291,7 @@ export async function startAssessment({
       claimedLevel: claim.level,
       question,
       answer: "",
-      model: isTypeSafeConfigured() ? typeSafeModel() : openRouterModel(),
+      model: typeSafeModel(),
     },
   });
 }
@@ -477,35 +324,14 @@ export async function submitAssessment({
   }
 
   try {
-    // System One answers both judgements in one calibrated request. The chat
-    // path remains for deployments with only an OpenRouter key; there the two
-    // judgements go out in parallel, since neither needs the other's output.
-    let authorship: AuthorshipJudgement;
-    let ranking: LevelJudgement;
-    let judgedBy = attempt.model;
-    let usage: { inputTokens: number; outputTokens: number } | null = null;
-
-    if (isTypeSafeConfigured()) {
-      const judged = await judgeWithSystemOne({
-        skillName: attempt.skill.name,
-        question: attempt.question,
-        answer: trimmed,
-      });
-      authorship = judged.authorship;
-      ranking = judged.ranking;
-      judgedBy = judged.model;
-      usage = judged.usage;
-    } else {
-      [authorship, ranking] = await Promise.all([
-        detectAiAuthorship(attempt.question, trimmed),
-        rankSkillLevel({
-          skillName: attempt.skill.name,
-          claimedLevel: attempt.claimedLevel as SkillLevel,
-          question: attempt.question,
-          answer: trimmed,
-        }),
-      ]);
-    }
+    const judged = await judgeWithSystemOne({
+      skillName: attempt.skill.name,
+      question: attempt.question,
+      answer: trimmed,
+    });
+    const { authorship, ranking } = judged;
+    const judgedBy = judged.model;
+    const usage = judged.usage;
 
     // Past the threshold the attempt goes to an admin rather than being acted
     // on automatically, and the level is still recorded either way.

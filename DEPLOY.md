@@ -442,35 +442,25 @@ then judged twice, independently — once for whether it reads as
 machine-written, once for the level it actually demonstrates. Without the key
 the feature does not appear anywhere in the UI.
 
-Model defaults to `typesafe/jev-router`, which routes each request to a
-suitable underlying model. Three calls per completed check: one to write the
-question, two to judge. Questions for an open attempt are reused on refresh so
-a student cannot reroll until an easier one appears.
+Judging runs on TypeSafe System One, one request per completed check.
+Questions for an open attempt are reused on refresh, so a student cannot
+reroll until an easier one appears.
 
-**The router is not reliable on its own.** Measured live, four calls each:
+**The questions need no model.** System One answers questions about text but
+does not write text, and rather than keep a second provider for phrasing
+alone, they are written by hand per skill category in
+`src/lib/services/skill-questions.ts`. That is also simply better than
+generating them was: generated questions had to be argued down from essays
+like "How would you design a large-scale React application, covering
+architecture, state management, performance, testing and accessibility?", each
+cost a 4-14 second call that could fail, and the provider they came from timed
+out on roughly half of all requests. A whole check now takes about 600ms
+rather than 13-22 seconds.
 
-| Model | Succeeded |
-| --- | --- |
-| `typesafe/jev-router` | 2/4 — `504 Decision model timed out` |
-| `openai/gpt-6-luna` | 4/4 |
-| `deepseek/deepseek-v4.1-flash` | 4/4 |
+Phrasings rotate by how many checks a student has already taken for that
+skill, so a retake is not the identical question.
 
-The failure is in the router's decision step, which runs before a model is
-chosen, so OpenRouter's own `models` fallback cannot rescue it. The client
-therefore retries the primary twice and then asks a concrete model from
-`OPENROUTER_FALLBACK_MODELS` instead, which took a 6-call sample from 3/6 to
-6/6. Expect 4–14 seconds per call. The two judgements are issued in parallel, since
-neither needs the other's output, which took the judging phase from about 14
-seconds to 8; a whole check lands around 13–22 seconds. Measured cost is
-roughly $0.002 per completed check, so the spend is not the constraint — the
-wait is.
 
-Two other things worth knowing, both found by running it rather than reading
-it. Reasoning is switched off for these calls: reasoning tokens come out of
-the same `max_tokens` budget and arrive in the content field, so leaving it on
-returned a truncated monologue and no JSON at all. And a reply that stops
-because it ran out of budget is now treated as a retryable failure rather than
-parsed as half an answer.
 
 A judgement is applied to the profile only when it is unflagged, confident
 (`ASSESSMENT_MIN_CONFIDENCE`, default 60) and actually answered the question
