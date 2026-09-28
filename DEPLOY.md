@@ -485,6 +485,31 @@ punish an honest student whose experience simply went differently. Without it,
 a genuine Docker answer about build-cache layering was marked as not
 addressing a question about runtime differences, and went unapplied.
 
+### Measured behaviour, judging on System One
+
+Five answers with known provenance, through the real code path:
+
+| Answer | Machine-written | Level |
+| --- | --- | --- |
+| Genuine expert, specific debugging story | 36% | EXPERT |
+| Genuine beginner, tutorial-level | 22% | BEGINNER |
+| Genuine, terse, non-native English | 28% | INTERMEDIATE |
+| Machine-written, hedging | 96% → flagged | BEGINNER |
+| Machine-written, short | 93% → flagged | INTERMEDIATE |
+
+A 57-point gap, with the flag threshold at 80 between the two groups.
+Judgement takes 320–550ms, against 8.3 seconds on the chat path.
+
+Getting there needed one non-obvious correction. The first version of the
+noul criteria described a genuine answer as one that "recalls a specific
+incident, mentions tools and versions, includes dead ends". A real beginner
+has none of those, so the question was quietly measuring skill rather than
+authorship, and an honest tutorial-level answer scored 59% — closer to
+machine-written than the expert answer was. The criteria now also treat
+admissions of inexperience as human evidence, since a language model does not
+volunteer that it followed a YouTube tutorial, and state plainly that lacking
+depth is not evidence of a machine. The same answer now scores 22%.
+
 **How the machine-written score is used matters.** LLM-based AI-text detection
 is unreliable, and worst precisely here: short technical answers written by
 non-native English speakers. So it never rejects or downgrades anyone. Past

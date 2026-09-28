@@ -24,18 +24,33 @@ export function typeSafeModel(): string {
   return envText("TYPESAFE_MODEL") ?? DEFAULT_TYPESAFE_MODEL;
 }
 
-/** A yes/no question. The answer is the probability that the answer is yes. */
-export type NoulQuestion = { type: "noul"; instructions: string; criteria?: unknown };
+/**
+ * Anywhere the API accepts structure. System One models are trained to read
+ * JSON, and labelled keys are clearer than a serialised prose template.
+ */
+export type Entry = string | number | boolean | null | Entry[] | { [k: string]: Entry };
+
+/**
+ * A yes/no question. The answer is the probability that the answer is yes.
+ *
+ * `criteria.true` and `criteria.false` describe each side explicitly, which
+ * calibrates far better than describing both inside one prose instruction.
+ */
+export type NoulQuestion = {
+  type: "noul";
+  instructions: Entry;
+  criteria?: { true?: Entry; false?: Entry };
+};
 
 /** One option from a fixed set, with a probability for each. */
 export type ChoiceQuestion = {
   type: "choice";
-  instructions: string;
-  criteria: Record<string, string>;
+  instructions: Entry;
+  criteria: Record<string, Entry>;
 };
 
 /** A rating against ordered, described levels. */
-export type ScoreQuestion = { type: "score"; instructions: string; criteria: string[] };
+export type ScoreQuestion = { type: "score"; instructions: Entry; criteria: Entry[] };
 
 export type Question = NoulQuestion | ChoiceQuestion | ScoreQuestion;
 
@@ -63,7 +78,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * sent, so those return immediately.
  */
 export async function askSystemOne(
-  state: string,
+  state: Entry,
   questions: Record<string, Question>,
   options: { timeoutMs?: number; retries?: number } = {},
 ): Promise<SystemOneResult> {
@@ -85,7 +100,7 @@ export async function askSystemOne(
 }
 
 async function askOnce(
-  state: string,
+  state: Entry,
   questions: Record<string, Question>,
   key: string,
   timeoutMs?: number,

@@ -288,29 +288,59 @@ async function judgeWithSystemOne({
   question: string;
   answer: string;
 }): Promise<{ authorship: AuthorshipJudgement; ranking: LevelJudgement; model: string }> {
+  // Structured, because System One reads JSON and labelled keys beat a prose
+  // template. criteria.true / criteria.false describe each side of a noul
+  // explicitly, which separates genuine from machine-written answers far
+  // better than packing both descriptions into one instruction string.
   const questions: Record<string, Question> = {
     machine_written: {
       type: "noul",
-      instructions: [
-        "The ANSWER was written by a language model rather than by the student from their own experience.",
-        "Not evidence of machine writing: non-native English, grammar or spelling mistakes, brevity, bullet points, a plain register, or simply being correct.",
-        "Evidence of machine writing: textbook completeness with no specifics of the writer's own situation; even-handed 'it depends on your use case' framing; answering a more general question than the one asked; polished rhythm with no concrete numbers, versions, tools or error messages.",
-      ].join(" "),
+      instructions: "`student_answer` was produced by a language model rather than written by the student from their own memory.",
+      criteria: {
+        true: [
+          "Textbook-complete coverage with nothing specific to this writer's own situation.",
+          "Even-handed 'it depends on your use case' framing, or advice addressed to a general reader.",
+          "Answers a broader question than the one asked.",
+          "Polished, evenly-paced prose with no concrete numbers, versions, tool names or error messages.",
+        ],
+        false: [
+          "Recalls a specific incident: what broke, what was tried, what finally worked.",
+          "Mentions particular tools, versions, numbers, error text or time spent.",
+          "Reads like one person's memory, including dead ends and irritation.",
+          "Admits the limits of their own experience — that they followed a tutorial, that it was a course project, that they did not hit any problems, that they are unsure. A language model does not volunteer this; a beginner answering honestly does.",
+          "Speaks only about themselves and their own work, rather than advising a general reader.",
+          "IGNORE ENTIRELY, as none of these indicate a language model: non-native English, grammar or spelling mistakes, brevity, a plain register, being correct, or lacking depth. A thin answer from a genuine beginner is still written by a person — judge who wrote it, never how skilled they are.",
+        ],
+      },
     },
     addressed_question: {
       type: "noul",
-      instructions:
-        "The ANSWER engages with what the QUESTION asked, or with closely related first-hand experience of the same technology. Answering about a different problem with the same technology still counts.",
+      instructions: "`student_answer` engages with `question_asked`.",
+      criteria: {
+        true: [
+          "Answers what was asked.",
+          "Describes closely related first-hand experience with the same technology — a different problem with that technology still counts, because the question invites the closest thing.",
+        ],
+        false: [
+          "Is about a different technology, or ignores the question entirely.",
+        ],
+      },
     },
     level: {
       type: "choice",
-      instructions: `How much hands-on experience with ${skillName} the ANSWER demonstrates. Judge substance, not fluency: a short, plain or non-native-English answer can still be expert. Ignore what the student claimed.`,
+      instructions: {
+        question: "How much hands-on experience with `technology` does `student_answer` demonstrate?",
+        judge: "Substance, not fluency. A short, plain or non-native-English answer can still be expert.",
+        ignore: "Whatever level the student claimed.",
+      },
       criteria: LEVEL_CRITERIA,
     },
   };
 
-  const state = `QUESTION ASKED:\n${question}\n\nANSWER GIVEN:\n${answer}`;
-  const result = await askSystemOne(state, questions);
+  const result = await askSystemOne(
+    { technology: skillName, question_asked: question, student_answer: answer },
+    questions,
+  );
   if (!result.ok) throw new HttpError(503, `Could not judge the answer: ${result.error}`);
 
   const machine = noulPercent(result.answers.machine_written);
@@ -339,11 +369,12 @@ async function judgeWithSystemOne({
         .join(", ")
     : "";
 
+  // The off-question note is added once, by the caller, so it is not repeated
+  // here.
   const rationale = [
     `Your answer reads as ${level.toLowerCase()} level`,
     spread ? ` (${spread})` : "",
     `, judged with ${confidence}% confidence.`,
-    addressedQuestion ? "" : " It answered a different question than the one asked.",
   ].join("");
 
   return {
