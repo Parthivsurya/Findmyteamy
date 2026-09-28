@@ -123,7 +123,7 @@ export default async function RequestsPage({
                       </p>
 
                       {request.message ? (
-                        <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-[0.82rem] leading-relaxed text-ink-2">
+                        <p className="mt-2 rounded-box bg-surface-2 px-3 py-2 text-[0.82rem] leading-relaxed text-ink-2">
                           “{request.message}”
                         </p>
                       ) : null}
@@ -205,7 +205,7 @@ export default async function RequestsPage({
                     ) : null}
 
                     {request.message ? (
-                      <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-[0.82rem] leading-relaxed text-ink-2">
+                      <p className="mt-2 rounded-box bg-surface-2 px-3 py-2 text-[0.82rem] leading-relaxed text-ink-2">
                         “{request.message}”
                       </p>
                     ) : null}

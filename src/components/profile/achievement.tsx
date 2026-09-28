@@ -58,8 +58,8 @@ export function AchievementCard({
           aria-hidden
           className={
             isWin
-              ? "flex size-9 shrink-0 items-center justify-center rounded-lg bg-lime text-[#4a5010]"
-              : "flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand"
+              ? "flex size-9 shrink-0 items-center justify-center rounded-box bg-brand-soft text-brand"
+              : "flex size-9 shrink-0 items-center justify-center rounded-box bg-surface-2 text-ink-muted"
           }
         >
           <TrophyIcon className="size-4.5" />
@@ -98,7 +98,7 @@ export function AchievementCard({
           ) : null}
 
           {achievement.status === "REJECTED" && achievement.reviewNote ? (
-            <p className="mt-2 rounded-lg bg-danger-soft px-2.5 py-1.5 text-[0.78rem] text-danger">
+            <p className="mt-2 rounded-box bg-danger-soft px-2.5 py-1.5 text-[0.78rem] text-danger">
               Reviewer note: {achievement.reviewNote}
             </p>
           ) : null}

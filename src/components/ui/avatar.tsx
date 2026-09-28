@@ -8,7 +8,13 @@ const sizes = {
   xl: "size-20 text-[1.3rem]",
 } as const;
 
-/** Initials on a plain background when there is no photo. */
+/**
+ * Initials on a plain background when there is no photo.
+ *
+ * The only round thing in the interface. Every other rectangle is `rounded-box`
+ * (3px); a portrait is round because faces are, and that is the documented
+ * exception to the one-radius rule rather than a drift in it.
+ */
 export function Avatar({
   name,
   image,

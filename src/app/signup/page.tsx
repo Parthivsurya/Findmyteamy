@@ -20,14 +20,14 @@ export default async function SignupPage() {
       title="Create your account"
       subtitle={
         <>
-          Only Amrita student addresses can register — that is what keeps this
+          Only Amrita student addresses can register. That is what keeps this
           to your own university.
         </>
       }
       footer={
         <p className="text-[0.85rem] text-ink-muted">
           Already registered?{" "}
-          <Link href="/login" className="font-semibold text-brand hover:underline">
+          <Link href="/login" className="font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand">
             Sign in
           </Link>
         </p>

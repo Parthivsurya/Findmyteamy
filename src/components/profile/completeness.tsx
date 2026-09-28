@@ -26,7 +26,7 @@ export function CompletenessCard({
           score >= 80
             ? "Your profile is in great shape."
             : score >= 60
-              ? "Good — a little more detail will lift you up the results."
+              ? "Good. A little more detail will lift you up the results."
               : "Profiles under 60% are ranked lower in search."
         }
         action={
@@ -47,7 +47,7 @@ export function CompletenessCard({
               <li key={item.label}>
                 <Link
                   href={item.href}
-                  className="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-[0.83rem] text-ink-2 transition-colors hover:bg-surface-2 hover:text-brand"
+                  className="flex items-center justify-between gap-2 rounded-box px-2 py-1.5 text-[0.83rem] text-ink-2 transition-colors hover:bg-surface-2 hover:text-brand"
                 >
                   <span className="flex items-center gap-2">
                     <PlusIcon className="size-3.5 text-ink-muted" />

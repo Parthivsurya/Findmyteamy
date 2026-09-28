@@ -33,7 +33,7 @@ export async function GET() {
         process.env.ALLOW_DEMO_LOGIN === "true"
           ? process.env.NODE_ENV === "production"
             ? "requested but ignored (never listed in production builds)"
-            : "ENABLED — development only"
+            : "ENABLED, development only"
           : "disabled",
       cron: process.env.CRON_SECRET ? "configured" : "disabled",
       // Neither provider exposes anything about its key, so reporting which

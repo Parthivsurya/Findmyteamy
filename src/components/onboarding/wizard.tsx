@@ -73,7 +73,7 @@ export function OnboardingWizard({
                 type="button"
                 onClick={() => setStep(index)}
                 className={cn(
-                  "w-full rounded-xl border px-3 py-2 text-left transition-colors",
+                  "w-full rounded-box border px-3 py-2 text-left transition-colors",
                   active
                     ? "border-brand bg-brand-soft"
                     : done
@@ -89,7 +89,7 @@ export function OnboardingWizard({
                         ? "bg-brand text-white"
                         : done
                           ? "bg-ok text-white"
-                          : "bg-surface-3 text-ink-muted",
+                          : "bg-surface-3 text-ink-2",
                     )}
                   >
                     {done ? <CheckIcon className="size-3" /> : index + 1}
@@ -118,7 +118,7 @@ export function OnboardingWizard({
         {state?.error ? (
           <p
             role="alert"
-            className="mb-4 rounded-xl border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
+            className="mb-4 rounded-box border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
           >
             {state.error}
           </p>
@@ -236,7 +236,7 @@ export function OnboardingWizard({
                   aria-pressed={active}
                   disabled={blocked}
                   className={cn(
-                    "rounded-full border px-3.5 py-1.5 text-[0.83rem] font-medium transition-colors",
+                    "rounded-box border px-3 py-1 text-[0.83rem] font-medium transition-colors duration-120",
                     active
                       ? "border-brand bg-brand text-white"
                       : blocked
@@ -302,7 +302,7 @@ export function OnboardingWizard({
             />
           </div>
 
-          <p className="rounded-xl bg-surface-2 px-3.5 py-2.5 text-[0.8rem] text-ink-muted">
+          <p className="rounded-box bg-surface-2 px-3.5 py-2.5 text-[0.8rem] text-ink-muted">
             Links are optional but each one adds to your profile completeness,
             and completeness affects where you appear in search results.
           </p>
@@ -321,7 +321,7 @@ export function OnboardingWizard({
                 onClick={() => setAvailability(option)}
                 aria-pressed={active}
                 className={cn(
-                  "flex w-full items-start gap-3 rounded-xl border p-3.5 text-left transition-colors",
+                  "flex w-full items-start gap-3 rounded-box border p-3.5 text-left transition-colors",
                   active
                     ? "border-brand bg-brand-soft"
                     : "border-line bg-surface hover:border-line-strong",
@@ -352,10 +352,9 @@ export function OnboardingWizard({
             );
           })}
 
-          <p className="flex items-start gap-2 rounded-xl bg-lime-soft px-3.5 py-2.5 text-[0.8rem] text-ink-2">
-            <SparklesIcon className="mt-0.5 size-3.5 shrink-0 text-lime-ink" />
+          <p className="rounded-box border border-line bg-surface-2 px-3 py-2 text-[0.8rem] text-ink-2">
             You can add achievements and mark which events you are attending
-            right after this — both make a real difference to who finds you.
+            right after this. Both make a real difference to who finds you.
           </p>
         </div>
 

@@ -63,7 +63,7 @@ export default async function SkillCheckPage({
       <Card>
         <CardHead
           title="Question"
-          description="Answer in your own words — specifics beat length."
+          description="Answer in your own words. Specifics beat length."
         />
         <CardBody>
           <SkillCheckForm

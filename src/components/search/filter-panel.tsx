@@ -41,7 +41,7 @@ export function FilterPanel({
     <form
       action="/search"
       method="get"
-      className="space-y-4 rounded-card border border-line bg-surface p-4"
+      className="space-y-4 rounded-box border border-line bg-surface p-4"
     >
       <div className="flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-[0.9rem] font-semibold">
@@ -70,8 +70,8 @@ export function FilterPanel({
       </div>
 
       {/* The two filters that matter most on a single campus. */}
-      <fieldset className="space-y-2 rounded-xl border border-line bg-surface-2 p-3">
-        <legend className="px-1 text-[0.72rem] font-bold uppercase tracking-wider text-ink-muted">
+      <fieldset className="space-y-2 rounded-box border border-line bg-surface-2 p-3">
+        <legend className="px-1 text-[0.76rem] font-medium text-ink-muted">
           My batch
         </legend>
 
@@ -120,7 +120,7 @@ export function FilterPanel({
           {branches.map((code) => (
             <option key={code} value={code}>
               {code.toUpperCase()}
-              {BRANCHES[code] ? ` — ${BRANCHES[code]}` : ""}
+              {BRANCHES[code] ? `, ${BRANCHES[code]}` : ""}
             </option>
           ))}
         </select>
@@ -156,7 +156,7 @@ export function FilterPanel({
 
       <fieldset>
         <legend className="field-label">Skill match</legend>
-        <div className="flex overflow-hidden rounded-lg border border-line-strong">
+        <div className="flex overflow-hidden rounded-box border border-line-strong">
           {(["any", "all"] as const).map((mode) => (
             <label
               key={mode}

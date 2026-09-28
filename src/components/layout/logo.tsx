@@ -13,10 +13,10 @@ export function Logo({
     <Link
       href="/"
       className={cn("inline-flex items-center gap-2", className)}
-      aria-label="FindMyTeammate — home"
+      aria-label="FindMyTeammate home"
     >
       {showText ? (
-        <span className="text-[0.95rem] font-semibold">
+        <span className="text-[0.95rem] font-medium tracking-[-0.02em]">
           FindMy<span className="text-brand">Teammate</span>
         </span>
       ) : null}

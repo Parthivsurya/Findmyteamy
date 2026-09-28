@@ -49,7 +49,7 @@ export function TeamBuilderForm({
     <form
       action="/team-builder"
       method="get"
-      className="rounded-card border border-line bg-surface p-4"
+      className="rounded-box border border-line bg-surface p-4"
     >
       <input type="hidden" name="slots" value={encoded} />
       {teamId ? <input type="hidden" name="team" value={teamId} /> : null}
@@ -82,10 +82,10 @@ export function TeamBuilderForm({
         {slots.map((slot, index) => (
           <div
             key={index}
-            className="rounded-xl border border-line bg-surface-2 p-3"
+            className="rounded-box border border-line bg-surface-2 p-3"
           >
             <div className="flex items-center gap-2">
-              <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-brand text-[0.7rem] font-bold text-white">
+              <span className="flex size-6 shrink-0 items-center justify-center rounded-box bg-brand text-[0.7rem] font-bold text-white">
                 {index + 1}
               </span>
 
@@ -111,7 +111,7 @@ export function TeamBuilderForm({
                   type="button"
                   onClick={() => setSlots((prev) => prev.filter((_, i) => i !== index))}
                   aria-label={`Remove role ${index + 1}`}
-                  className="rounded-lg p-2 text-ink-muted hover:bg-danger-soft hover:text-danger"
+                  className="rounded-box p-2 text-ink-muted hover:bg-danger-soft hover:text-danger"
                 >
                   <XIcon className="size-4" />
                 </button>
@@ -136,7 +136,7 @@ export function TeamBuilderForm({
         <button
           type="button"
           onClick={() => setSlots((prev) => [...prev, { roleId: "", skillIds: [] }])}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-dashed border-line-strong px-3 py-2 text-[0.83rem] font-medium text-ink-2 hover:border-brand hover:text-brand"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-box border border-dashed border-line-strong px-3 py-2 text-[0.83rem] font-medium text-ink-2 hover:border-brand hover:text-brand"
         >
           <PlusIcon className="size-3.5" />
           Add another role

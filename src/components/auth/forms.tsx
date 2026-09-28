@@ -21,7 +21,7 @@ function Alert({ state }: { state: FormResult | undefined }) {
   return (
     <p
       role="alert"
-      className="rounded-xl border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
+      className="rounded-box border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
     >
       {state.error}
     </p>
@@ -31,7 +31,7 @@ function Alert({ state }: { state: FormResult | undefined }) {
 function Notice({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <p className="flex items-start gap-2 rounded-xl border border-ok/30 bg-ok-soft px-3.5 py-2.5 text-[0.83rem] text-ink-2">
+    <p className="flex items-start gap-2 rounded-box border border-ok/30 bg-ok-soft px-3.5 py-2.5 text-[0.83rem] text-ink-2">
       <CheckIcon className="mt-0.5 size-3.5 shrink-0 text-ok" />
       {message}
     </p>
@@ -144,7 +144,7 @@ export function SignupForm() {
         ) : (
           <p className="field-hint">
             Your campus, school, branch and joining year are read from this
-            address — nothing to fill in by hand.
+            address, nothing to fill in by hand.
           </p>
         )}
       </div>
@@ -219,7 +219,7 @@ export function VerifyForm({
   return (
     <div className="space-y-4">
       {devCode ? (
-        <p className="rounded-xl border border-warn/30 bg-warn-soft px-3.5 py-2.5 text-[0.83rem] text-warn">
+        <p className="rounded-box border border-warn/30 bg-warn-soft px-3.5 py-2.5 text-[0.83rem] text-warn">
           SMTP is not configured on this server, so the code is shown here for
           development: <strong className="font-mono text-base">{devCode}</strong>
         </p>
@@ -319,7 +319,7 @@ export function ResetPasswordForm({
       <Alert state={state} />
 
       {devCode ? (
-        <p className="rounded-xl border border-warn/30 bg-warn-soft px-3.5 py-2.5 text-[0.83rem] text-warn">
+        <p className="rounded-box border border-warn/30 bg-warn-soft px-3.5 py-2.5 text-[0.83rem] text-warn">
           SMTP is not configured, so the code is shown for development:{" "}
           <strong className="font-mono text-base">{devCode}</strong>
         </p>

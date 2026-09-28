@@ -20,7 +20,7 @@ export function ReportForm({
       {state?.error ? (
         <p
           role="alert"
-          className="rounded-xl border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
+          className="rounded-box border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
         >
           {state.error}
         </p>

@@ -24,7 +24,7 @@ export function SkillCheckForm({
   if (state?.ok) {
     return (
       <div className="space-y-4">
-        <div className="rounded border border-ok/40 bg-ok-soft px-4 py-3 text-[0.88rem] text-ink-2">
+        <div className="rounded-box border border-ok/40 bg-ok-soft px-4 py-3 text-[0.88rem] text-ink-2">
           {state.message}
         </div>
         <Link href="/settings/skills" className={btn("outline", "md")}>
@@ -41,14 +41,14 @@ export function SkillCheckForm({
       {state?.error ? (
         <p
           role="alert"
-          className="rounded border border-danger/40 bg-danger-soft px-3.5 py-2.5 text-[0.85rem] text-danger"
+          className="rounded-box border border-danger/40 bg-danger-soft px-3.5 py-2.5 text-[0.85rem] text-danger"
         >
           {state.error}
         </p>
       ) : null}
 
-      <div className="rounded border border-line bg-surface-2 p-4">
-        <p className="mb-1 text-[0.72rem] font-bold uppercase tracking-wider text-ink-muted">
+      <div className="rounded-box border border-line bg-surface-2 p-4">
+        <p className="mb-1 text-[0.76rem] font-medium text-ink-muted">
           {skillName} · you claimed {SKILL_LEVEL_LABEL[claimedLevel as SkillLevel] ?? claimedLevel}
         </p>
         <p className="text-[0.95rem] leading-relaxed">{question}</p>
@@ -66,7 +66,7 @@ export function SkillCheckForm({
           minLength={60}
           maxLength={4000}
           className="field resize-y"
-          placeholder="Answer from your own experience. Three or four sentences is plenty — specifics matter more than length."
+          placeholder="Answer from your own experience. Three or four sentences is plenty, and specifics matter more than length."
         />
         {state?.fieldErrors?.answer ? (
           <p className="field-error">{state.fieldErrors.answer}</p>
@@ -127,7 +127,7 @@ export function AssessedBadge({
 
   const order = ["BEGINNER", "INTERMEDIATE", "EXPERT"];
   const diff = order.indexOf(assessedLevel) - order.indexOf(claimedLevel);
-  const tone = diff === 0 ? "ok" : diff > 0 ? "sky" : "warn";
+  const tone = diff === 0 ? "ok" : diff > 0 ? "brand" : "warn";
   const label = SKILL_LEVEL_LABEL[assessedLevel as SkillLevel] ?? assessedLevel;
 
   return (

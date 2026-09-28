@@ -7,7 +7,15 @@ import { getSkills } from "@/lib/services/catalog";
 
 export const revalidate = 60;
 
-/** The home page is one thing: search for a teammate by skill. */
+/**
+ * The home page is one thing: search for a teammate by skill.
+ *
+ * Left-aligned rather than centred, and the search form is the only thing on
+ * it. There is no feature grid, no screenshot and no stock photography,
+ * because the form is the product: a student who lands here wants to type a
+ * skill, not read about the site. Anything else on this page would push the
+ * one control that matters further down the screen.
+ */
 export default async function LandingPage() {
   const [user, skills] = await Promise.all([getCurrentUser(), getSkills()]);
 
@@ -19,14 +27,18 @@ export default async function LandingPage() {
       })
     : null;
 
+  const summary = academicSummary(me ?? {});
+
   return (
-    <div className="mx-auto w-full max-w-xl px-4 py-12 sm:px-6">
-      <h1 className="text-xl font-semibold">Search for a teammate by skills</h1>
-      <p className="mt-1.5 text-[0.88rem] text-ink-muted">
+    <div className="mx-auto w-full max-w-xl px-4 pb-20 pt-14 sm:px-6 sm:pt-20">
+      <h1 className="text-[1.6rem] leading-[1.15] sm:text-[1.9rem]">
+        Search for a teammate by skills
+      </h1>
+      <p className="mt-2 text-[0.92rem] text-ink-muted">
         Find people from your own year or branch for your next hackathon.
       </p>
 
-      <div className="mt-5">
+      <div className="mt-7">
         <HomeSearch
           skills={skills}
           signedIn={Boolean(user)}
@@ -35,19 +47,25 @@ export default async function LandingPage() {
         />
       </div>
 
-      <p className="mt-5 text-[0.85rem] text-ink-muted">
+      <p className="rule mt-8 pt-4 text-[0.85rem] text-ink-muted">
         {user ? (
           <>
             Signed in as {user.name}
-            {academicSummary(me ?? {}) ? ` · ${academicSummary(me ?? {})}` : ""}
+            {summary ? `, ${summary}` : ""}
           </>
         ) : (
           <>
-            <Link href="/login" className="font-medium text-brand hover:underline">
+            <Link
+              href="/login"
+              className="font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand"
+            >
               Sign in
             </Link>{" "}
             with your Amrita email, or{" "}
-            <Link href="/signup" className="font-medium text-brand hover:underline">
+            <Link
+              href="/signup"
+              className="font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand"
+            >
               create an account
             </Link>
             .

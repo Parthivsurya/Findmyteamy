@@ -18,7 +18,7 @@ export function EventForm({ isAdmin }: { isAdmin: boolean }) {
       {state?.error ? (
         <p
           role="alert"
-          className="rounded-xl border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
+          className="rounded-box border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
         >
           {state.error}
         </p>
@@ -125,7 +125,7 @@ export function EventForm({ isAdmin }: { isAdmin: boolean }) {
               <label
                 key={option}
                 className={cn(
-                  "cursor-pointer rounded-lg border px-3.5 py-1.5 text-[0.83rem] font-medium transition-colors",
+                  "cursor-pointer rounded-box border px-3.5 py-1.5 text-[0.83rem] font-medium transition-colors",
                   mode === option
                     ? "border-brand bg-brand text-white"
                     : "border-line-strong bg-surface text-ink-2 hover:border-brand",

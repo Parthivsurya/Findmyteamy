@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-/** Server-rendered tab strip — each tab is a real link, so tabs are bookmarkable. */
+/** Server-rendered tab strip. Each tab is a real link, so tabs are bookmarkable. */
 export function TabLinks({
   tabs,
   className,
@@ -33,7 +33,7 @@ export function TabLinks({
           {tab.count !== undefined ? (
             <span
               className={cn(
-                "ml-1.5 rounded-full px-1.5 py-0.5 text-[0.7rem] font-semibold tabular-nums",
+                "ml-1.5 rounded-box px-1.5 py-0.5 text-[0.7rem] font-medium tabular-nums",
                 tab.active ? "bg-brand-soft text-brand" : "bg-surface-2 text-ink-muted",
               )}
             >
@@ -98,10 +98,10 @@ function PageLink({
   current?: boolean;
 }) {
   const classes = cn(
-    "inline-flex h-9 min-w-9 items-center justify-center rounded-lg border px-3",
+    "inline-flex h-9 min-w-9 items-center justify-center rounded-box border px-3",
     "text-[0.82rem] font-medium transition-colors",
     current
-      ? "border-brand bg-brand text-white"
+      ? "border-brand-fill bg-brand-fill text-white"
       : "border-line bg-surface text-ink-2 hover:border-brand hover:text-brand",
     disabled && "pointer-events-none opacity-45",
   );

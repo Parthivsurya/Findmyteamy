@@ -11,11 +11,11 @@ export function Meter({
   value: number;
   max?: number;
   className?: string;
-  tone?: "brand" | "ok" | "sky";
+  tone?: "brand" | "ok";
   label?: string;
 }) {
   const pct = max === 0 ? 0 : Math.max(0, Math.min(100, (value / max) * 100));
-  const fill = tone === "ok" ? "bg-ok" : tone === "sky" ? "bg-sky" : "bg-brand";
+  const fill = tone === "ok" ? "bg-ok" : "bg-brand-fill";
 
   return (
     <div
@@ -24,7 +24,7 @@ export function Meter({
       aria-valuemin={0}
       aria-valuemax={100}
       aria-label={label}
-      className={cn("h-1.5 w-full overflow-hidden rounded bg-surface-3", className)}
+      className={cn("h-1.5 w-full overflow-hidden rounded-box bg-surface-3", className)}
     >
       <div className={cn("h-full", fill)} style={{ width: `${pct}%` }} />
     </div>

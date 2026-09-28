@@ -91,7 +91,7 @@ export default async function NotificationsPage() {
                 <div className="flex items-start gap-3">
                   <span
                     className={cn(
-                      "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                      "flex size-8 shrink-0 items-center justify-center rounded-box",
                       notification.read
                         ? "bg-surface-2 text-ink-muted"
                         : "bg-brand text-white",

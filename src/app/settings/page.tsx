@@ -46,8 +46,8 @@ export default async function SettingsPage({
   return (
     <div className="space-y-6">
       {reported ? (
-        <p className="rounded-card border border-ok/30 bg-ok-soft px-4 py-3 text-[0.87rem] text-ink-2">
-          Thanks — an admin will review your report.
+        <p className="rounded-box border border-ok/30 bg-ok-soft px-4 py-3 text-[0.87rem] text-ink-2">
+          Thanks. An admin will review your report.
         </p>
       ) : null}
 
@@ -64,7 +64,7 @@ export default async function SettingsPage({
       <Card>
         <CardHead
           title="Contact privacy"
-          description="This is fixed, not a setting — it is how the platform works."
+          description="This is fixed, not a setting. It is how the platform works."
         />
         <CardBody className="space-y-2 text-[0.85rem] text-ink-2">
           <p>

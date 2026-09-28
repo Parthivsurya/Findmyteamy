@@ -13,7 +13,7 @@ import { countdown, formatDateRange, parseThemes } from "@/lib/utils";
 export function ModeBadge({ mode }: { mode: string }) {
   const key = (mode as EventMode) ?? "ONLINE";
   return (
-    <Badge tone={key === "ONLINE" ? "sky" : key === "HYBRID" ? "brand" : "neutral"}>
+    <Badge tone="neutral">
       {key === "ONLINE" ? (
         <GlobeIcon className="size-3" />
       ) : (
@@ -77,7 +77,7 @@ export function EventCard({ event }: { event: EventCardEvent }) {
           <div className="flex items-center gap-2">
             <UsersIcon className="size-3.5 shrink-0 text-ink-muted" />
             <dd>
-              Teams of {event.minTeamSize}–{event.maxTeamSize}
+              Teams of {event.minTeamSize}-{event.maxTeamSize}
             </dd>
           </div>
         </dl>
@@ -87,7 +87,7 @@ export function EventCard({ event }: { event: EventCardEvent }) {
             {themes.slice(0, 3).map((theme) => (
               <span
                 key={theme}
-                className="rounded-md bg-surface-2 px-1.5 py-0.5 text-[0.72rem] text-ink-muted"
+                className="rounded-box bg-surface-2 px-1.5 py-0.5 text-[0.72rem] text-ink-muted"
               >
                 {theme}
               </span>
@@ -123,7 +123,7 @@ export function EventCard({ event }: { event: EventCardEvent }) {
               tone={
                 new Date(event.registrationDeadline).getTime() < Date.now()
                   ? "neutral"
-                  : "lime"
+                  : "warn"
               }
               title={`Registration deadline: ${new Date(event.registrationDeadline).toDateString()}`}
             >

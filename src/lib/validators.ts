@@ -93,7 +93,7 @@ export const skillsSchema = z.object({
         level: z.enum(SKILL_LEVELS),
       }),
     )
-    .max(40, "That is a lot of skills — keep the list focused"),
+    .max(40, "That is a lot of skills, keep the list focused"),
 });
 
 export const rolesSchema = z.object({
@@ -316,7 +316,7 @@ export const assessmentAnswerSchema = z.object({
   answer: z
     .string()
     .trim()
-    .min(60, "Write a little more — three or four sentences is plenty")
+    .min(60, "Write a little more, three or four sentences is plenty")
     .max(4000, "That answer is too long"),
 });
 

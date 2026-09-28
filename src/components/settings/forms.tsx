@@ -24,7 +24,7 @@ function Banner({ state }: { state: FormResult | undefined }) {
     return (
       <p
         role="alert"
-        className="rounded-xl border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
+        className="rounded-box border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
       >
         {state.error}
       </p>
@@ -32,7 +32,7 @@ function Banner({ state }: { state: FormResult | undefined }) {
   }
   if (state?.ok) {
     return (
-      <p className="flex items-start gap-2 rounded-xl border border-ok/30 bg-ok-soft px-3.5 py-2.5 text-[0.83rem] text-ink-2">
+      <p className="flex items-start gap-2 rounded-box border border-ok/30 bg-ok-soft px-3.5 py-2.5 text-[0.83rem] text-ink-2">
         <CheckIcon className="mt-0.5 size-3.5 shrink-0 text-ok" />
         {state.message ?? "Saved."}
       </p>
@@ -249,7 +249,7 @@ export function SkillsRolesForm({
                 aria-pressed={active}
                 disabled={blocked}
                 className={cn(
-                  "rounded-full border px-3.5 py-1.5 text-[0.83rem] font-medium transition-colors",
+                  "rounded-box border px-3 py-1 text-[0.83rem] font-medium transition-colors duration-120",
                   active
                     ? "border-brand bg-brand text-white"
                     : blocked
@@ -306,7 +306,7 @@ export function AchievementForm() {
             name="title"
             required
             className="field"
-            placeholder="Winner – Anokha 2027 Hackathon"
+            placeholder="Winner, Anokha 2027 Hackathon"
           />
         </div>
 
@@ -369,7 +369,7 @@ export function AchievementForm() {
             placeholder="https://… certificate or results page"
           />
           <p className="field-hint">
-            Needed for verification — without proof it stays unverified and does
+            Needed for verification. Without proof it stays unverified and does
             not count in search filters.
           </p>
         </div>

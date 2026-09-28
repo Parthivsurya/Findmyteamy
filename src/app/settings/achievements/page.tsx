@@ -43,7 +43,7 @@ export default async function AchievementsSettingsPage() {
         <CardBody className="space-y-3">
           {achievements.length === 0 ? (
             <p className="text-[0.85rem] text-ink-muted">
-              Nothing added yet. Even a participation entry is worth adding — it
+              Nothing added yet. Even a participation entry is worth adding, because it
               shows you turn up.
             </p>
           ) : (

@@ -28,7 +28,7 @@ export function conflict(message: string) {
   return NextResponse.json({ error: message }, { status: 409 });
 }
 
-export function tooMany(message = "Too many requests — please slow down") {
+export function tooMany(message = "Too many requests, please slow down") {
   return NextResponse.json({ error: message }, { status: 429 });
 }
 

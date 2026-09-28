@@ -78,7 +78,7 @@ export function TeamCard({
 
       {openSlots.length ? (
         <div className="mt-3 space-y-2 border-t border-line pt-3">
-          <p className="text-[0.72rem] font-bold uppercase tracking-wider text-ink-muted">
+          <p className="text-[0.76rem] font-medium text-ink-muted">
             Open roles
           </p>
           {openSlots.slice(0, compact ? 2 : 4).map((slot) => (

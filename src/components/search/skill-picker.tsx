@@ -104,14 +104,14 @@ export function SkillPicker({
             {selected.map((id) => (
               <span
                 key={id}
-                className="inline-flex items-center gap-1 rounded-lg bg-brand-soft px-2 py-1 text-[0.78rem] font-medium text-brand"
+                className="inline-flex items-center gap-1 rounded-box bg-brand-soft px-2 py-1 text-[0.78rem] font-medium text-brand"
               >
                 {byId.get(id)?.name ?? id}
                 <button
                   type="button"
                   onClick={() => remove(id)}
                   aria-label={`Remove ${byId.get(id)?.name ?? "skill"}`}
-                  className="rounded-full p-0.5 hover:bg-brand hover:text-white"
+                  className="rounded-box p-0.5 hover:bg-brand-fill hover:text-white"
                 >
                   <XIcon className="size-3" />
                 </button>
@@ -153,11 +153,11 @@ export function SkillPicker({
           {open && matches.length ? (
             <div
               id={`${name}-options`}
-              className="scrollbar-slim absolute z-30 mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-line bg-surface p-1 shadow-pop"
+              className="scrollbar-slim absolute z-30 mt-1.5 max-h-64 w-full overflow-y-auto rounded-box border border-line bg-surface p-1 shadow-pop"
             >
               {grouped.map(([category, items]) => (
                 <div key={category}>
-                  <p className="px-2 pb-1 pt-2 text-[0.68rem] font-bold uppercase tracking-wider text-ink-muted">
+                  <p className="px-2 pb-1 pt-2 text-[0.73rem] font-medium text-ink-muted">
                     {SKILL_CATEGORY_LABEL[category as SkillCategory] ?? category}
                   </p>
                   {items.map((skill) => (
@@ -166,7 +166,7 @@ export function SkillPicker({
                       type="button"
                       onMouseDown={(e) => e.preventDefault()}
                       onClick={() => add(skill.id)}
-                      className="block w-full rounded-lg px-2 py-1.5 text-left text-[0.83rem] text-ink-2 hover:bg-brand-soft hover:text-brand"
+                      className="block w-full rounded-box px-2 py-1.5 text-left text-[0.83rem] text-ink-2 hover:bg-brand-soft hover:text-brand"
                     >
                       {skill.name}
                     </button>
@@ -242,7 +242,7 @@ export function LeveledSkillPicker({
         <input
           type="text"
           value={term}
-          placeholder="Add a skill — try “React” or “PyTorch”…"
+          placeholder="Add a skill, like React or PyTorch"
           onChange={(e) => {
             setTerm(e.target.value);
             setOpen(true);
@@ -260,14 +260,14 @@ export function LeveledSkillPicker({
         />
 
         {open && matches.length ? (
-          <div className="scrollbar-slim absolute z-30 mt-1.5 max-h-56 w-full overflow-y-auto rounded-xl border border-line bg-surface p-1 shadow-pop">
+          <div className="scrollbar-slim absolute z-30 mt-1.5 max-h-56 w-full overflow-y-auto rounded-box border border-line bg-surface p-1 shadow-pop">
             {matches.map((skill) => (
               <button
                 key={skill.id}
                 type="button"
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => add(skill.id)}
-                className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-[0.83rem] text-ink-2 hover:bg-brand-soft hover:text-brand"
+                className="flex w-full items-center justify-between rounded-box px-2 py-1.5 text-left text-[0.83rem] text-ink-2 hover:bg-brand-soft hover:text-brand"
               >
                 {skill.name}
                 <span className="text-[0.7rem] text-ink-muted">
@@ -280,7 +280,7 @@ export function LeveledSkillPicker({
       </div>
 
       {rows.length ? (
-        <ul className="mt-3 divide-y divide-[var(--line)] rounded-xl border border-line">
+        <ul className="mt-3 divide-y divide-[var(--line)] rounded-box border border-line">
           {rows.map((row) => (
             <li
               key={row.skillId}
@@ -290,7 +290,7 @@ export function LeveledSkillPicker({
                 {byId.get(row.skillId)?.name}
               </span>
 
-              <div className="flex overflow-hidden rounded-lg border border-line">
+              <div className="flex overflow-hidden rounded-box border border-line">
                 {(["BEGINNER", "INTERMEDIATE", "EXPERT"] as const).map((level) => (
                   <button
                     key={level}
@@ -317,7 +317,7 @@ export function LeveledSkillPicker({
                 type="button"
                 onClick={() => remove(row.skillId)}
                 aria-label={`Remove ${byId.get(row.skillId)?.name ?? "skill"}`}
-                className="rounded-lg p-1.5 text-ink-muted hover:bg-danger-soft hover:text-danger"
+                className="rounded-box p-1.5 text-ink-muted hover:bg-danger-soft hover:text-danger"
               >
                 <XIcon className="size-3.5" />
               </button>
@@ -326,7 +326,7 @@ export function LeveledSkillPicker({
         </ul>
       ) : (
         <p className="field-hint">
-          Add at least three skills — they are what search matches on.
+          Add at least three skills. They are what search matches on.
         </p>
       )}
     </div>

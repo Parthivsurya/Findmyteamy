@@ -335,7 +335,7 @@ export async function submitAssessment({
 
   const trimmed = answer.trim();
   if (trimmed.length < MIN_ANSWER_CHARS) {
-    throw new HttpError(400, `Write a little more — at least ${MIN_ANSWER_CHARS} characters.`);
+    throw new HttpError(400, `Write a little more, at least ${MIN_ANSWER_CHARS} characters.`);
   }
   if (trimmed.length > MAX_ANSWER_CHARS) {
     throw new HttpError(400, "That answer is too long.");

@@ -215,7 +215,7 @@ export function batchLabel(
 ): string | null {
   if (!joiningYear) return null;
   if (!programYears) return String(joiningYear);
-  return `${joiningYear}–${joiningYear + programYears}`;
+  return `${joiningYear}-${joiningYear + programYears}`;
 }
 
 /**

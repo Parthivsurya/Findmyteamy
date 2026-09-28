@@ -17,7 +17,7 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "rounded border border-line bg-surface px-4 py-8 text-center",
+        "rounded-box border border-line bg-surface px-4 py-10 text-center",
         className,
       )}
     >
@@ -33,5 +33,5 @@ export function EmptyState({
 }
 
 export function Skeleton({ className }: { className?: string }) {
-  return <div className={cn("rounded bg-surface-2", className)} />;
+  return <div className={cn("rounded-box bg-surface-2", className)} />;
 }

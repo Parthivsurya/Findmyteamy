@@ -1,20 +1,17 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-export type BadgeTone =
-  | "neutral"
-  | "brand"
-  | "sky"
-  | "lime"
-  | "ok"
-  | "warn"
-  | "danger";
+/**
+ * `sky` and `lime` are gone. A badge's tone has to mean something: neutral is
+ * a fact, brand is the thing you are looking at, and ok / warn / danger are
+ * real state. A fourth and fifth decorative colour meant a profile could show
+ * five tones at once and none of them carried information.
+ */
+export type BadgeTone = "neutral" | "brand" | "ok" | "warn" | "danger";
 
 const tones: Record<BadgeTone, string> = {
   neutral: "bg-surface-2 text-ink-2 border-line",
   brand: "bg-brand-soft text-brand border-line",
-  sky: "bg-sky-soft text-sky-ink border-line",
-  lime: "bg-lime-soft text-lime-ink border-line",
   ok: "bg-ok-soft text-ok border-line",
   warn: "bg-warn-soft text-warn border-line",
   danger: "bg-danger-soft text-danger border-line",
@@ -36,7 +33,7 @@ export function Badge({
     <span
       title={title}
       className={cn(
-        "inline-flex items-center gap-1 rounded border px-1.5 py-0.5",
+        "inline-flex items-center gap-1 rounded-box border px-1.5 py-0.5",
         "text-[0.72rem] font-medium leading-4",
         tones[tone],
         className,

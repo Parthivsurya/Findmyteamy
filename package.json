@@ -21,6 +21,7 @@
     "db:sql": "node scripts/generate-bootstrap-sql.mjs"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
     "@prisma/client": "6.19.3",
     "@types/nodemailer": "^8.0.2",
     "next": "16.3.6",

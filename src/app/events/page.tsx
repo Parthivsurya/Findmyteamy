@@ -58,10 +58,10 @@ export default async function EventsPage({
       </header>
 
       {submitted ? (
-        <div className="mb-6 flex items-start gap-2.5 rounded-card border border-ok/30 bg-ok-soft px-4 py-3">
+        <div className="mb-6 flex items-start gap-2.5 rounded-box border border-ok/30 bg-ok-soft px-4 py-3">
           <CheckIcon className="mt-0.5 size-4 shrink-0 text-ok" />
           <p className="text-[0.87rem] text-ink-2">
-            Event submitted. An admin will review it before it appears here —
+            Event submitted. An admin will review it before it appears here.
             that is what keeps duplicates and spam off the list.
           </p>
         </div>
@@ -71,7 +71,7 @@ export default async function EventsPage({
       <form
         action="/events"
         method="get"
-        className="mb-5 flex flex-wrap gap-2 rounded-card border border-line bg-surface p-3"
+        className="mb-5 flex flex-wrap gap-2 rounded-box border border-line bg-surface p-3"
       >
         <input type="hidden" name="when" value={query.when} />
 
@@ -141,7 +141,7 @@ export default async function EventsPage({
         <EmptyState
           icon={<CalendarIcon className="size-5" />}
           title="No events match that"
-          description="Try a different search, or list the event yourself — anyone can submit one and an admin reviews it before it goes public."
+          description="Try a different search, or list the event yourself. Anyone can submit one and an admin reviews it before it goes public."
           action={
             <div className="flex flex-wrap justify-center gap-2">
               <Link href="/events" className={btn("outline", "md")}>

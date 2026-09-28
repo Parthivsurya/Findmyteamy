@@ -59,7 +59,7 @@ export function ReviewAchievement({ achievementId }: { achievementId: string }) 
             name="reviewNote"
             rows={2}
             required
-            placeholder="Why it was not approved — the student sees this."
+            placeholder="Why it was not approved. The student sees this."
             className="field resize-y text-[0.82rem]"
           />
           <div className="flex gap-2">

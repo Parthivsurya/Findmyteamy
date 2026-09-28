@@ -54,7 +54,7 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
-      className="inline-flex size-9 items-center justify-center rounded-lg text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
+      className="inline-flex size-9 items-center justify-center rounded-box text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
     >
       {dark ? <MoonIcon className="size-4.5" /> : <SunIcon className="size-4.5" />}
     </button>
@@ -93,7 +93,7 @@ export function UserMenu({ user }: { user: HeaderUser }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-haspopup="menu"
-        className="flex items-center gap-1.5 rounded-full p-0.5 transition-shadow hover:shadow-card"
+        className="flex items-center gap-1.5 rounded-box p-0.5 transition-colors duration-120 hover:bg-surface-2"
       >
         <Avatar name={user.name} image={user.image} size="sm" />
       </button>
@@ -101,7 +101,7 @@ export function UserMenu({ user }: { user: HeaderUser }) {
       {open ? (
         <div
           role="menu"
-          className="animate-in absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-xl border border-line bg-surface shadow-pop"
+          className="animate-in absolute right-0 top-11 z-50 w-56 overflow-hidden rounded-box border border-line bg-surface shadow-pop"
         >
           <div className="border-b border-line px-3 py-2.5">
             <p className="truncate text-[0.85rem] font-semibold">{user.name}</p>
@@ -132,7 +132,7 @@ export function UserMenu({ user }: { user: HeaderUser }) {
             <button
               type="submit"
               role="menuitem"
-              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-[0.85rem] text-ink-2 transition-colors hover:bg-surface-2 hover:text-danger"
+              className="flex w-full items-center gap-2 rounded-box px-2.5 py-2 text-left text-[0.85rem] text-ink-2 transition-colors hover:bg-surface-2 hover:text-danger"
             >
               <LogoutIcon className="size-4" />
               Sign out
@@ -157,7 +157,7 @@ function MenuItem({
     <Link
       href={href}
       role="menuitem"
-      className="flex items-center gap-2 rounded-lg px-2.5 py-2 text-[0.85rem] text-ink-2 transition-colors hover:bg-surface-2 hover:text-brand"
+      className="flex items-center gap-2 rounded-box px-2.5 py-2 text-[0.85rem] text-ink-2 transition-colors hover:bg-surface-2 hover:text-brand"
     >
       {icon}
       {children}
@@ -170,7 +170,7 @@ export function NavLinks({ links }: { links: NavLink[] }) {
   const pathname = usePathname();
 
   return (
-    <nav className="hidden items-center gap-0.5 md:flex">
+    <nav className="hidden h-full items-stretch gap-0.5 md:flex">
       {links.map((link) => {
         const active =
           pathname === link.href || pathname.startsWith(`${link.href}/`);
@@ -180,10 +180,11 @@ export function NavLinks({ links }: { links: NavLink[] }) {
             href={link.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "rounded-lg px-3 py-1.5 text-[0.86rem] font-medium transition-colors",
+              "-mb-px inline-flex items-center border-b-2 px-3 text-[0.86rem]",
+              "transition-colors duration-120",
               active
-                ? "bg-brand-soft text-brand"
-                : "text-ink-2 hover:bg-surface-2 hover:text-ink",
+                ? "border-brand font-medium text-ink"
+                : "border-transparent text-ink-muted hover:border-line-strong hover:text-ink",
             )}
           >
             {link.label}
@@ -219,7 +220,7 @@ export function MobileNav({
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Open menu"
-        className="inline-flex size-9 items-center justify-center rounded-lg text-ink-2 hover:bg-surface-2 md:hidden"
+        className="inline-flex size-9 items-center justify-center rounded-box text-ink-2 hover:bg-surface-2 md:hidden"
       >
         <MenuIcon className="size-5" />
       </button>
@@ -239,7 +240,7 @@ export function MobileNav({
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Close menu"
-                className="inline-flex size-9 items-center justify-center rounded-lg text-ink-2 hover:bg-surface-2"
+                className="inline-flex size-9 items-center justify-center rounded-box text-ink-2 hover:bg-surface-2"
               >
                 <XIcon className="size-5" />
               </button>
@@ -250,7 +251,7 @@ export function MobileNav({
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="rounded-lg px-3 py-2.5 text-[0.9rem] font-medium text-ink-2 hover:bg-surface-2 hover:text-brand"
+                  className="rounded-box px-3 py-2.5 text-[0.9rem] font-medium text-ink-2 hover:bg-surface-2 hover:text-brand"
                 >
                   {link.label}
                 </Link>

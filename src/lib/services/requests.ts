@@ -293,7 +293,7 @@ export async function respondToRequest({
     title:
       request.type === "INVITE"
         ? `${request.toUser.name} joined ${request.team.name}`
-        : `You are in — ${request.team.name} accepted you`,
+        : `You are in: ${request.team.name} accepted you`,
     body: `${slot.role.name} · ${request.team.event.name}. Contact details are now shared.`,
     href: `/teams/${request.teamId}`,
     emailPref: "emailOnRequests",

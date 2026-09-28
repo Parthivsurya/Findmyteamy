@@ -54,7 +54,7 @@ export function RequestForm({
 
   if (state?.ok) {
     return (
-      <div className="flex items-start gap-2.5 rounded-xl border border-ok/30 bg-ok-soft px-4 py-3">
+      <div className="flex items-start gap-2.5 rounded-box border border-ok/30 bg-ok-soft px-4 py-3">
         <CheckIcon className="mt-0.5 size-4 shrink-0 text-ok" />
         <p className="text-[0.87rem] text-ink-2">
           {state.message ?? "Request sent."}
@@ -76,7 +76,7 @@ export function RequestForm({
       {state?.error ? (
         <p
           role="alert"
-          className="rounded-xl border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
+          className="rounded-box border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
         >
           {state.error}
         </p>
@@ -95,7 +95,7 @@ export function RequestForm({
           >
             {teams.map((team) => (
               <option key={team.id} value={team.id}>
-                {team.name} — {team.eventName}
+                {team.name}, {team.eventName}
               </option>
             ))}
           </select>
@@ -108,11 +108,11 @@ export function RequestForm({
         </label>
 
         {slots.length === 0 ? (
-          <p className="rounded-xl bg-surface-2 px-3.5 py-2.5 text-[0.83rem] text-ink-muted">
+          <p className="rounded-box bg-surface-2 px-3.5 py-2.5 text-[0.83rem] text-ink-muted">
             This team has no open roles left.
           </p>
         ) : slots.length === 1 ? (
-          <p className="rounded-xl border border-line bg-surface-2 px-3.5 py-2.5 text-[0.87rem] font-medium">
+          <p className="rounded-box border border-line bg-surface-2 px-3.5 py-2.5 text-[0.87rem] font-medium">
             {slots[0]!.roleName}
             {slots[0]!.requiredSkills.length ? (
               <span className="ml-1.5 text-[0.78rem] font-normal text-ink-muted">
@@ -131,7 +131,7 @@ export function RequestForm({
               <option key={slot.id} value={slot.id}>
                 {slot.roleName}
                 {slot.requiredSkills.length
-                  ? ` — ${slot.requiredSkills.join(", ")}`
+                  ? `: ${slot.requiredSkills.join(", ")}`
                   : ""}
               </option>
             ))}

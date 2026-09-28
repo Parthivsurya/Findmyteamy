@@ -124,7 +124,7 @@ export default async function InvitePage({
           />
           <CardBody>
             {alreadyPending ? (
-              <div className="mb-4 rounded-xl border border-warn/30 bg-warn-soft px-3.5 py-2.5 text-[0.83rem] text-warn">
+              <div className="mb-4 rounded-box border border-warn/30 bg-warn-soft px-3.5 py-2.5 text-[0.83rem] text-warn">
                 There is already a pending request between you two for{" "}
                 <Link
                   href={`/teams/${alreadyPending.team.id}`}
@@ -160,7 +160,7 @@ export default async function InvitePage({
                 defaultTeamId={teamParam}
                 defaultSlotId={slotParam}
                 submitLabel={`Send invite to ${candidate.name.split(" ")[0]}`}
-                placeholder={`Hi ${candidate.name.split(" ")[0]} — we are building… and your work on… is exactly what we need.`}
+                placeholder={`Hi ${candidate.name.split(" ")[0]}, we are building… and your work on… is exactly what we need.`}
               />
             )}
           </CardBody>
@@ -187,7 +187,7 @@ export default async function InvitePage({
             <div className="mt-3 flex flex-wrap gap-1.5">
               <AvailabilityBadge availability={candidate.availability} short />
               {candidate._count.achievements > 0 ? (
-                <Badge tone="lime">
+                <Badge tone="ok">
                   <VerifiedIcon className="size-3" />
                   {candidate._count.achievements} verified
                 </Badge>

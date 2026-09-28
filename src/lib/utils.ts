@@ -39,9 +39,9 @@ export function formatDateRange(start: Date | string, end: Date | string): strin
   const b = new Date(end);
   const sameMonth = a.getMonth() === b.getMonth() && a.getFullYear() === b.getFullYear();
   if (sameMonth) {
-    return `${a.getDate()}–${b.getDate()} ${DATE_FMT.format(b).split(" ").slice(1).join(" ")}`;
+    return `${a.getDate()}-${b.getDate()} ${DATE_FMT.format(b).split(" ").slice(1).join(" ")}`;
   }
-  return `${formatDate(a)} – ${formatDate(b)}`;
+  return `${formatDate(a)} to ${formatDate(b)}`;
 }
 
 export function daysSince(date: Date | string | null | undefined): number {

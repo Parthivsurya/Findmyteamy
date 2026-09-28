@@ -167,11 +167,11 @@ export default async function DashboardPage({
       </header>
 
       {welcome ? (
-        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-card border border-ok/30 bg-ok-soft px-4 py-3">
+        <div className="mb-6 flex flex-wrap items-center gap-3 rounded-box border border-ok/30 bg-ok-soft px-4 py-3">
           <CheckIcon className="size-4 shrink-0 text-ok" />
           <p className="flex-1 text-[0.87rem] text-ink-2">
             Profile created. Add an achievement and mark the events you are
-            attending — both strongly affect who finds you.
+            attending. Both strongly affect who finds you.
           </p>
           <Link href="/settings/achievements" className={btn("secondary", "sm")}>
             Add achievement
@@ -247,7 +247,7 @@ export default async function DashboardPage({
                           {relativeTime(request.createdAt)}
                         </p>
                         {request.message ? (
-                          <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-[0.82rem] leading-relaxed text-ink-2">
+                          <p className="mt-2 rounded-box bg-surface-2 px-3 py-2 text-[0.82rem] leading-relaxed text-ink-2">
                             “{request.message}”
                           </p>
                         ) : null}
@@ -282,7 +282,7 @@ export default async function DashboardPage({
               <EmptyState
                 icon={<CalendarIcon className="size-5" />}
                 title="You are not attending any events yet"
-                description="Mark an event as attending and set your status — that is how team leaders find people for a specific hackathon."
+                description="Mark an event as attending and set your status. That is how team leaders find people for a specific hackathon."
                 action={
                   <Link href="/events" className={btn("primary", "md")}>
                     Find an event
@@ -300,7 +300,7 @@ export default async function DashboardPage({
                       >
                         {participation.event.name}
                       </Link>
-                      <Badge tone="lime">
+                      <Badge tone="warn">
                         {countdown(
                           participation.event.registrationDeadline ??
                             participation.event.startDate,
@@ -465,7 +465,7 @@ export default async function DashboardPage({
               title="Availability"
               description={
                 availabilityStale
-                  ? "Last updated over 30 days ago — please confirm."
+                  ? "Last updated over 30 days ago. Please confirm."
                   : `Updated ${relativeTime(user.availabilityUpdatedAt)}`
               }
             />
@@ -511,7 +511,7 @@ export default async function DashboardPage({
               {user.achievements.length === 0 ? (
                 <p className="flex items-start gap-2 text-[0.83rem] text-ink-muted">
                   <TrophyIcon className="mt-0.5 size-4 shrink-0" />
-                  Add a hackathon result and upload proof — verified wins are the
+                  Add a hackathon result and upload proof. Verified wins are the
                   strongest signal on your profile.
                 </p>
               ) : (

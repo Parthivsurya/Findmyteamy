@@ -106,13 +106,13 @@ export async function resendCodeAction(
         ok: true,
         message: issued.emailed
           ? "A new code is on its way."
-          : `SMTP is not configured — your code is ${issued.devCode}`,
+          : `SMTP is not configured, your code is ${issued.devCode}`,
       };
     },
   );
 
   if (result.ok && devCode && process.env.NODE_ENV !== "production") {
-    return { ...result, message: `SMTP is not configured — your code is ${devCode}` };
+    return { ...result, message: `SMTP is not configured, your code is ${devCode}` };
   }
   return result;
 }

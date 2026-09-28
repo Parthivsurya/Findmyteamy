@@ -52,18 +52,18 @@ export default async function ProfileSettingsPage() {
         />
         <CardBody className="grid gap-3 sm:grid-cols-2">
           <Fact label="Campus">
-            {user.campusCode ? (CAMPUSES[user.campusCode] ?? user.campusCode.toUpperCase()) : "—"}
+            {user.campusCode ? (CAMPUSES[user.campusCode] ?? user.campusCode.toUpperCase()) : "Not set"}
           </Fact>
           <Fact label="School">
-            {user.schoolCode ? (SCHOOLS[user.schoolCode] ?? user.schoolCode.toUpperCase()) : "—"}
+            {user.schoolCode ? (SCHOOLS[user.schoolCode] ?? user.schoolCode.toUpperCase()) : "Not set"}
           </Fact>
           <Fact label="Branch">
             {user.branchCode
-              ? `${user.branchCode.toUpperCase()}${BRANCHES[user.branchCode] ? ` — ${BRANCHES[user.branchCode]}` : ""}`
-              : "—"}
+              ? `${user.branchCode.toUpperCase()}${BRANCHES[user.branchCode] ? `, ${BRANCHES[user.branchCode]}` : ""}`
+              : "Not set"}
           </Fact>
           <Fact label="Year">
-            {studyYearLabel(user.joiningYear, user.programYears) ?? "—"}
+            {studyYearLabel(user.joiningYear, user.programYears) ?? "Not set"}
             {batchLabel(user.joiningYear, user.programYears)
               ? ` · ${batchLabel(user.joiningYear, user.programYears)}`
               : ""}
@@ -84,7 +84,7 @@ export default async function ProfileSettingsPage() {
 function Fact({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <dt className="text-[0.72rem] font-bold uppercase tracking-wider text-ink-muted">
+      <dt className="text-[0.76rem] font-medium text-ink-muted">
         {label}
       </dt>
       <dd className="text-[0.87rem] font-medium">{children}</dd>

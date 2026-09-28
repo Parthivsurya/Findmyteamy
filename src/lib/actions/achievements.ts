@@ -40,7 +40,7 @@ export async function addAchievementAction(
       ok: true,
       message: parsed.data.proofUrl
         ? "Added and sent for review. You will be notified once an admin checks the proof."
-        : "Added. Attach proof to have it verified — only verified wins count in search filters.",
+        : "Added. Attach proof to have it verified. Only verified wins count in search filters.",
     }),
   );
 

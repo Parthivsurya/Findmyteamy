@@ -249,7 +249,7 @@ export function digestEmail({
     ...groups.flatMap((g) => [
       `${g.roleName}`,
       ...g.candidates.map(
-        (c) => `  - ${c.name} (${c.score}% match)${c.reason ? ` — ${c.reason}` : ""}`,
+        (c) => `  - ${c.name} (${c.score}% match)${c.reason ? `: ${c.reason}` : ""}`,
       ),
       "",
     ]),

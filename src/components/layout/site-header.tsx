@@ -28,11 +28,11 @@ export async function SiteHeader() {
     : PUBLIC_LINKS;
 
   return (
-    <header className="border-b border-line bg-surface">
-      <div className="mx-auto flex h-12 max-w-6xl items-center gap-3 px-4 sm:px-6">
+    <header className="sticky top-0 z-40 border-b border-line bg-surface">
+      <div className="mx-auto flex h-[52px] max-w-6xl items-center gap-3 px-4 sm:px-6">
         <Logo />
 
-        <div className="ml-2 flex-1">
+        <div className="ml-3 flex h-full flex-1">
           <NavLinks links={links} />
         </div>
 
@@ -43,14 +43,14 @@ export async function SiteHeader() {
             <>
               <Link
                 href="/requests"
-                className="hidden px-2 py-1 text-[0.82rem] text-ink-2 hover:text-brand sm:inline"
+                className="hidden rounded-box px-2 py-1 text-[0.82rem] text-ink-muted transition-colors duration-120 hover:text-ink sm:inline"
               >
                 Requests
                 {user.pendingRequests > 0 ? ` (${user.pendingRequests})` : ""}
               </Link>
               <Link
                 href="/notifications"
-                className="px-2 py-1 text-[0.82rem] text-ink-2 hover:text-brand"
+                className="rounded-box px-2 py-1 text-[0.82rem] text-ink-muted transition-colors duration-120 hover:text-ink"
               >
                 Alerts
                 {user.unreadNotifications > 0 ? ` (${user.unreadNotifications})` : ""}

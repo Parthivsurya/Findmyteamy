@@ -97,7 +97,7 @@ export default async function TeamPage({ params }: Props) {
               </Link>
               <p className="mt-0.5 text-[0.78rem] text-ink-muted">
                 {formatDateRange(team.event.startDate, team.event.endDate)} ·
-                teams of {team.event.minTeamSize}–{team.event.maxTeamSize}
+                teams of {team.event.minTeamSize}-{team.event.maxTeamSize}
               </p>
             </div>
 
@@ -142,7 +142,7 @@ export default async function TeamPage({ params }: Props) {
                     invited by {request.fromUser.name}
                   </p>
                   {request.message ? (
-                    <p className="mt-1.5 rounded-lg bg-surface-2 px-3 py-2 text-[0.83rem] text-ink-2">
+                    <p className="mt-1.5 rounded-box bg-surface-2 px-3 py-2 text-[0.83rem] text-ink-2">
                       “{request.message}”
                     </p>
                   ) : null}
@@ -232,7 +232,7 @@ export default async function TeamPage({ params }: Props) {
               <Card>
                 <CardBody className="flex items-center gap-2 text-[0.85rem] text-ok">
                   <CheckIcon className="size-4" />
-                  Every role is filled — this team is complete.
+                  Every role is filled. This team is complete.
                 </CardBody>
               </Card>
             ) : (
@@ -304,7 +304,7 @@ export default async function TeamPage({ params }: Props) {
                           {relativeTime(request.createdAt)}
                         </p>
                         {request.message ? (
-                          <p className="mt-2 rounded-lg bg-surface-2 px-3 py-2 text-[0.83rem] leading-relaxed text-ink-2">
+                          <p className="mt-2 rounded-box bg-surface-2 px-3 py-2 text-[0.83rem] leading-relaxed text-ink-2">
                             “{request.message}”
                           </p>
                         ) : null}
@@ -408,7 +408,7 @@ export default async function TeamPage({ params }: Props) {
               <p className="text-ink-muted">{team.event.organizer}</p>
               <p className="flex items-center gap-1.5 text-ink-2">
                 <UsersIcon className="size-3.5" />
-                Teams of {team.event.minTeamSize}–{team.event.maxTeamSize}
+                Teams of {team.event.minTeamSize}-{team.event.maxTeamSize}
               </p>
             </CardBody>
           </Card>

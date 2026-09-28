@@ -72,7 +72,7 @@ export function ProfileCard({
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <AvailabilityBadge availability={user.availability} short />
             {user.verifiedWins > 0 ? (
-              <Badge tone="lime" title={`${user.verifiedWins} verified achievements`}>
+              <Badge tone="ok" title={`${user.verifiedWins} verified achievements`}>
                 <VerifiedIcon className="size-3" />
                 {user.verifiedWins} verified{" "}
                 {user.verifiedWins === 1 ? "win" : "wins"}
@@ -110,7 +110,7 @@ export function ProfileCard({
               key={reason}
               className="flex items-start gap-1.5 text-[0.78rem] text-ink-muted"
             >
-              <span aria-hidden className="mt-1.5 size-1 shrink-0 rounded-full bg-sky" />
+              <span aria-hidden className="mt-[0.45rem] h-px w-2 shrink-0 bg-line-strong" />
               {reason}
             </li>
           ))}

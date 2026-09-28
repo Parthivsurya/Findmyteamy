@@ -63,20 +63,16 @@ export default async function LoginPage({
         <div className="space-y-5">
           <p className="text-[0.85rem] text-ink-muted">
             New here?{" "}
-            <Link href="/signup" className="font-semibold text-brand hover:underline">
+            <Link href="/signup" className="font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand">
               Create an account
             </Link>
           </p>
 
           {demoAccounts.length ? (
             <div>
-              <div className="flex items-center gap-3">
-                <span className="h-px flex-1 bg-line" />
-                <span className="text-[0.7rem] font-bold uppercase tracking-wider text-ink-muted">
-                  Demo accounts for local testing
-                </span>
-                <span className="h-px flex-1 bg-line" />
-              </div>
+              <p className="text-[0.76rem] font-medium text-ink-2">
+                Demo accounts for local testing
+              </p>
 
               <Card className="mt-3 divide-y divide-[var(--line)]">
                 {demoAccounts.map((account) => (
@@ -119,7 +115,7 @@ export default async function LoginPage({
       {error ? (
         <p
           role="alert"
-          className="mb-4 rounded-xl border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
+          className="mb-4 rounded-box border border-danger/30 bg-danger-soft px-3.5 py-2.5 text-[0.83rem] text-danger"
         >
           {ERRORS[error] ?? "Something went wrong. Please try again."}
         </p>

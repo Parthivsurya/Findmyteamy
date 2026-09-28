@@ -78,7 +78,7 @@ export async function respondToRequestAction(
       ok: true,
       message:
         rawAction === "accept"
-          ? "Accepted — contact details are now shared with each other."
+          ? "Accepted. Contact details are now shared with each other."
           : rawAction === "decline"
             ? "Request declined."
             : "Request cancelled.",

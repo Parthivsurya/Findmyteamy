@@ -19,7 +19,7 @@ export const AVAILABILITY_LABEL: Record<Availability, string> = {
 export const AVAILABILITY_HINT: Record<Availability, string> = {
   OPEN: "Actively looking and happy to be contacted",
   EVENTS_ONLY: "Available only for the events I have marked",
-  NOT_AVAILABLE: "Busy — hidden from search results",
+  NOT_AVAILABLE: "Busy, hidden from search results",
 };
 
 export const SKILL_LEVELS = ["BEGINNER", "INTERMEDIATE", "EXPERT"] as const;

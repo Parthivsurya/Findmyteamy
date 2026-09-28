@@ -36,7 +36,7 @@ export default async function NewTeamPage({
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6">
         <EmptyState
           title="There are no upcoming events yet"
-          description="Teams belong to an event, so add the hackathon first — it takes a minute and an admin reviews it."
+          description="Teams belong to an event, so add the hackathon first. It takes a minute and an admin reviews it."
           action={
             <Link href="/events/new" className={btn("primary", "md")}>
               List an event
@@ -57,7 +57,7 @@ export default async function NewTeamPage({
         <h1 className="text-2xl font-bold">Create a team</h1>
         <p className="mt-1.5 text-[0.9rem] text-ink-muted">
           You become the team leader. List the roles you are missing and people
-          can be invited into them — or request to join one themselves.
+          can be invited into them, or request to join one themselves.
         </p>
       </header>
 

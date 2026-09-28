@@ -28,7 +28,7 @@ export default async function VerifyPage({
       footer={
         <p className="text-[0.85rem] text-ink-muted">
           Wrong address?{" "}
-          <Link href="/signup" className="font-semibold text-brand hover:underline">
+          <Link href="/signup" className="font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand">
             Start again
           </Link>
         </p>

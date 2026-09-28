@@ -34,7 +34,7 @@ export const GET = route(async (request) => {
       userId: user.id,
       type: "AVAILABILITY_REMINDER",
       title: "Is your availability still correct?",
-      body: "You set it over a month ago. Confirming it keeps you visible to team leaders — and keeps search results honest.",
+      body: "You set it over a month ago. Confirming it keeps you visible to team leaders and keeps search results honest.",
       href: "/dashboard",
       emailPref: "emailOnRequests",
     });

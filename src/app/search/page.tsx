@@ -114,7 +114,7 @@ export default async function SearchPage({
             </p>
 
             <div
-              className="flex items-center gap-1 rounded-lg border border-line bg-surface p-0.5"
+              className="flex items-center gap-1 rounded-box border border-line bg-surface p-0.5"
               role="group"
               aria-label="Sort results"
             >
@@ -124,7 +124,7 @@ export default async function SearchPage({
                   href={withParams("/search", raw, { sort: sort.value, page: null })}
                   aria-current={query.sort === sort.value ? "true" : undefined}
                   className={cn(
-                    "rounded-md px-2.5 py-1 text-[0.78rem] font-medium transition-colors",
+                    "rounded-box px-2.5 py-1 text-[0.78rem] font-medium transition-colors",
                     query.sort === sort.value
                       ? "bg-brand-soft text-brand"
                       : "text-ink-muted hover:text-ink",

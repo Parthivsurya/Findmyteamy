@@ -48,7 +48,7 @@ export function SkillChip({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[0.78rem] font-medium",
+        "inline-flex items-center gap-1.5 rounded-box border px-2 py-1 text-[0.78rem] font-medium",
         highlight
           ? "border-brand/40 bg-brand-soft text-brand"
           : "border-line bg-surface-2 text-ink-2",
@@ -65,8 +65,8 @@ export function RoleChip({ name, className }: { name: string; className?: string
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full border border-sky/40 bg-sky-soft",
-        "px-2.5 py-1 text-[0.78rem] font-semibold text-sky-ink",
+        "inline-flex items-center rounded-box border border-line bg-surface-2",
+        "px-2 py-0.5 text-[0.78rem] font-medium text-ink-2",
         className,
       )}
     >
@@ -96,7 +96,7 @@ export function SkillsByCategory({
     <div className="space-y-4">
       {ordered.map(([category, entries]) => (
         <div key={category}>
-          <h3 className="mb-2 text-[0.72rem] font-bold uppercase tracking-wider text-ink-muted">
+          <h3 className="mb-2 text-[0.76rem] font-medium text-ink-muted">
             {SKILL_CATEGORY_LABEL[category as SkillCategory] ?? category}
           </h3>
           <div className="flex flex-wrap gap-1.5">

@@ -44,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     title: event.name,
     description:
       event.description?.slice(0, 200) ??
-      `${event.name} by ${event.organizer} — find teammates and teams looking for members.`,
+      `${event.name} by ${event.organizer}. Find teammates and teams looking for members.`,
     openGraph: { title: event.name, type: "website" },
     alternates: { canonical: `/events/${slug}` },
   };
@@ -84,7 +84,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       {event.status !== "APPROVED" ? (
-        <div className="mb-5 rounded-card border border-warn/30 bg-warn-soft px-4 py-3 text-[0.85rem] text-warn">
+        <div className="mb-5 rounded-box border border-warn/30 bg-warn-soft px-4 py-3 text-[0.85rem] text-warn">
           This event is <strong>{event.status.toLowerCase()}</strong> and is not
           publicly listed yet.
         </div>
@@ -139,7 +139,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
             </Fact>
           ) : null}
           <Fact icon={<UsersIcon className="size-4" />} label="Team size">
-            {event.minTeamSize}–{event.maxTeamSize} people
+            {event.minTeamSize}-{event.maxTeamSize} people
           </Fact>
           {event.registrationDeadline ? (
             <Fact icon={<ClockIcon className="size-4" />} label="Register by">
@@ -218,7 +218,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
 
                 {completeTeams.length ? (
                   <>
-                    <h3 className="mb-3 mt-8 text-[0.75rem] font-bold uppercase tracking-wider text-ink-muted">
+                    <h3 className="mb-3 mt-8 text-[0.8rem] font-medium text-ink-2">
                       Complete teams ({completeTeams.length})
                     </h3>
                     <div className="grid gap-4 sm:grid-cols-2">
@@ -234,7 +234,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
             <EmptyState
               icon={<UsersIcon className="size-5" />}
               title="Nobody has marked themselves as looking yet"
-              description="Be the first — mark yourself as attending and set your status to “looking for a team”, and leaders searching for this event will find you."
+              description="Be the first. Mark yourself as attending and set your status to “looking for a team”, and leaders searching for this event will find you."
             />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2">
@@ -337,7 +337,7 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
                 {themes.map((theme) => (
                   <span
                     key={theme}
-                    className="rounded-lg bg-surface-2 px-2 py-1 text-[0.78rem] text-ink-2"
+                    className="rounded-box bg-surface-2 px-2 py-1 text-[0.78rem] text-ink-2"
                   >
                     {theme}
                   </span>
@@ -385,7 +385,7 @@ function Fact({
     <div className="flex items-start gap-2">
       <span className="mt-0.5 text-brand">{icon}</span>
       <div>
-        <dt className="text-[0.72rem] font-bold uppercase tracking-wider text-ink-muted">
+        <dt className="text-[0.76rem] font-medium text-ink-muted">
           {label}
         </dt>
         <dd className="text-[0.87rem] font-medium">{children}</dd>

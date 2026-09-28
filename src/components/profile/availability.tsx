@@ -41,7 +41,7 @@ export function ParticipationBadge({ status }: { status: string }) {
   }
   if (status === "TEAM_LOOKING_FOR_MEMBERS") {
     return (
-      <Badge tone="sky">
+      <Badge tone="ok">
         <Dot />
         Team needs members
       </Badge>

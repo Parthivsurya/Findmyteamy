@@ -15,7 +15,7 @@ import { buildTeam } from "@/lib/services/search";
 export const metadata: Metadata = {
   title: "Team Builder",
   description:
-    "Describe the team you need — one row per open role — and get ranked candidates for each role slot.",
+    "Describe the team you need, one row per open role, and get ranked candidates for each role slot.",
 };
 
 /** Decodes "roleId:skillA,skillB|roleId2:" back into builder rows. */
@@ -111,13 +111,7 @@ export default async function TeamBuilderPage({
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <header className="mb-6">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-bold">Team Builder</h1>
-          <Badge tone="lime">
-            <SparklesIcon className="size-3" />
-            Ranked per role
-          </Badge>
-        </div>
+        <h1 className="text-[1.35rem] font-medium tracking-tight">Team Builder</h1>
         <p className="mt-1.5 max-w-2xl text-[0.9rem] text-ink-muted">
           Instead of searching one skill at a time, describe the team you need.
           Each open role gets its own ranked shortlist, so a designer is never
@@ -125,7 +119,7 @@ export default async function TeamBuilderPage({
         </p>
 
         {team ? (
-          <p className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-xl border border-line bg-surface px-3 py-2 text-[0.83rem]">
+          <p className="mt-3 inline-flex flex-wrap items-center gap-2 rounded-box border border-line bg-surface px-3 py-2 text-[0.83rem]">
             Filling open roles for{" "}
             <Link
               href={`/teams/${team.id}`}
@@ -165,7 +159,7 @@ export default async function TeamBuilderPage({
             <EmptyState
               icon={<UsersIcon className="size-5" />}
               title="Describe the team you need"
-              description="Add the roles you are missing — for example one ML engineer and one UI/UX designer — and optionally the skills each role should bring. You will get a separate ranked list per role."
+              description="Add the roles you are missing (one ML engineer and one UI/UX designer, say) and optionally the skills each should bring. You get a separate ranked list per role."
               action={
                 <Link href="/search" className={btn("outline", "md")}>
                   Or search everyone instead
@@ -184,7 +178,7 @@ export default async function TeamBuilderPage({
                   <div key={`${group.roleId}-${index}`}>
                     <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-line pb-2.5">
                       <div className="flex flex-wrap items-center gap-2">
-                        <span className="flex size-6 items-center justify-center rounded-md bg-brand text-[0.7rem] font-bold text-white">
+                        <span className="flex size-6 items-center justify-center rounded-box bg-brand text-[0.7rem] font-bold text-white">
                           {index + 1}
                         </span>
                         <RoleChip name={group.roleName} />
@@ -200,7 +194,7 @@ export default async function TeamBuilderPage({
                     </div>
 
                     {group.candidates.length === 0 ? (
-                      <p className="rounded-xl border border-dashed border-line-strong px-4 py-6 text-center text-[0.85rem] text-ink-muted">
+                      <p className="rounded-box border border-dashed border-line-strong px-4 py-6 text-center text-[0.85rem] text-ink-muted">
                         Nobody matches this role yet. Try removing a required
                         skill, or widen the event filter.
                       </p>

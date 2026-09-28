@@ -108,7 +108,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description:
       user.bio ??
       `${user.name}${user.college ? ` from ${user.college}` : ""}${
-        skills ? ` — ${skills}` : ""
+        skills ? `. ${skills}` : ""
       }${wins ? ` · ${wins} verified hackathon wins` : ""}.`,
     openGraph: {
       title: `${user.name} on FindMyTeammate`,
@@ -243,7 +243,7 @@ export default async function ProfilePage({ params }: Props) {
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <AvailabilityBadge availability={profile.availability} />
             {verified.length > 0 ? (
-              <Badge tone="lime">
+              <Badge tone="ok">
                 <VerifiedIcon className="size-3" />
                 {verified.length} verified {verified.length === 1 ? "win" : "wins"}
               </Badge>
@@ -272,7 +272,7 @@ export default async function ProfilePage({ params }: Props) {
                   {BRANCHES[profile.branchCode] ? (
                     <span className="text-ink-muted">
                       {" "}
-                      — {BRANCHES[profile.branchCode]}
+                      , {BRANCHES[profile.branchCode]}
                     </span>
                   ) : null}
                 </dd>
@@ -347,7 +347,7 @@ export default async function ProfilePage({ params }: Props) {
           ) : null}
 
           {isOwner ? (
-            <div className="mt-5 rounded-xl border border-line bg-surface-2 p-3">
+            <div className="mt-5 rounded-box border border-line bg-surface-2 p-3">
               <div className="flex items-center justify-between text-[0.8rem]">
                 <span className="font-semibold">Profile completeness</span>
                 <span className="font-bold tabular-nums text-brand">
@@ -471,7 +471,7 @@ export default async function ProfilePage({ params }: Props) {
                 upcoming.map((participation) => (
                   <div
                     key={participation.event.id}
-                    className="flex flex-wrap items-start justify-between gap-2 rounded-xl border border-line p-3"
+                    className="flex flex-wrap items-start justify-between gap-2 rounded-box border border-line p-3"
                   >
                     <div className="min-w-0">
                       <Link

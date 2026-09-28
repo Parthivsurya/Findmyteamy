@@ -118,7 +118,7 @@ export default async function AdminPage() {
           <Badge tone="brand">{admin.name}</Badge>
         </h1>
         <p className="mt-1.5 text-[0.9rem] text-ink-muted">
-          Verification keeps the badges meaningful — this is the queue that does it.
+          Verification keeps the badges meaningful. This is the queue that does it.
         </p>
       </header>
 
@@ -166,7 +166,7 @@ export default async function AdminPage() {
             description={
               pendingAchievements.length
                 ? `${pendingAchievements.length} waiting`
-                : "Nothing waiting — the queue is clear."
+                : "Nothing waiting. The queue is clear."
             }
           />
           <CardBody className="space-y-4">
@@ -224,7 +224,7 @@ export default async function AdminPage() {
               pendingEvents.map((event) => (
                 <div
                   key={event.id}
-                  className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-line p-3.5"
+                  className="flex flex-wrap items-start justify-between gap-3 rounded-box border border-line p-3.5"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
@@ -295,7 +295,7 @@ export default async function AdminPage() {
         <Card>
           <CardHead
             title="Skill checks flagged for review"
-            description="Answers the model thought were probably machine-written. Treat the score as a hint, not a verdict — short answers and non-native English both trip it."
+            description="Answers the model thought were probably machine-written. Treat the score as a hint, not a verdict: short answers and non-native English both trip it."
           />
           <CardBody>
             {flaggedAssessments.length === 0 ? (
@@ -303,7 +303,7 @@ export default async function AdminPage() {
             ) : (
               <ul className="space-y-3">
                 {flaggedAssessments.map((a) => (
-                  <li key={a.id} className="rounded border border-line p-3.5">
+                  <li key={a.id} className="rounded-box border border-line p-3.5">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <p className="text-[0.87rem]">
                         <Link
@@ -322,15 +322,15 @@ export default async function AdminPage() {
                       </Badge>
                     </div>
 
-                    <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-wider text-ink-muted">
+                    <p className="mt-2 text-[0.78rem] font-medium text-ink-muted">
                       Question
                     </p>
                     <p className="text-[0.83rem] text-ink-2">{a.question}</p>
 
-                    <p className="mt-2 text-[0.78rem] font-semibold uppercase tracking-wider text-ink-muted">
+                    <p className="mt-2 text-[0.78rem] font-medium text-ink-muted">
                       Answer
                     </p>
-                    <p className="whitespace-pre-line rounded bg-surface-2 px-3 py-2 text-[0.83rem] leading-relaxed text-ink-2">
+                    <p className="whitespace-pre-line rounded-box bg-surface-2 px-3 py-2 text-[0.83rem] leading-relaxed text-ink-2">
                       {a.answer}
                     </p>
 
@@ -341,7 +341,7 @@ export default async function AdminPage() {
                     ) : null}
                     {a.rationale ? (
                       <p className="mt-1 text-[0.78rem] text-ink-muted">
-                        Would have been ranked {a.assessedLevel?.toLowerCase()} —{" "}
+                        Would have been ranked {a.assessedLevel?.toLowerCase()} at{" "}
                         {a.rationale}
                       </p>
                     ) : null}
@@ -366,7 +366,7 @@ export default async function AdminPage() {
                 {openReports.map((report) => (
                   <li
                     key={report.id}
-                    className="flex flex-wrap items-start justify-between gap-3 rounded-xl border border-line p-3.5"
+                    className="flex flex-wrap items-start justify-between gap-3 rounded-box border border-line p-3.5"
                   >
                     <div className="min-w-0">
                       <p className="text-[0.87rem]">
@@ -381,7 +381,7 @@ export default async function AdminPage() {
                           reported by {report.reporter.name}
                         </span>
                       </p>
-                      <p className="mt-1.5 rounded-lg bg-surface-2 px-3 py-2 text-[0.82rem] leading-relaxed text-ink-2">
+                      <p className="mt-1.5 rounded-box bg-surface-2 px-3 py-2 text-[0.82rem] leading-relaxed text-ink-2">
                         {report.reason}
                       </p>
                       <p className="mt-1 text-[0.75rem] text-ink-muted">
@@ -411,7 +411,7 @@ function Stat({
 }) {
   return (
     <Card className="p-3.5">
-      <p className="text-[0.72rem] font-bold uppercase tracking-wider text-ink-muted">
+      <p className="text-[0.76rem] font-medium text-ink-muted">
         {label}
       </p>
       <p className="mt-1 text-xl font-bold tabular-nums">{value}</p>
