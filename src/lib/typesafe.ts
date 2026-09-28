@@ -64,8 +64,17 @@ export type ChoiceAnswer = {
 export type ScoreAnswer = { type: "score"; score: number; confidence?: number };
 export type Answer = NoulAnswer | ChoiceAnswer | ScoreAnswer;
 
+/** Token counts for one request. There is no account-level usage endpoint —
+ *  every candidate path 404s — so this is the only way to track spend. */
+export type TypeSafeUsage = { inputTokens: number; outputTokens: number };
+
 export type SystemOneResult =
-  | { ok: true; model: string; answers: Record<string, Answer> }
+  | {
+      ok: true;
+      model: string;
+      answers: Record<string, Answer>;
+      usage: TypeSafeUsage;
+    }
   | { ok: false; error: string; retryable: boolean };
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -132,6 +141,7 @@ async function askOnce(
     const body = (await response.json()) as {
       model?: string;
       answers?: Record<string, Answer>;
+      usage?: { input_tokens?: number; output_tokens?: number };
     };
 
     if (!body.answers || typeof body.answers !== "object") {
@@ -149,7 +159,15 @@ async function askOnce(
       };
     }
 
-    return { ok: true, model: body.model ?? typeSafeModel(), answers: body.answers };
+    return {
+      ok: true,
+      model: body.model ?? typeSafeModel(),
+      answers: body.answers,
+      usage: {
+        inputTokens: body.usage?.input_tokens ?? 0,
+        outputTokens: body.usage?.output_tokens ?? 0,
+      },
+    };
   } catch (error) {
     const aborted = error instanceof Error && error.name === "AbortError";
     return {

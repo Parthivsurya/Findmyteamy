@@ -485,6 +485,29 @@ punish an honest student whose experience simply went differently. Without it,
 a genuine Docker answer about build-cache layering was marked as not
 addressing a question about runtime differences, and went unapplied.
 
+### Watching what it spends
+
+TypeSafe exposes nothing about the key over the API — `/v1/key`, `/v1/keys`,
+`/v1/me`, `/v1/account`, `/v1/usage`, `/v1/credits`, `/v1/billing` and
+`/v1/limits` all return 404. Balance and limits live only in the console at
+https://console.typesafe.ai.
+
+What the API does return, on every request, is token usage:
+
+```json
+{"model":"jev-1.13.0","answers":{…},"usage":{"input_tokens":277,"output_tokens":21}}
+```
+
+Those counts are stored per assessment, and `/admin` shows the number of
+checks taken and the tokens they consumed. Since there is no account endpoint
+to poll, this is the only record of spend, so it is worth glancing at while
+the credit balance is small.
+
+OpenRouter, by contrast, does report on its key: `/api/v1/key` gives the
+key's spend cap and what it has used, and `/api/v1/credits` gives the account
+balance. Note that the `limit` field there is a cap on the key, not money in
+the account — a key can be capped at $50 while the balance is nil.
+
 ### Measured behaviour, judging on System One
 
 Five answers with known provenance, through the real code path:

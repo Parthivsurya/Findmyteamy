@@ -287,7 +287,12 @@ async function judgeWithSystemOne({
   skillName: string;
   question: string;
   answer: string;
-}): Promise<{ authorship: AuthorshipJudgement; ranking: LevelJudgement; model: string }> {
+}): Promise<{
+  authorship: AuthorshipJudgement;
+  ranking: LevelJudgement;
+  model: string;
+  usage: { inputTokens: number; outputTokens: number };
+}> {
   // Structured, because System One reads JSON and labelled keys beat a prose
   // template. criteria.true / criteria.false describe each side of a noul
   // explicitly, which separates genuine from machine-written answers far
@@ -379,6 +384,7 @@ async function judgeWithSystemOne({
 
   return {
     model: result.model,
+    usage: result.usage,
     authorship: {
       likelihood: machine,
       verdict: machine >= 75 ? "LIKELY_AI" : machine >= 35 ? "UNCERTAIN" : "LIKELY_HUMAN",
@@ -477,6 +483,7 @@ export async function submitAssessment({
     let authorship: AuthorshipJudgement;
     let ranking: LevelJudgement;
     let judgedBy = attempt.model;
+    let usage: { inputTokens: number; outputTokens: number } | null = null;
 
     if (isTypeSafeConfigured()) {
       const judged = await judgeWithSystemOne({
@@ -487,6 +494,7 @@ export async function submitAssessment({
       authorship = judged.authorship;
       ranking = judged.ranking;
       judgedBy = judged.model;
+      usage = judged.usage;
     } else {
       [authorship, ranking] = await Promise.all([
         detectAiAuthorship(attempt.question, trimmed),
@@ -517,6 +525,8 @@ export async function submitAssessment({
         aiSignals: JSON.stringify(authorship.signals),
         status: flagged ? "FLAGGED" : "ASSESSED",
         model: judgedBy,
+        inputTokens: usage?.inputTokens,
+        outputTokens: usage?.outputTokens,
         completedAt: new Date(),
       },
     });

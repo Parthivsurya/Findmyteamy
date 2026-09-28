@@ -32,6 +32,7 @@ export default async function AdminPage() {
     suggestedSkills,
     openReports,
     flaggedAssessments,
+    assessmentUsage,
     stats,
   ] = await Promise.all([
     db.achievement.findMany({
@@ -71,6 +72,12 @@ export default async function AdminPage() {
       take: 50,
     }),
     listFlaggedAssessments(),
+    // No account usage endpoint exists on the judging provider, so the only
+    // record of spend is what each request reported.
+    db.skillAssessment.aggregate({
+      _sum: { inputTokens: true, outputTokens: true },
+      _count: { _all: true },
+    }),
     Promise.all([
       db.user.count(),
       db.user.count({ where: { onboarded: true } }),
@@ -137,6 +144,18 @@ export default async function AdminPage() {
         <Stat label="Events live" value={approvedEvents} />
         <Stat label="In review" value={pendingAchievements.length} hint="achievements" />
         <Stat label="Open reports" value={openReports.length} />
+        <Stat
+          label="Skill checks"
+          value={assessmentUsage._count._all}
+          hint={
+            assessmentUsage._sum.inputTokens
+              ? `${(
+                  (assessmentUsage._sum.inputTokens ?? 0) +
+                  (assessmentUsage._sum.outputTokens ?? 0)
+                ).toLocaleString()} tokens used`
+              : undefined
+          }
+        />
       </section>
 
       <div className="space-y-6">

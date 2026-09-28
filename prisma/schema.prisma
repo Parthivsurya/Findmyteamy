@@ -221,6 +221,11 @@ model SkillAssessment {
   aiVerdict    String? // LIKELY_HUMAN | UNCERTAIN | LIKELY_AI
   aiSignals    String? // JSON array of what the model noticed
 
+  /// Token counts from the judging request. Recorded because the provider has
+  /// no account usage endpoint, so this is the only record of what was spent.
+  inputTokens  Int?
+  outputTokens Int?
+
   status String @default("PENDING") // PENDING | ASSESSED | FLAGGED | FAILED
   /// Set when the run could not complete, so the student sees why.
   error  String?
