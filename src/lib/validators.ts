@@ -17,6 +17,41 @@ import {
  * the two can never disagree about limits.
  */
 
+/**
+ * Wraps a query-string schema so that a parameter which is present but blank
+ * counts as absent.
+ *
+ * A GET form submits every control it contains, so an untouched `<select>`
+ * arrives as `""` rather than being left out. Zod rightly rejects `""` for an
+ * enum or a coerced number, and because one bad field fails the whole object,
+ * the search page fell back to `parse({})` and silently discarded every filter
+ * the student had set. Pressing "Apply filters" with `sameYear=true` in the URL
+ * therefore came back with both checkboxes clear and no filtering applied, and
+ * `/api/search` answered the same request with a 400.
+ *
+ * Stripping blanks first makes "present but empty" mean "not set", which is
+ * what a form means by it, and keeps a genuinely invalid value an error.
+ */
+function queryObject<T extends z.ZodRawShape>(shape: T) {
+  return z.preprocess((value) => {
+    if (value === null || typeof value !== "object" || Array.isArray(value)) {
+      return value;
+    }
+    const out: Record<string, unknown> = {};
+    for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof raw === "string" && raw.trim() === "") continue;
+      if (Array.isArray(raw)) {
+        const kept = raw.filter((i) => !(typeof i === "string" && i.trim() === ""));
+        if (kept.length === 0) continue;
+        out[key] = kept;
+        continue;
+      }
+      out[key] = raw;
+    }
+    return out;
+  }, z.object(shape));
+}
+
 const trimmed = (max: number) => z.string().trim().max(max);
 const optionalText = (max: number) =>
   z
@@ -158,7 +193,7 @@ export const achievementReviewSchema = z.object({
 // Search and Team Builder
 // ---------------------------------------------------------------------------
 
-export const searchQuerySchema = z.object({
+export const searchQuerySchema = queryObject({
   q: optionalText(80),
   skills: commaList,
   skillMatch: z.enum(["any", "all"]).optional().default("any"),
@@ -245,7 +280,7 @@ export const eventReviewSchema = z.object({
   status: z.enum(EVENT_STATUSES),
 });
 
-export const eventListQuerySchema = z.object({
+export const eventListQuerySchema = queryObject({
   q: optionalText(80),
   mode: z.enum(EVENT_MODES).optional(),
   when: z.enum(["upcoming", "past", "all"]).optional().default("upcoming"),
