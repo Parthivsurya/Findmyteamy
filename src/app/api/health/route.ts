@@ -2,6 +2,8 @@ import { authSecretProblem } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { databaseProvider } from "@/lib/env";
 import { emailTransport, isEmailConfigured } from "@/lib/mailer";
+import { isOpenRouterConfigured, openRouterModel } from "@/lib/openrouter";
+import { isTypeSafeConfigured, typeSafeModel } from "@/lib/typesafe";
 
 /**
  * Health check for uptime monitoring and for confirming a deployment is wired
@@ -35,6 +37,15 @@ export async function GET() {
             : "ENABLED — development only"
           : "disabled",
       cron: process.env.CRON_SECRET ? "configured" : "disabled",
+      // Neither provider exposes anything about its key, so reporting which
+      // one is wired up is the only way to confirm a key actually landed.
+      skillChecks: isTypeSafeConfigured()
+        ? `judging on ${typeSafeModel()}${
+            isOpenRouterConfigured() ? `, questions from ${openRouterModel()}` : ", templated questions"
+          }`
+        : isOpenRouterConfigured()
+          ? `judging on ${openRouterModel()} (chat path)`
+          : "disabled (no TYPESAFE_API_KEY or OPENROUTER_API_KEY)",
     },
     responseTimeMs: Date.now() - startedAt,
   };
