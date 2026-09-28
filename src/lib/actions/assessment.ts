@@ -46,10 +46,11 @@ export async function submitAssessmentAction(
       }),
     (saved) => ({
       ok: true,
-      message:
-        saved.status === "FLAGGED"
-          ? "Answer received. It has been sent to an admin to look over before your profile is updated."
-          : `Assessed as ${saved.assessedLevel?.toLowerCase()}. ${saved.rationale ?? ""}`.trim(),
+      // `applied` is the only honest signal here: an assessment can complete,
+      // be recorded, and still leave the claimed level untouched.
+      message: saved.applied
+        ? `Assessed as ${saved.assessedLevel?.toLowerCase()} and saved to your profile. ${saved.rationale ?? ""}`.trim()
+        : (saved.rationale ?? "Answer received.").trim(),
     }),
   );
 

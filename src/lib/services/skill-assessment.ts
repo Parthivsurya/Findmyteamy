@@ -44,8 +44,19 @@ import {
  */
 const aiFlagThreshold = () => envNumber("ASSESSMENT_AI_FLAG_THRESHOLD", 80);
 const attemptsPerDay = () => envNumber("ASSESSMENT_ATTEMPTS_PER_DAY", 12);
-/** Below this, the judgement is recorded but the profile is left alone. */
-const minConfidence = () => envNumber("ASSESSMENT_MIN_CONFIDENCE", 60);
+/**
+ * How much probability must sit on the chosen level before the profile moves.
+ *
+ * Deliberately measured against that level's own share, not the `confidence`
+ * System One returns for the choice. The three levels are ordered, so adjacent
+ * ones compete on almost every real answer: a clear intermediate answer came
+ * back 62% intermediate / 38% expert, which is only 43% confident but is not
+ * remotely unsure about the level being "around intermediate". Gating on
+ * confidence threw those away — measured 43 and 36 rejected against 82, 97 and
+ * 100 accepted, so whether an honest answer counted was close to a coin flip.
+ */
+const minLevelProbability = () =>
+  envNumber("ASSESSMENT_MIN_LEVEL_PROBABILITY", 55);
 
 // ---------------------------------------------------------------------------
 // Step 1 — the question
@@ -86,6 +97,8 @@ export type AuthorshipJudgement = {
 export type LevelJudgement = {
   level: SkillLevel;
   confidence: number;
+  /** The chosen level's own probability, 0-100. This is what gates the profile. */
+  probability: number;
   rationale: string;
   /**
    * Whether the answer actually addressed the question.
@@ -203,6 +216,9 @@ async function judgeWithSystemOne({
 
   const confidence = confidencePercent(levelAnswer) ?? 50;
   const addressedQuestion = addressed >= 50;
+  const probability = levelAnswer.probabilities?.[level] !== undefined
+    ? Math.round(levelAnswer.probabilities[level] * 100)
+    : confidence;
 
   // System One returns judgements, not prose, so the explanation is assembled
   // here from what it actually reported rather than being written by a model.
@@ -216,10 +232,12 @@ async function judgeWithSystemOne({
 
   // The off-question note is added once, by the caller, so it is not repeated
   // here.
+  // The confidence number is recorded but kept out of this sentence: shown to
+  // a student it read as a mark on their answer, which it is not.
   const rationale = [
     `Your answer reads as ${level.toLowerCase()} level`,
     spread ? ` (${spread})` : "",
-    `, judged with ${confidence}% confidence.`,
+    `.`,
   ].join("");
 
   return {
@@ -230,7 +248,7 @@ async function judgeWithSystemOne({
       verdict: machine >= 75 ? "LIKELY_AI" : machine >= 35 ? "UNCERTAIN" : "LIKELY_HUMAN",
       signals: [],
     },
-    ranking: { level, confidence, rationale, addressedQuestion },
+    ranking: { level, confidence, probability, rationale, addressedQuestion },
   };
 }
 
@@ -336,6 +354,20 @@ export async function submitAssessment({
     // Past the threshold the attempt goes to an admin rather than being acted
     // on automatically, and the level is still recorded either way.
     const flagged = authorship.likelihood >= aiFlagThreshold();
+    const tooClose = ranking.probability < minLevelProbability();
+
+    // The profile moves only on a judgement that is unflagged, on-question and
+    // decided. Every other path has to say so: an earlier version told the
+    // student "Assessed as intermediate" and then changed nothing, which is
+    // indistinguishable from the feature being broken.
+    const applied = !flagged && ranking.addressedQuestion && !tooClose;
+    const note = !ranking.addressedQuestion
+      ? "This answered a different question, so your claimed level was left as it is."
+      : flagged
+        ? "An admin will look this over before your profile changes."
+        : tooClose
+          ? "The levels came out too close to call, so your claimed level was left as it is. Answering with more of what you actually did will separate them."
+          : "";
 
     const saved = await db.skillAssessment.update({
       where: { id: attempt.id },
@@ -343,9 +375,7 @@ export async function submitAssessment({
         answer: trimmed,
         assessedLevel: ranking.level,
         confidence: ranking.confidence,
-        rationale: ranking.addressedQuestion
-          ? ranking.rationale
-          : `${ranking.rationale} (This answered a different question, so it was not applied to your profile.)`.trim(),
+        rationale: [ranking.rationale, note].filter(Boolean).join(" "),
         aiLikelihood: authorship.likelihood,
         aiVerdict: authorship.verdict,
         aiSignals: JSON.stringify(authorship.signals),
@@ -357,19 +387,14 @@ export async function submitAssessment({
       },
     });
 
-    // The profile moves only on a judgement that is unflagged, on-question and
-    // confident. Anything else is kept as a record without changing the badge.
-    const conclusive =
-      !flagged && ranking.addressedQuestion && ranking.confidence >= minConfidence();
-
-    if (conclusive) {
+    if (applied) {
       await db.userSkill.update({
         where: { userId_skillId: { userId, skillId: attempt.skillId } },
         data: { assessedLevel: ranking.level, assessedAt: new Date() },
       });
     }
 
-    return saved;
+    return { ...saved, applied };
   } catch (error) {
     const message = error instanceof HttpError ? error.message : "The skill check could not be completed";
     await db.skillAssessment.update({

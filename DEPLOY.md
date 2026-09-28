@@ -462,12 +462,27 @@ skill, so a retake is not the identical question.
 
 
 
-A judgement is applied to the profile only when it is unflagged, confident
-(`ASSESSMENT_MIN_CONFIDENCE`, default 60) and actually answered the question
-asked. That last condition exists because an earlier version ranked a
+A judgement is applied to the profile only when it is unflagged, decided
+(`ASSESSMENT_MIN_LEVEL_PROBABILITY`, default 55) and actually answered the
+question asked. That last condition exists because an earlier version ranked a
 detailed, clearly expert answer as BEGINNER at 85% confidence purely for
 describing a different problem than the one asked. Drifting off the question
 now means inconclusive, not unskilled.
+
+The "decided" test reads the chosen level's own probability, **not** the
+`confidence` System One returns for the choice, and the difference is not
+academic. The levels are ordered, so adjacent ones compete on almost every
+real answer: a clear intermediate answer came back 62% intermediate / 38%
+expert, which is only 43% confident while being perfectly clear that the level
+is around intermediate. The first version gated on confidence at 60 and threw
+those away — of five judgements the measured confidences were 34, 80, 97, 100
+and 100, so whether an honest answer counted was close to a coin flip, and
+three real attempts in a row changed nothing on the profile.
+
+Every path that does not move the profile now says so in the message the
+student sees. The earlier version reported "Assessed as intermediate" and then
+silently left the claimed level alone, which is indistinguishable from the
+feature being broken.
 
 Questions end with an escape hatch — "if that has not happened to you, tell me
 about the closest thing" — because they are otherwise specific enough to
