@@ -447,6 +447,35 @@ suitable underlying model. Three calls per completed check: one to write the
 question, two to judge. Questions for an open attempt are reused on refresh so
 a student cannot reroll until an easier one appears.
 
+**The router is not reliable on its own.** Measured live, four calls each:
+
+| Model | Succeeded |
+| --- | --- |
+| `typesafe/jev-router` | 2/4 — `504 Decision model timed out` |
+| `openai/gpt-6-luna` | 4/4 |
+| `deepseek/deepseek-v4.1-flash` | 4/4 |
+
+The failure is in the router's decision step, which runs before a model is
+chosen, so OpenRouter's own `models` fallback cannot rescue it. The client
+therefore retries the primary twice and then asks a concrete model from
+`OPENROUTER_FALLBACK_MODELS` instead, which took a 6-call sample from 3/6 to
+6/6. Expect 4–14 seconds per call; the slow end is the router timing out
+before the fallback answers.
+
+Two other things worth knowing, both found by running it rather than reading
+it. Reasoning is switched off for these calls: reasoning tokens come out of
+the same `max_tokens` budget and arrive in the content field, so leaving it on
+returned a truncated monologue and no JSON at all. And a reply that stops
+because it ran out of budget is now treated as a retryable failure rather than
+parsed as half an answer.
+
+A judgement is applied to the profile only when it is unflagged, confident
+(`ASSESSMENT_MIN_CONFIDENCE`, default 60) and actually answered the question
+asked. That last condition exists because an earlier version ranked a
+detailed, clearly expert answer as BEGINNER at 85% confidence purely for
+describing a different problem than the one asked. Drifting off the question
+now means inconclusive, not unskilled.
+
 **How the machine-written score is used matters.** LLM-based AI-text detection
 is unreliable, and worst precisely here: short technical answers written by
 non-native English speakers. So it never rejects or downgrades anyone. Past

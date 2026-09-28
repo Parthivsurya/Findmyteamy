@@ -30,6 +30,8 @@ import { chatJson, isOpenRouterConfigured, openRouterModel } from "@/lib/openrou
  */
 const aiFlagThreshold = () => envNumber("ASSESSMENT_AI_FLAG_THRESHOLD", 80);
 const attemptsPerDay = () => envNumber("ASSESSMENT_ATTEMPTS_PER_DAY", 12);
+/** Below this, the judgement is recorded but the profile is left alone. */
+const minConfidence = () => envNumber("ASSESSMENT_MIN_CONFIDENCE", 60);
 
 // ---------------------------------------------------------------------------
 // Step 1 — the question
@@ -49,13 +51,25 @@ export async function generateQuestion(
       {
         role: "system",
         content: [
-          "You set short practical questions that reveal whether a student has genuinely used a technology, for a university hackathon-team platform.",
-          "Write exactly one question. Rules:",
-          "- It must be answerable in three to six sentences from hands-on experience.",
-          "- Prefer questions about what goes wrong, what they chose between, or how they debugged something, over definitions or syntax recall.",
-          "- Do not ask for code. Do not ask anything a search engine answers verbatim.",
-          "- Calibrate the difficulty to the level the student claims, but keep it answerable by an honest student one level below.",
-          "- Plain English, no jargon beyond the technology itself.",
+          "You set one short question that reveals whether a student has actually used a technology, for a university hackathon-team platform.",
+          "",
+          "The question must ask about their own past experience. Aim it at a specific moment: something that broke, something they had to choose between, something that surprised them.",
+          "",
+          "GOOD examples of the shape to aim for:",
+          '- "Tell me about a time something in React did not re-render when you expected it to. What was actually going on?"',
+          '- "What is the most annoying problem you have hit deploying with Docker, and what did you end up doing about it?"',
+          "",
+          "BAD examples, never write these:",
+          '- "How would you design a large-scale React application, covering architecture, state management, performance, testing and accessibility?" (an essay, not a question; nobody answers this in a paragraph)',
+          '- "What is the virtual DOM?" (recall; documentation answers it)',
+          '- "Explain the difference between props and state." (recall)',
+          "",
+          "Hard rules:",
+          "- One question, at most 30 words.",
+          "- Answerable honestly in three to six sentences.",
+          "- Ask about ONE thing. Never list several topics to cover.",
+          "- Do not ask for code.",
+          "- Someone who has genuinely used the technology at the claimed level should find it easy; someone who has only read about it should not.",
           'Reply as JSON: {"question": "..."}',
         ].join("\n"),
       },
@@ -68,7 +82,7 @@ export async function generateQuestion(
       const q = (v as { question?: unknown })?.question;
       return typeof q === "string" && q.trim().length > 15 ? { question: q.trim() } : null;
     },
-    { temperature: 0.7, maxTokens: 250 },
+    { temperature: 0.7, maxTokens: 600 },
   );
 
   if (!result.ok) throw new HttpError(503, `Could not prepare a question: ${result.error}`);
@@ -126,7 +140,7 @@ export async function detectAiAuthorship(
           : [],
       };
     },
-    { temperature: 0, maxTokens: 400 },
+    { temperature: 0, maxTokens: 700 },
   );
 
   if (!result.ok) throw new HttpError(503, `Could not check the answer: ${result.error}`);
@@ -141,6 +155,15 @@ export type LevelJudgement = {
   level: SkillLevel;
   confidence: number;
   rationale: string;
+  /**
+   * Whether the answer actually addressed the question.
+   *
+   * Kept separate from the level because conflating them is unfair: an
+   * earlier version ranked a detailed, clearly expert answer as BEGINNER at
+   * 85% confidence purely because it described a different problem than the
+   * one asked. Off-question now means inconclusive, not unskilled.
+   */
+  addressedQuestion: boolean;
 };
 
 export async function rankSkillLevel({
@@ -165,10 +188,11 @@ export async function rankSkillLevel({
           "INTERMEDIATE: has built something real; names concrete problems hit and how they were handled.",
           "EXPERT: reasons about trade-offs, edge cases, performance or failure modes unprompted, with specifics.",
           "Judge substance, not fluency. Short, plain or non-native English answers can be EXPERT.",
-          "An answer that does not address the question asked cannot be above BEGINNER.",
+          "Set addressedQuestion to false if the answer talks about something other than what was asked.",
+          "When it is false, still rank the depth the answer does show, and lower your confidence — an answer about the wrong problem is inconclusive, not unskilled. Never mark someone down to BEGINNER merely for drifting off the question.",
           "Confidence is an integer 0-100 in your own ranking; be honest when an answer is too short to tell.",
           "The rationale is one sentence, addressed to the student, plain and specific.",
-          'Reply as JSON: {"level": "BEGINNER|INTERMEDIATE|EXPERT", "confidence": 0-100, "rationale": "..."}',
+          'Reply as JSON: {"level": "BEGINNER|INTERMEDIATE|EXPERT", "confidence": 0-100, "addressedQuestion": true|false, "rationale": "..."}',
         ].join("\n"),
       },
       {
@@ -177,7 +201,12 @@ export async function rankSkillLevel({
       },
     ],
     (v) => {
-      const o = v as { level?: unknown; confidence?: unknown; rationale?: unknown };
+      const o = v as {
+        level?: unknown;
+        confidence?: unknown;
+        rationale?: unknown;
+        addressedQuestion?: unknown;
+      };
       if (typeof o.level !== "string" || !(SKILL_LEVELS as readonly string[]).includes(o.level)) return null;
       const c = typeof o.confidence === "number" ? Math.round(o.confidence) : NaN;
       if (!Number.isFinite(c) || c < 0 || c > 100) return null;
@@ -185,9 +214,11 @@ export async function rankSkillLevel({
         level: o.level as SkillLevel,
         confidence: c,
         rationale: typeof o.rationale === "string" ? o.rationale.trim().slice(0, 400) : "",
+        // Absent means we cannot tell, so assume it did rather than punish.
+        addressedQuestion: o.addressedQuestion !== false,
       };
     },
-    { temperature: 0, maxTokens: 400 },
+    { temperature: 0, maxTokens: 700 },
   );
 
   if (!result.ok) throw new HttpError(503, `Could not rank the answer: ${result.error}`);
@@ -296,7 +327,9 @@ export async function submitAssessment({
         answer: trimmed,
         assessedLevel: ranking.level,
         confidence: ranking.confidence,
-        rationale: ranking.rationale,
+        rationale: ranking.addressedQuestion
+          ? ranking.rationale
+          : `${ranking.rationale} (This answered a different question, so it was not applied to your profile.)`.trim(),
         aiLikelihood: authorship.likelihood,
         aiVerdict: authorship.verdict,
         aiSignals: JSON.stringify(authorship.signals),
@@ -305,8 +338,12 @@ export async function submitAssessment({
       },
     });
 
-    // Only an unflagged result updates the profile.
-    if (!flagged) {
+    // The profile moves only on a judgement that is unflagged, on-question and
+    // confident. Anything else is kept as a record without changing the badge.
+    const conclusive =
+      !flagged && ranking.addressedQuestion && ranking.confidence >= minConfidence();
+
+    if (conclusive) {
       await db.userSkill.update({
         where: { userId_skillId: { userId, skillId: attempt.skillId } },
         data: { assessedLevel: ranking.level, assessedAt: new Date() },
