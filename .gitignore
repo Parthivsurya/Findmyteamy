@@ -28,3 +28,7 @@ tsconfig.tsbuildinfo
 # project documentation (kept locally, not published)
 FindMyTeammate_Project_Documentation.docx
 *.docx
+# The progress record, both halves. The .docx is a build artifact and a .docx
+# was purged from this history once already; the markdown behind it is a
+# working log rather than project documentation.
+PROGRESS.md
