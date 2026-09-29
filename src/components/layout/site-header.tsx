@@ -10,7 +10,14 @@ import {
   type NavLink,
 } from "./header-client";
 
-const PUBLIC_LINKS: NavLink[] = [
+/**
+ * Finding people and building a team both need a session now, so offering them
+ * to a signed-out visitor would only bounce them to the login screen. Events
+ * stay open, because reading what a hackathon is does not expose anyone.
+ */
+const SIGNED_OUT_LINKS: NavLink[] = [{ href: "/events", label: "Events" }];
+
+const SIGNED_IN_LINKS: NavLink[] = [
   { href: "/search", label: "Find people" },
   { href: "/team-builder", label: "Team Builder" },
   { href: "/events", label: "Events" },
@@ -22,10 +29,10 @@ export async function SiteHeader() {
   const links: NavLink[] = user
     ? [
         { href: "/dashboard", label: "Dashboard" },
-        ...PUBLIC_LINKS,
+        ...SIGNED_IN_LINKS,
         { href: "/teams", label: "My teams" },
       ]
-    : PUBLIC_LINKS;
+    : SIGNED_OUT_LINKS;
 
   return (
     <header className="sticky top-0 z-40 border-b border-line bg-surface">

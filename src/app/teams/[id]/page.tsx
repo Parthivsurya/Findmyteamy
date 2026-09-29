@@ -20,7 +20,7 @@ import {
   SparklesIcon,
   UsersIcon,
 } from "@/components/icons";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, requireOnboardedUser } from "@/lib/auth";
 import { getTeam } from "@/lib/services/teams";
 import { formatDateRange, relativeTime } from "@/lib/utils";
 
@@ -30,6 +30,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
   const team = await getTeam(id);
   if (!team) return { title: "Team not found" };
+
+  // Same reasoning as the profile page: the team's name and its idea should
+  // not reach anyone who cannot open the page.
+  if (!(await getCurrentUser())) {
+    return { title: "Team", robots: { index: false, follow: false } };
+  }
   return {
     title: `${team.name} · ${team.event.name}`,
     description: team.idea ?? `${team.name}, a team for ${team.event.name}.`,
@@ -38,7 +44,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TeamPage({ params }: Props) {
   const { id } = await params;
-  const [team, viewer] = await Promise.all([getTeam(id), getCurrentUser()]);
+  // Membership is a list of students, so this page is signed in only.
+  const viewer = await requireOnboardedUser(`/teams/${id}`);
+  const team = await getTeam(id);
 
   if (!team) notFound();
 

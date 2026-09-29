@@ -6,7 +6,7 @@ import { Pagination } from "@/components/ui/nav";
 import { FilterPanel } from "@/components/search/filter-panel";
 import { ProfileCard } from "@/components/profile/profile-card";
 import { UsersIcon } from "@/components/icons";
-import { getCurrentUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getRoles, getSkills } from "@/lib/services/catalog";
 import { searchPeople } from "@/lib/services/search";
@@ -33,11 +33,27 @@ export default async function SearchPage({
   searchParams: Promise<RawParams>;
 }) {
   const raw = await searchParams;
+
+  // Signed in only. This page lists real students by name, branch and batch,
+  // so it is not something a visitor from outside the university should be
+  // able to read. The whole query string is carried into `next`, so a search
+  // typed on the home page while signed out is still run after signing in
+  // rather than being silently dropped.
+  const back = new URLSearchParams(
+    Object.entries(raw).flatMap(([key, value]) =>
+      value === undefined
+        ? []
+        : Array.isArray(value)
+          ? value.map((one) => [key, one] as [string, string])
+          : [[key, value] as [string, string]],
+    ),
+  ).toString();
+  const user = await requireOnboardedUser(back ? `/search?${back}` : "/search");
+
   const parsed = searchQuerySchema.safeParse(raw);
   const query = parsed.success ? parsed.data : searchQuerySchema.parse({});
 
-  const [user, skills, roles, events, branchRows, yearRows] = await Promise.all([
-    getCurrentUser(),
+  const [skills, roles, events, branchRows, yearRows] = await Promise.all([
     getSkills(),
     getRoles(),
     db.event.findMany({
@@ -67,7 +83,7 @@ export default async function SearchPage({
     .map((row) => row.joiningYear)
     .filter((year): year is number => year !== null);
 
-  const search = await searchPeople(query, user?.id);
+  const search = await searchPeople(query, user.id);
   const highlight = new Set(search.skillIds);
   const activeEvent = events.find((e) => e.id === search.eventId);
 

@@ -1,12 +1,17 @@
-import { notFound, ok, route } from "@/lib/api";
+import { notFound, ok, requireSession, route } from "@/lib/api";
 import { db } from "@/lib/db";
 
 /**
- * GET /api/users/:username — the public profile. The email address is never
- * part of this response, and rejected achievements are excluded.
+ * GET /api/users/:username - one student's profile.
+ *
+ * Signed in only, despite the page it backs having been called "public": on
+ * an Amrita-only platform "public" means visible to other students, not to
+ * the internet. The email address is never part of this response, and
+ * rejected achievements are excluded.
  */
 export const GET = route(
   async (_request, context: { params: Promise<{ username: string }> }) => {
+    await requireSession();
     const { username } = await context.params;
 
     const user = await db.user.findUnique({

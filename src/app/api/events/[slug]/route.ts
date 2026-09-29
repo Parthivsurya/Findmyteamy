@@ -3,7 +3,15 @@ import { getCurrentUser } from "@/lib/auth";
 import { getEventBySlug, getEventPeople } from "@/lib/services/events";
 import { listTeamsForEvent } from "@/lib/services/teams";
 
-/** GET /api/events/:slug — event details, the people attending, and the teams. */
+/**
+ * GET /api/events/:slug - event details, plus the people and teams for a
+ * signed-in student.
+ *
+ * The event is public because anyone should be able to read what a hackathon
+ * is. Who is attending it is not: `people` and `teams` come back empty for an
+ * anonymous request, and `viewerSignedIn` says why so a client can prompt for
+ * a sign-in rather than showing an empty list.
+ */
 export const GET = route(
   async (_request, context: { params: Promise<{ slug: string }> }) => {
     const { slug } = await context.params;
@@ -12,13 +20,16 @@ export const GET = route(
     if (!event) return notFound("No event with that slug");
 
     const viewer = await getCurrentUser();
-    const [people, teams] = await Promise.all([
-      getEventPeople(event.id, viewer?.id),
-      listTeamsForEvent(event.id),
-    ]);
+    const [people, teams] = viewer
+      ? await Promise.all([
+          getEventPeople(event.id, viewer.id),
+          listTeamsForEvent(event.id),
+        ])
+      : [[], []];
 
     return ok({
       event,
+      viewerSignedIn: Boolean(viewer),
       people,
       teams: teams.map((team) => ({
         id: team.id,

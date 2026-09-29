@@ -62,16 +62,18 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
 
   const viewer = await getCurrentUser();
 
-  const [people, teams, myParticipation] = await Promise.all([
-    getEventPeople(event.id, viewer?.id),
-    listTeamsForEvent(event.id),
-    viewer
-      ? db.eventParticipation.findUnique({
+  // Nothing about the students is read for a signed-out visitor, rather than
+  // read and then hidden in the markup.
+  const [people, teams, myParticipation] = viewer
+    ? await Promise.all([
+        getEventPeople(event.id, viewer.id),
+        listTeamsForEvent(event.id),
+        db.eventParticipation.findUnique({
           where: { userId_eventId: { userId: viewer.id, eventId: event.id } },
           select: { status: true },
-        })
-      : null,
-  ]);
+        }),
+      ])
+    : [[], [], null];
 
   const looking = people.filter((p) => p.status !== "IN_TEAM");
   const recruitingTeams = teams.filter((team) => !team.isComplete);
@@ -157,125 +159,151 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
         {/* ------------------------------------------------- people + teams */}
         <div>
-          <TabLinks
-            className="mb-5"
-            tabs={[
-              {
-                href: `/events/${slug}?tab=people`,
-                label: "People looking for a team",
-                active: tab !== "teams",
-                count: looking.length,
-              },
-              {
-                href: `/events/${slug}?tab=teams`,
-                label: "Teams looking for members",
-                active: tab === "teams",
-                count: recruitingTeams.length,
-              },
-            ]}
-          />
-
-          {tab === "teams" ? (
-            recruitingTeams.length === 0 ? (
-              <EmptyState
-                title="No teams are recruiting yet"
-                description="Create a team for this event, list the roles you are missing, and Team Builder will find candidates for each one."
-                action={
-                  <Link
-                    href={
-                      viewer
-                        ? `/teams/new?event=${slug}`
-                        : `/login?next=/teams/new?event=${slug}`
-                    }
-                    className={btn("primary", "md")}
-                  >
-                    <PlusIcon className="size-4" />
-                    Create a team
-                  </Link>
-                }
-              />
-            ) : (
-              <>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {recruitingTeams.map((team) => (
-                    <TeamCard
-                      key={team.id}
-                      team={team}
-                      compact
-                      action={
-                        <Link
-                          href={`/teams/${team.id}`}
-                          className={btn("primary", "sm", "flex-1")}
-                        >
-                          {viewer?.id === team.leaderId
-                            ? "Manage team"
-                            : "View and request to join"}
-                        </Link>
-                      }
-                    />
-                  ))}
-                </div>
-
-                {completeTeams.length ? (
-                  <>
-                    <h3 className="mb-3 mt-8 text-[0.8rem] font-medium text-ink-2">
-                      Complete teams ({completeTeams.length})
-                    </h3>
-                    <div className="grid gap-4 sm:grid-cols-2">
-                      {completeTeams.map((team) => (
-                        <TeamCard key={team.id} team={team} compact />
-                      ))}
-                    </div>
-                  </>
-                ) : null}
-              </>
-            )
-          ) : looking.length === 0 ? (
-            <EmptyState
-              icon={<UsersIcon className="size-5" />}
-              title="Nobody has marked themselves as looking yet"
-              description="Be the first. Mark yourself as attending and set your status to “looking for a team”, and leaders searching for this event will find you."
+          {/* The event itself is public, but the students attending it are
+              not. A visitor from outside the university can read what the
+              hackathon is and when it runs, and has to sign in to see who
+              is looking for a team. */}
+          {viewer ? (
+            <>
+            <TabLinks
+              className="mb-5"
+              tabs={[
+                {
+                  href: `/events/${slug}?tab=people`,
+                  label: "People looking for a team",
+                  active: tab !== "teams",
+                  count: looking.length,
+                },
+                {
+                  href: `/events/${slug}?tab=teams`,
+                  label: "Teams looking for members",
+                  active: tab === "teams",
+                  count: recruitingTeams.length,
+                },
+              ]}
             />
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2">
-              {looking.map((entry) => (
-                <ProfileCard
-                  key={entry.user.id}
-                  user={entry.user}
-                  reasons={[
-                    entry.status === "TEAM_LOOKING_FOR_MEMBERS"
-                      ? "Leads a team that needs members"
-                      : "Looking for a team at this event",
-                  ]}
+
+            {tab === "teams" ? (
+              recruitingTeams.length === 0 ? (
+                <EmptyState
+                  title="No teams are recruiting yet"
+                  description="Create a team for this event, list the roles you are missing, and Team Builder will find candidates for each one."
                   action={
-                    viewer?.id === entry.user.id ? (
-                      <span className="flex-1 text-center text-[0.78rem] text-ink-muted">
-                        This is you
-                      </span>
-                    ) : (
-                      <>
-                        <Link
-                          href={`/u/${entry.user.username}`}
-                          className={btn("outline", "sm", "flex-1")}
-                        >
-                          Profile
-                        </Link>
-                        <Link
-                          href={
-                            viewer
-                              ? `/invite/${entry.user.username}?event=${slug}`
-                              : `/login?next=/invite/${entry.user.username}`
-                          }
-                          className={btn("primary", "sm", "flex-1")}
-                        >
-                          Invite
-                        </Link>
-                      </>
-                    )
+                    <Link
+                      href={
+                        viewer
+                          ? `/teams/new?event=${slug}`
+                          : `/login?next=/teams/new?event=${slug}`
+                      }
+                      className={btn("primary", "md")}
+                    >
+                      <PlusIcon className="size-4" />
+                      Create a team
+                    </Link>
                   }
                 />
-              ))}
-            </div>
+              ) : (
+                <>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    {recruitingTeams.map((team) => (
+                      <TeamCard
+                        key={team.id}
+                        team={team}
+                        compact
+                        action={
+                          <Link
+                            href={`/teams/${team.id}`}
+                            className={btn("primary", "sm", "flex-1")}
+                          >
+                            {viewer?.id === team.leaderId
+                              ? "Manage team"
+                              : "View and request to join"}
+                          </Link>
+                        }
+                      />
+                    ))}
+                  </div>
+
+                  {completeTeams.length ? (
+                    <>
+                      <h3 className="mb-3 mt-8 text-[0.8rem] font-medium text-ink-2">
+                        Complete teams ({completeTeams.length})
+                      </h3>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        {completeTeams.map((team) => (
+                          <TeamCard key={team.id} team={team} compact />
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
+                </>
+              )
+            ) : looking.length === 0 ? (
+              <EmptyState
+                icon={<UsersIcon className="size-5" />}
+                title="Nobody has marked themselves as looking yet"
+                description="Be the first. Mark yourself as attending and set your status to “looking for a team”, and leaders searching for this event will find you."
+              />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2">
+                {looking.map((entry) => (
+                  <ProfileCard
+                    key={entry.user.id}
+                    user={entry.user}
+                    reasons={[
+                      entry.status === "TEAM_LOOKING_FOR_MEMBERS"
+                        ? "Leads a team that needs members"
+                        : "Looking for a team at this event",
+                    ]}
+                    action={
+                      viewer?.id === entry.user.id ? (
+                        <span className="flex-1 text-center text-[0.78rem] text-ink-muted">
+                          This is you
+                        </span>
+                      ) : (
+                        <>
+                          <Link
+                            href={`/u/${entry.user.username}`}
+                            className={btn("outline", "sm", "flex-1")}
+                          >
+                            Profile
+                          </Link>
+                          <Link
+                            href={
+                              viewer
+                                ? `/invite/${entry.user.username}?event=${slug}`
+                                : `/login?next=/invite/${entry.user.username}`
+                            }
+                            className={btn("primary", "sm", "flex-1")}
+                          >
+                            Invite
+                          </Link>
+                        </>
+                      )
+                    }
+                  />
+                ))}
+              </div>
+            )}
+            </>
+          ) : (
+            <EmptyState
+              title="Sign in to see who is attending"
+              description={
+                <>
+                  The people and teams at this event are visible to Amrita
+                  students only.
+                </>
+              }
+              action={
+                <Link
+                  href={`/login?next=${encodeURIComponent(`/events/${slug}`)}`}
+                  className={btn("primary")}
+                >
+                  Sign in
+                </Link>
+              }
+            />
           )}
         </div>
 
@@ -349,7 +377,9 @@ export default async function EventDetailPage({ params, searchParams }: Props) {
           <Card>
             <CardHead title="At a glance" />
             <CardBody className="space-y-2 text-[0.85rem]">
-              <Row label="Attending" value={people.length} />
+              {viewer ? (
+                <Row label="Attending" value={people.length} />
+              ) : null}
               <Row label="Looking for a team" value={looking.length} />
               <Row label="Teams recruiting" value={recruitingTeams.length} />
               <Row label="Complete teams" value={completeTeams.length} />

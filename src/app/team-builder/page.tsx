@@ -7,7 +7,7 @@ import { ProfileCard } from "@/components/profile/profile-card";
 import { RoleChip, SkillChip } from "@/components/profile/skills";
 import { TeamBuilderForm, type BuilderSlot } from "@/components/search/team-builder-form";
 import { SparklesIcon, UsersIcon } from "@/components/icons";
-import { getCurrentUser } from "@/lib/auth";
+import { requireOnboardedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { getRoles, getSkills } from "@/lib/services/catalog";
 import { buildTeam } from "@/lib/services/search";
@@ -42,8 +42,10 @@ export default async function TeamBuilderPage({
 }) {
   const { slots: slotsParam, event: eventSlug, team: teamId } = await searchParams;
 
-  const [user, roles, skills, events] = await Promise.all([
-    getCurrentUser(),
+  // Ranks real students against each open role, so it is signed in only.
+  const user = await requireOnboardedUser("/team-builder");
+
+  const [roles, skills, events] = await Promise.all([
     getRoles(),
     getSkills(),
     db.event.findMany({
@@ -100,7 +102,7 @@ export default async function TeamBuilderPage({
     ? await buildTeam({
         slots: activeSlots.map((slot) => ({ ...slot, count: 1 })),
         eventId: event?.id ?? null,
-        viewerId: user?.id,
+        viewerId: user.id,
         limitPerRole: 6,
         excludeUserIds: alreadyOnTeam,
       })

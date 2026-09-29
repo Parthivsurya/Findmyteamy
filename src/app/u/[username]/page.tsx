@@ -31,7 +31,7 @@ import {
   batchLabel,
   studyYearLabel,
 } from "@/lib/amrita";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, requireOnboardedUser } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { formatDateRange, relativeTime } from "@/lib/utils";
 
@@ -100,6 +100,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!user) return { title: "Profile not found" };
 
+  // `generateMetadata` runs whether or not the page component redirects, so
+  // without this check a signed-out request still received the student's name,
+  // bio, college and skills in the title and Open Graph tags. That is also
+  // what a link-preview crawler reads, so a profile URL pasted into a group
+  // chat would have unfurled someone's details to people outside the
+  // university.
+  if (!(await getCurrentUser())) {
+    return { title: "Student profile", robots: { index: false, follow: false } };
+  }
+
   const skills = user.skills.map((s) => s.skill.name).join(", ");
   const wins = user._count.achievements;
 
@@ -116,12 +126,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: "profile",
     },
     alternates: { canonical: `/u/${user.username}` },
+    // Visible to Amrita students, not to search engines.
+    robots: { index: false, follow: false },
   };
 }
 
 export default async function ProfilePage({ params }: Props) {
   const { username } = await params;
-  const [profile, viewer] = await Promise.all([getProfile(username), getCurrentUser()]);
+  // A profile carries a student's name, branch, batch, bio and links, so it
+  // is readable only by other signed-in students.
+  const viewer = await requireOnboardedUser(`/u/${username}`);
+  const profile = await getProfile(username);
 
   if (!profile) notFound();
 
