@@ -31,7 +31,7 @@ branch — and invite people directly into a specific open role.
 ## How the email address is read
 
 ```
-cb.sc.u4cse24000@cb.students.amrita.edu
+cb.sc.u4cse24535@cb.students.amrita.edu
 │  │  ││  │  │
 │  │  ││  │  └── 535  roll number within the batch
 │  │  ││  └───── 24   joined in 2024
