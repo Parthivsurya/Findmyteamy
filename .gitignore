@@ -32,3 +32,7 @@ FindMyTeammate_Project_Documentation.docx
 # was purged from this history once already; the markdown behind it is a
 # working log rather than project documentation.
 PROGRESS.md
+
+# Local deliverability test artefacts, not part of the app.
+otp-preview.html
+otp-content-test.eml
