@@ -98,7 +98,7 @@ ${escapeHtml(preheader)}&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&z
             <p style="margin:0 0 6px;font-size:12px;line-height:1.5;color:${MUTED}">${escapeHtml(footerNote)}</p>
             <p style="margin:0;font-size:12px;line-height:1.5;color:${MUTED}">
               FindMyTeammate · Amrita Vishwa Vidyapeetham ·
-              <a href="${base}" style="color:${MUTED}">${escapeHtml(base.replace(/^https?:\/\//, ""))}</a>
+              ${escapeHtml(base.replace(/^https?:\/\//, ""))}
             </p>
             <p style="margin:6px 0 0;font-size:12px;line-height:1.5;color:${MUTED}">This mailbox is not monitored, so please do not reply.</p>
           </td>
@@ -135,7 +135,7 @@ export function otpEmail(code: string, minutes: number): EmailContent {
   const spaced = code.split("").join(" ");
 
   return {
-    subject: `${code} is your FindMyTeammate verification code`,
+    subject: `Your FindMyTeammate sign-in code`,
     text: textLayout(
       [
         `Your verification code is ${code}`,
