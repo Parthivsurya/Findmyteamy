@@ -36,3 +36,6 @@ PROGRESS.md
 # Local deliverability test artefacts, not part of the app.
 otp-preview.html
 otp-content-test.eml
+
+# One-off registry correspondence, not part of the app.
+NIXI-request-*.docx

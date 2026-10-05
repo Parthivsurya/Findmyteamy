@@ -9,9 +9,11 @@ import { SkillPicker, type PickerSkill } from "./skill-picker";
  * year and my own branch. Both are resolved server-side from the signed-in
  * student's Amrita address.
  *
- * The two filters sit on one row under the inputs rather than in a panel of
- * their own. On one campus there are only ever these two, so a collapsible
- * filter section would be chrome around two checkboxes.
+ * Skills are the only input here. A keyword box used to sit under them, but on
+ * a page whose whole job is "search by skills" it was a second, vaguer way to
+ * do the same thing; the full keyword filter still lives on the search page
+ * for anyone refining a result. The two batch filters sit on one row rather
+ * than in a panel, because on one campus there are only ever these two.
  */
 export function HomeSearch({
   skills,
@@ -36,19 +38,6 @@ export function HomeSearch({
         label="Skills"
         placeholder="Try React, PyTorch or Figma"
       />
-
-      <div>
-        <label htmlFor="home-q" className="field-label">
-          Keyword
-        </label>
-        <input
-          id="home-q"
-          name="q"
-          placeholder="Name, role or keyword"
-          className="field"
-        />
-        <p className="field-hint">Optional.</p>
-      </div>
 
       <fieldset className="rule pt-3.5">
         <legend className="sr-only">Narrow to my own year or branch</legend>
