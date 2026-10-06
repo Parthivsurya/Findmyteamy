@@ -60,12 +60,22 @@ model User {
   githubUrl    String?
   linkedinUrl  String?
   portfolioUrl String?
+  /// Stored in international form without a plus, e.g. 919876543210, because
+  /// that is the only shape wa.me accepts. Normalised on the way in so a
+  /// number typed as "+91 98765 43210" still produces a working link.
+  whatsapp     String?
   resumeUrl    String?
 
   // Which links the user wants shown publicly
   showGithub    Boolean @default(true)
   showLinkedin  Boolean @default(true)
   showPortfolio Boolean @default(true)
+  /// Visible by default, because the point of the site is getting teammates
+  /// talking and a hidden-by-default number would almost never be turned on.
+  /// The toggle is offered at sign-up rather than buried in settings, so the
+  /// choice is made knowingly: a roll address is university-issued, a personal
+  /// phone number is not.
+  showWhatsapp  Boolean @default(true)
 
   // "OPEN" | "EVENTS_ONLY" | "NOT_AVAILABLE"
   availability          String   @default("OPEN")
@@ -106,6 +116,14 @@ model User {
   blocksMade      Block[]  @relation("Blocker")
   blockedBy       Block[]  @relation("Blocked")
 
+  /// How this account got in: VOUCH | REQUEST | SEED. Kept as a column rather
+  /// than derived from the Vouch table so a profile label needs no join, and
+  /// so it survives the voucher deleting their account.
+  joinedVia       String   @default("SEED")
+  vouchesWritten  Vouch[]  @relation("Voucher")
+  vouchesReceived Vouch[]  @relation("Subject")
+  requestsDecided AccessRequest[] @relation("Decider")
+
   @@index([username])
   @@index([availability])
   @@index([lastActiveAt])
@@ -113,6 +131,8 @@ model User {
   @@index([branchCode])
   @@index([joiningYear])
   @@index([campusCode, branchCode, joiningYear])
+  /// Vouching looks a student up by their full roll identity on every write.
+  @@index([campusCode, schoolCode, branchCode, joiningYear, rollNumber])
 }
 
 /// One request for a one-time code, kept so the rate limiter can count a
@@ -358,6 +378,9 @@ model Team {
   slots    TeamSlot[]
   requests TeamRequest[]
 
+  /// Endorsements that cite this team as the shared work.
+  vouches  Vouch[]
+
   @@index([eventId, isComplete])
   @@index([leaderId])
 }
@@ -450,4 +473,112 @@ model Block {
 
   @@id([blockerId, blockedId])
   @@index([blockedId])
+}
+
+// ---------------------------------------------------------------------------
+// Getting in
+// ---------------------------------------------------------------------------
+
+/**
+ * A vouch: one member names another student by roll number, says why, and gets
+ * a link only that student can redeem.
+ *
+ * The link carries no secret worth guessing, because the binding below is what
+ * secures it: redemption parses the signing-up address and every identity part
+ * must match. A link shared in a group or screenshotted is useless to anyone
+ * else, which is why there is no single-use or short-expiry requirement for
+ * safety. Expiry exists only so dead links do not accumulate.
+ *
+ * `statement` is the whole point. An earlier design inherited a trust score
+ * down a tree of vouches; that measured friendship, and compounded its own
+ * error at every hop. A sentence a reader can weigh is better than a number
+ * they cannot inspect.
+ */
+model Vouch {
+  id      String @id @default(cuid())
+  token   String @unique
+
+  /// MEMBER is one student vouching another, and needs a statement.
+  /// ADMIN_SEED is an admin planting a founding member: the ticket still
+  /// records which admin created it, for audit, but the account it creates is
+  /// a root of the forest rather than that admin's child. Without this the
+  /// first cohort would all hang off one administrator and the tree would say
+  /// something untrue about who brought whom in.
+  kind String @default("MEMBER") // MEMBER | ADMIN_SEED
+
+  /// Who created the ticket: the vouching student, or the admin for a seed.
+  voucherId String
+  /// Null until redeemed, because the subject has no account yet.
+  subjectId String?
+
+  /// The bound identity, read from a roll like "cse24535" plus the voucher's
+  /// own campus and school. Stored in full even though the short form is what
+  /// gets typed, because a roll number is only unique within these.
+  campusCode  String
+  schoolCode  String
+  branchCode  String
+  joiningYear Int
+  rollNumber  String
+
+  /// Why the voucher is vouching. Required for MEMBER and enforced in the
+  /// service rather than the column, because an ADMIN_SEED has nothing
+  /// truthful to say here and a placeholder sentence would read as a real
+  /// endorsement to anyone looking at the profile.
+  statement String?
+
+  /// Set only for the verified kind, where both people shared this team and
+  /// the platform can confirm it rather than taking anyone's word.
+  teamId String?
+
+  status String @default("PENDING") // PENDING | REDEEMED | REVOKED | EXPIRED
+
+  /// The subject can hide a statement written about them. Admins still see it.
+  hiddenBySubject Boolean @default(false)
+
+  createdAt  DateTime  @default(now())
+  redeemedAt DateTime?
+  expiresAt  DateTime?
+
+  /// Cascade on both sides. The statement is the voucher's own speech, so it
+  /// goes when they leave; and nothing should outlive the person it describes.
+  voucher User  @relation("Voucher", fields: [voucherId], references: [id], onDelete: Cascade)
+  subject User? @relation("Subject", fields: [subjectId], references: [id], onDelete: Cascade)
+  team    Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
+
+  @@index([campusCode, schoolCode, branchCode, joiningYear, rollNumber])
+  @@index([subjectId])
+  @@index([voucherId, status])
+  @@index([status])
+  @@index([kind, status])
+}
+
+/**
+ * The way in for someone with no vouch link. Their Amrita address already
+ * proves they are a student, so this is about accountability rather than
+ * identity: an admin or a member approves, and the account records that route.
+ *
+ * Without this, invite-only would filter hardest against the students with the
+ * most to gain. A first-year who knows nobody needs a teammate finder more
+ * than a final-year who already has a team.
+ */
+model AccessRequest {
+  id    String @id @default(cuid())
+  email String
+
+  /// Optional, and the only thing they can say for themselves.
+  note String?
+
+  status String @default("PENDING") // PENDING | APPROVED | DECLINED
+
+  decidedById String?
+  decidedAt   DateTime?
+  /// Shown to the requester when declined, so a refusal is not silent.
+  decisionNote String?
+
+  createdAt DateTime @default(now())
+
+  decidedBy User? @relation("Decider", fields: [decidedById], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+  @@index([email])
 }
