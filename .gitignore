@@ -39,3 +39,9 @@ otp-content-test.eml
 
 # One-off registry correspondence, not part of the app.
 NIXI-request-*.docx
+
+# Explainer doc, kept with the owner like the progress record.
+HOW-IT-WORKS.md
+
+# Design docs, kept with the owner like the other documents.
+DESIGN-*.md

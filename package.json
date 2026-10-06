@@ -19,7 +19,8 @@
     "db:provider": "node scripts/set-db-provider.mjs",
     "make-admin": "node scripts/make-admin.mjs",
     "db:sql": "node scripts/generate-bootstrap-sql.mjs",
-    "progress": "pandoc PROGRESS.md -o FindMyTeammate_Progress.docx --toc --toc-depth=2"
+    "progress": "pandoc PROGRESS.md -o FindMyTeammate_Progress.docx --toc --toc-depth=2",
+    "docs": "pandoc HOW-IT-WORKS.md -o FindMyTeammate_HowItWorks.docx --toc --toc-depth=2"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
