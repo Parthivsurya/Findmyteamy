@@ -23,7 +23,7 @@ export default async function VerifyPage({
       subtitle={
         unverified
           ? "Your address has not been confirmed yet. Enter the code we just emailed you."
-          : "We emailed a six-digit code to your Amrita address. Enter it to finish setting up your account."
+          : "We emailed a six-digit code to your Amrita address. Enter it to finish setting up your account. If it is not in your inbox, look in Junk: the university mail filter often files our messages there."
       }
       footer={
         <p className="text-[0.85rem] text-ink-muted">

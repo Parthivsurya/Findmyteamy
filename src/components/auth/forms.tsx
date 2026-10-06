@@ -266,6 +266,14 @@ export function VerifyForm({
         <Button type="submit" variant="ghost" size="sm" disabled={resending}>
           {resending ? "Sending…" : "Send a new code"}
         </Button>
+        {/* Amrita's filter tags our mail as likely spam, so the code often
+            lands in Junk. Saying so is the difference between a student
+            finding their code and assuming the site is broken. */}
+        <p className="field-hint">
+          Nothing arrived? Check your Junk folder before asking for another
+          code. Marking the message as not junk will help the next one reach
+          your inbox.
+        </p>
       </form>
     </div>
   );
