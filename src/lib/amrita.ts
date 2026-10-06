@@ -234,3 +234,73 @@ export function studentEmailProblem(rawEmail: string): string | null {
   }
   return null;
 }
+
+// ---------------------------------------------------------------------------
+// Short rolls, for vouching
+// ---------------------------------------------------------------------------
+
+/**
+ * The part of a roll address students actually know about each other:
+ * "cse24535" out of cb.sc.u4cse24535@cb.students.amrita.edu.
+ *
+ * This is what a voucher types. It is deliberately short because it is the
+ * form people say out loud and read off a class list, but it is **not unique
+ * on its own**: cse24535 exists at Coimbatore and at Amritapuri alike. The
+ * caller must pair it with a campus and school, normally the voucher's own,
+ * before storing or matching anything.
+ */
+export type ShortRoll = {
+  branchCode: string;
+  joiningYear: number;
+  rollNumber: string;
+};
+
+const SHORT_ROLL = /^([a-z]{2,8})(\d{2})(\d{2,4})$/;
+
+/** Parses "cse24535", tolerating case, spaces and surrounding punctuation. */
+export function parseShortRoll(raw: string): ShortRoll | null {
+  const cleaned = raw.trim().toLowerCase().replace(/[\s._-]/g, "");
+  const match = SHORT_ROLL.exec(cleaned);
+  if (!match) return null;
+
+  const [, branchCode, yy, rollNumber] = match;
+  const joiningYear = 2000 + Number(yy);
+
+  // A roll from before the platform existed, or from a future that has not
+  // happened, is a typo rather than a student.
+  const thisYear = new Date().getFullYear();
+  if (joiningYear < 2015 || joiningYear > thisYear + 1) return null;
+
+  return { branchCode: branchCode!, joiningYear, rollNumber: rollNumber! };
+}
+
+/** How a short roll is shown back to the person who typed it. */
+export function formatShortRoll(roll: ShortRoll): string {
+  return `${roll.branchCode}${String(roll.joiningYear).slice(2)}${roll.rollNumber}`;
+}
+
+/**
+ * Whether a signing-up address is the student a vouch was written for.
+ *
+ * Every part must agree. This is the whole security model for a vouch link:
+ * because the link is worthless to anyone else, it does not matter that it can
+ * be forwarded, screenshotted or pasted into a group chat.
+ */
+export function addressMatchesRoll(
+  identity: StudentIdentity,
+  bound: {
+    campusCode: string;
+    schoolCode: string;
+    branchCode: string;
+    joiningYear: number;
+    rollNumber: string;
+  },
+): boolean {
+  return (
+    identity.campusCode === bound.campusCode &&
+    identity.schoolCode === bound.schoolCode &&
+    identity.branchCode === bound.branchCode &&
+    identity.joiningYear === bound.joiningYear &&
+    identity.rollNumber === bound.rollNumber
+  );
+}

@@ -358,3 +358,41 @@ export const assessmentAnswerSchema = z.object({
 export const startAssessmentSchema = z.object({
   skillId: z.string().min(1, "Pick a skill"),
 });
+
+// ---------------------------------------------------------------------------
+// Vouching and access
+// ---------------------------------------------------------------------------
+
+export const vouchSchema = z.object({
+  /** "cse24535". Parsed properly in the service, which also binds the campus. */
+  shortRoll: trimmed(16).min(4, "Enter a roll number like cse24535"),
+  statement: trimmed(400)
+    .min(20, "Say why in at least 20 characters")
+    .refine((v) => !/https?:\/\//i.test(v), "Statements cannot contain links"),
+  /** Only an admin sees this, and only to plant a founding member. */
+  campusCode: optionalText(4),
+  schoolCode: optionalText(4),
+});
+
+/** An admin seeding a root member: a roll, and nothing to say about them yet. */
+export const seedMemberSchema = z.object({
+  shortRoll: trimmed(16).min(4, "Enter a roll number like cse24535"),
+  campusCode: optionalText(4),
+  schoolCode: optionalText(4),
+});
+
+export const accessRequestSchema = z.object({
+  email: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .max(120)
+    .email("Enter your Amrita student email address"),
+  note: optionalText(300),
+});
+
+export const accessDecisionSchema = z.object({
+  requestId: z.string().min(1),
+  decision: z.enum(["APPROVE", "DECLINE"]),
+  decisionNote: optionalText(200),
+});
