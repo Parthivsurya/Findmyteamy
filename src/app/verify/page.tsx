@@ -12,9 +12,14 @@ export const metadata: Metadata = {
 export default async function VerifyPage({
   searchParams,
 }: {
-  searchParams: Promise<{ email?: string; dev?: string; unverified?: string }>;
+  searchParams: Promise<{
+    email?: string;
+    dev?: string;
+    unverified?: string;
+    vouch?: string;
+  }>;
 }) {
-  const { email, dev, unverified } = await searchParams;
+  const { email, dev, unverified, vouch } = await searchParams;
   if (!email) redirect("/signup");
 
   return (
@@ -34,7 +39,7 @@ export default async function VerifyPage({
         </p>
       }
     >
-      <VerifyForm email={email} devCode={dev} />
+      <VerifyForm email={email} devCode={dev} vouchToken={vouch} />
     </AuthShell>
   );
 }

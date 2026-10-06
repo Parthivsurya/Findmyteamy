@@ -13,6 +13,7 @@ import {
 } from "@/lib/services/accounts";
 import { issueOtp } from "@/lib/services/otp";
 import { clientIp } from "@/lib/request-ip";
+import { redeemVouch, vouchAcceptsEmail } from "@/lib/services/vouch";
 import { field, guard, type FormResult } from "./shared";
 
 /**
@@ -45,9 +46,21 @@ export async function signupAction(
     };
   }
 
+  // A vouch link is checked here, before an account exists, so a mismatch
+  // costs the real recipient nothing: the link is not consumed and they can
+  // still use it.
+  const vouchToken = field(formData, "vouch");
+  if (vouchToken) {
+    const check = await vouchAcceptsEmail(vouchToken, email);
+    if (!check.ok) {
+      return { error: check.reason, fieldErrors: { email: check.reason } };
+    }
+  }
+
   let devCode: string | undefined;
   const result = await guard(
-    async () => startSignup({ email, name, password, ip: await clientIp() }),
+    async () =>
+      startSignup({ email, name, password, ip: await clientIp(), vouchToken }),
     (issued) => {
       devCode = issued.devCode;
       return { ok: true };
@@ -55,8 +68,11 @@ export async function signupAction(
   );
 
   if (result.ok) {
+    // The token rides along to the verify screen rather than being redeemed
+    // now: an abandoned sign-up must leave the link usable.
+    const carry = vouchToken ? `&vouch=${encodeURIComponent(vouchToken)}` : "";
     redirect(
-      `/verify?email=${encodeURIComponent(email)}${devCodeParam(devCode)}`,
+      `/verify?email=${encodeURIComponent(email)}${devCodeParam(devCode)}${carry}`,
     );
   }
   return result;
@@ -83,6 +99,20 @@ export async function verifyEmailAction(
       where: { email },
       select: { id: true },
     });
+
+    // Now the address is proven, so the vouch can be attached. A failure here
+    // must not block the sign-up: the account is already real and verified,
+    // and an unattached vouch is a far smaller problem than a student locked
+    // out of the account they just created.
+    const vouchToken = field(formData, "vouch");
+    if (user && vouchToken) {
+      try {
+        await redeemVouch(vouchToken, user.id);
+      } catch (error) {
+        console.error("[signup] vouch could not be attached", error);
+      }
+    }
+
     if (user) await startSession(user.id);
     redirect(destination);
   }

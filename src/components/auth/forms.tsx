@@ -96,7 +96,7 @@ export function LoginForm({ next }: { next?: string }) {
 
 // ---------------------------------------------------------------------------
 
-export function SignupForm() {
+export function SignupForm({ vouchToken }: { vouchToken?: string } = {}) {
   const [state, formAction, pending] = useActionState(signupAction, undefined);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -108,6 +108,9 @@ export function SignupForm() {
   return (
     <form action={formAction} className="space-y-4">
       <Alert state={state} />
+      {vouchToken ? (
+        <input type="hidden" name="vouch" value={vouchToken} />
+      ) : null}
 
       <div>
         <label htmlFor="name" className="field-label">
@@ -205,10 +208,13 @@ export function VerifyForm({
   email,
   devCode,
   purpose = "SIGNUP",
+  vouchToken,
 }: {
   email: string;
   devCode?: string;
   purpose?: "SIGNUP" | "RESET";
+  /** Attached only once the address is confirmed, never before. */
+  vouchToken?: string;
 }) {
   const [state, formAction, pending] = useActionState(verifyEmailAction, undefined);
   const [resendState, resendAction, resending] = useActionState(
@@ -227,6 +233,9 @@ export function VerifyForm({
 
       <form action={formAction} className="space-y-4">
         <input type="hidden" name="email" value={email} />
+        {vouchToken ? (
+          <input type="hidden" name="vouch" value={vouchToken} />
+        ) : null}
         <Alert state={state} />
 
         <div>
