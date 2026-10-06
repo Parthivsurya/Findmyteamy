@@ -12,6 +12,10 @@ import {
   ReviewSkill,
 } from "@/components/admin/review";
 import { ShieldIcon } from "@/components/icons";
+import { AccessDecision, SeedMemberForm } from "@/components/admin/vouch-admin";
+import { VouchTree } from "@/components/admin/vouch-tree";
+import { listAccessRequests } from "@/lib/services/access-requests";
+import { buildVouchForest } from "@/lib/services/vouch";
 import { SKILL_CATEGORY_LABEL, type SkillCategory } from "@/lib/enums";
 import { listFlaggedAssessments } from "@/lib/services/skill-assessment";
 import { requireAdmin } from "@/lib/auth";
@@ -34,6 +38,8 @@ export default async function AdminPage() {
     flaggedAssessments,
     assessmentUsage,
     stats,
+    accessRequests,
+    forest,
   ] = await Promise.all([
     db.achievement.findMany({
       where: { status: "PENDING" },
@@ -91,6 +97,8 @@ export default async function AdminPage() {
       db.teamRequest.count(),
       db.teamRequest.count({ where: { status: "ACCEPTED" } }),
     ]),
+    listAccessRequests("PENDING"),
+    buildVouchForest(),
   ]);
 
   const [
@@ -159,6 +167,60 @@ export default async function AdminPage() {
       </section>
 
       <div className="space-y-6">
+        {/* ------------------------------------------- access requests */}
+        <Card>
+          <CardHead
+            title="Requests to join"
+            description="Students with a valid Amrita address but no vouch link. Their address already proves they are a student, so this is about accountability rather than identity."
+            action={
+              accessRequests.length ? (
+                <Badge tone="warn">{accessRequests.length} waiting</Badge>
+              ) : null
+            }
+          />
+          <CardBody className="space-y-4">
+            {accessRequests.length === 0 ? (
+              <p className="text-[0.85rem] text-ink-muted">
+                Nothing waiting. The queue is clear.
+              </p>
+            ) : (
+              accessRequests.map((request) => (
+                <div
+                  key={request.id}
+                  className="space-y-2 rounded-box border border-line p-3"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[0.82rem] font-medium">
+                      {request.email}
+                    </span>
+                    <span className="ml-auto text-[0.75rem] text-ink-muted">
+                      {relativeTime(request.createdAt)}
+                    </span>
+                  </div>
+                  {request.note ? (
+                    <p className="text-[0.85rem] leading-relaxed text-ink-2">
+                      {request.note}
+                    </p>
+                  ) : null}
+                  <AccessDecision requestId={request.id} />
+                </div>
+              ))
+            )}
+          </CardBody>
+        </Card>
+
+        {/* ------------------------------------------------ the vouch tree */}
+        <Card>
+          <CardHead
+            title="How people got in"
+            description="Every account traces to a voucher, an approved request, or the founding cohort. A root with an unusually large subtree is where collusion would show up first."
+            action={<SeedMemberForm />}
+          />
+          <CardBody>
+            <VouchTree roots={forest.roots} totals={forest.totals} />
+          </CardBody>
+        </Card>
+
         {/* ------------------------------------------ achievement queue */}
         <Card>
           <CardHead

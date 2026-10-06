@@ -8,6 +8,7 @@ const TABS = [
   { href: "/settings/profile", label: "Profile" },
   { href: "/settings/skills", label: "Skills and roles" },
   { href: "/settings/achievements", label: "Achievements" },
+  { href: "/settings/vouches", label: "Vouches" },
   { href: "/settings/security", label: "Password" },
   { href: "/settings", label: "Privacy and email" },
 ];

@@ -32,6 +32,8 @@ import {
   studyYearLabel,
 } from "@/lib/amrita";
 import { getCurrentUser, requireOnboardedUser } from "@/lib/auth";
+import { listVouchesFor } from "@/lib/services/vouch";
+import { joinRouteLabel } from "@/lib/join-route";
 import { db } from "@/lib/db";
 import { formatDateRange, relativeTime } from "@/lib/utils";
 
@@ -137,6 +139,7 @@ export default async function ProfilePage({ params }: Props) {
   // is readable only by other signed-in students.
   const viewer = await requireOnboardedUser(`/u/${username}`);
   const profile = await getProfile(username);
+  const vouches = profile ? await listVouchesFor(profile.id) : [];
 
   if (!profile) notFound();
 
@@ -264,6 +267,13 @@ export default async function ProfilePage({ params }: Props) {
               </Badge>
             ) : null}
             {profile.role === "ADMIN" ? <Badge tone="brand">Admin</Badge> : null}
+            {/* How they got in, stated plainly. An account an admin let in
+                should say so rather than looking like it arrived on its own. */}
+            {profile.joinedVia && profile.joinedVia !== "SEED" ? (
+              <Badge tone={profile.joinedVia === "ADMIN" ? "brand" : "neutral"}>
+                {joinRouteLabel(profile.joinedVia)}
+              </Badge>
+            ) : null}
             <span className="text-[0.78rem] text-ink-muted">
               Active {relativeTime(profile.lastActiveAt)}
             </span>
@@ -390,6 +400,49 @@ export default async function ProfilePage({ params }: Props) {
       <div className="mt-6 grid gap-6 lg:grid-cols-[1.3fr_1fr]">
         {/* ------------------------------------------------- skills + roles */}
         <div className="space-y-6">
+          {/* Vouches sit above skills on purpose. A claimed skill is what this
+              person says about themselves; a vouch is what someone else says,
+              with their name attached, and that is the harder thing to fake. */}
+          {vouches.length ? (
+            <section>
+              <SectionTitle>
+                Vouched for by {vouches.length}{" "}
+                {vouches.length === 1 ? "person" : "people"}
+              </SectionTitle>
+              <Card>
+                <CardBody className="space-y-4">
+                  {vouches.map((vouch) => (
+                    <figure key={vouch.id} className="flex gap-3">
+                      <Avatar
+                        name={vouch.voucher.name}
+                        image={vouch.voucher.image}
+                        size="sm"
+                      />
+                      <div className="min-w-0">
+                        <blockquote className="text-[0.88rem] leading-relaxed text-ink-2">
+                          “{vouch.statement}”
+                        </blockquote>
+                        <figcaption className="mt-1 flex flex-wrap items-center gap-2 text-[0.78rem] text-ink-muted">
+                          <Link
+                            href={`/u/${vouch.voucher.username}`}
+                            className="font-medium text-ink-2 hover:text-brand"
+                          >
+                            {vouch.voucher.name}
+                          </Link>
+                          {vouch.team ? (
+                            <Badge tone="ok">
+                              Shared a team at {vouch.team.event.name}
+                            </Badge>
+                          ) : null}
+                        </figcaption>
+                      </div>
+                    </figure>
+                  ))}
+                </CardBody>
+              </Card>
+            </section>
+          ) : null}
+
           <section>
             <SectionTitle>Skills</SectionTitle>
             {profile.skills.length ? (
@@ -472,11 +525,7 @@ export default async function ProfilePage({ params }: Props) {
                 <p className="text-[0.85rem] text-ink-muted">
                   {isOwner ? (
                     <>
-                      Mark yourself as attending an event so team leaders can
-                      find you.{" "}
-                      <Link href="/events" className="font-medium text-brand hover:underline">
-                        Browse events
-                      </Link>
+                      Events are coming back soon.
                     </>
                   ) : (
                     "This person has not marked any events yet."
@@ -489,12 +538,9 @@ export default async function ProfilePage({ params }: Props) {
                     className="flex flex-wrap items-start justify-between gap-2 rounded-box border border-line p-3"
                   >
                     <div className="min-w-0">
-                      <Link
-                        href={`/events/${participation.event.slug}`}
-                        className="block text-[0.87rem] font-semibold hover:text-brand"
-                      >
+                      <span className="block text-[0.87rem] font-semibold">
                         {participation.event.name}
-                      </Link>
+                      </span>
                       <p className="mt-0.5 flex items-center gap-1.5 text-[0.75rem] text-ink-muted">
                         <CalendarIcon className="size-3" />
                         {formatDateRange(
