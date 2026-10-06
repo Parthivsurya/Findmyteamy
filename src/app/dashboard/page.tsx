@@ -4,18 +4,15 @@ import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button, btn } from "@/components/ui/button";
 import { Card, CardBody, CardHead, SectionTitle } from "@/components/ui/card";
-import { EmptyState } from "@/components/ui/empty";
 import { ScoreBadge } from "@/components/ui/meter";
 import { CompletenessCard } from "@/components/profile/completeness";
-import { ParticipationBadge } from "@/components/profile/availability";
 import { RoleChip } from "@/components/profile/skills";
-import { TeamCard } from "@/components/teams/team-card";
 import {
   ArrowRightIcon,
   CalendarIcon,
   CheckIcon,
   InboxIcon,
-  SparklesIcon,
+  SearchIcon,
   TrophyIcon,
   UsersIcon,
 } from "@/components/icons";
@@ -28,7 +25,7 @@ import {
   type Availability,
 } from "@/lib/enums";
 import { buildTeam } from "@/lib/services/search";
-import { countdown, daysSince, formatDateRange, relativeTime } from "@/lib/utils";
+import { daysSince, relativeTime } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -151,14 +148,14 @@ export default async function DashboardPage({
           <p className="mt-1 text-[0.9rem] text-ink-muted">
             {welcome
               ? "Your profile is live. Here is what to do next."
-              : "Your events, requests and the people worth inviting."}
+              : "Your requests, and the people worth inviting."}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <Link href="/team-builder" className={btn("primary", "md")}>
-            <SparklesIcon className="size-4" />
-            Team Builder
+          <Link href="/search" className={btn("primary", "md")}>
+            <SearchIcon className="size-4" />
+            Find teammates
           </Link>
           <Link href={`/u/${user.username}`} className={btn("outline", "md")}>
             View public profile
@@ -262,128 +259,13 @@ export default async function DashboardPage({
             )}
           </section>
 
-          {/* my events */}
-          <section>
-            <SectionTitle
-              action={
-                <Link
-                  href="/events"
-                  className="inline-flex items-center gap-1 text-[0.82rem] font-semibold text-brand hover:underline"
-                >
-                  Browse events
-                  <ArrowRightIcon className="size-3.5" />
-                </Link>
-              }
-            >
-              My events
-            </SectionTitle>
-
-            {user.participations.length === 0 ? (
-              <EmptyState
-                icon={<CalendarIcon className="size-5" />}
-                title="You are not attending any events yet"
-                description="Mark an event as attending and set your status. That is how team leaders find people for a specific hackathon."
-                action={
-                  <Link href="/events" className={btn("primary", "md")}>
-                    Find an event
-                  </Link>
-                }
-              />
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {user.participations.map((participation) => (
-                  <Card key={participation.eventId} className="p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <Link
-                        href={`/events/${participation.event.slug}`}
-                        className="text-[0.9rem] font-semibold leading-snug hover:text-brand"
-                      >
-                        {participation.event.name}
-                      </Link>
-                      <Badge tone="warn">
-                        {countdown(
-                          participation.event.registrationDeadline ??
-                            participation.event.startDate,
-                        )}
-                      </Badge>
-                    </div>
-                    <p className="mt-1 flex items-center gap-1.5 text-[0.78rem] text-ink-muted">
-                      <CalendarIcon className="size-3" />
-                      {formatDateRange(
-                        participation.event.startDate,
-                        participation.event.endDate,
-                      )}
-                    </p>
-                    <div className="mt-2.5">
-                      <ParticipationBadge status={participation.status} />
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {/* teams */}
-          {user.ledTeams.length || memberTeams.length ? (
-            <section>
-              <SectionTitle>My teams</SectionTitle>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {user.ledTeams.map((team) => (
-                  <TeamCard
-                    key={team.id}
-                    team={team}
-                    action={
-                      team.slots.some((s) => !s.filledById) ? (
-                        <Link
-                          href={`/team-builder?team=${team.id}`}
-                          className={btn("primary", "sm", "flex-1")}
-                        >
-                          Fill open roles
-                        </Link>
-                      ) : (
-                        <Link
-                          href={`/teams/${team.id}`}
-                          className={btn("outline", "sm", "flex-1")}
-                        >
-                          Manage team
-                        </Link>
-                      )
-                    }
-                  />
-                ))}
-                {memberTeams.map((team) => (
-                  <TeamCard
-                    key={team.id}
-                    team={team}
-                    action={
-                      <Link
-                        href={`/teams/${team.id}`}
-                        className={btn("outline", "sm", "flex-1")}
-                      >
-                        View team
-                      </Link>
-                    }
-                  />
-                ))}
-              </div>
-            </section>
-          ) : null}
+          {/* Events and teams are hidden for now, to return later. The data
+              and routes are untouched; only the way in is gone. */}
 
           {/* suggested teammates */}
           {suggestions.some((group) => group.candidates.length) ? (
             <section>
               <SectionTitle
-                action={
-                  recruitingTeam ? (
-                    <Link
-                      href={`/team-builder?team=${recruitingTeam.id}`}
-                      className="inline-flex items-center gap-1 text-[0.82rem] font-semibold text-brand hover:underline"
-                    >
-                      Open Team Builder
-                      <ArrowRightIcon className="size-3.5" />
-                    </Link>
-                  ) : null
-                }
               >
                 Suggested for {recruitingTeam?.name}
               </SectionTitle>
@@ -549,10 +431,6 @@ export default async function DashboardPage({
           <Card>
             <CardHead title="Quick actions" />
             <CardBody className="grid gap-2">
-              <Link href="/events/new" className={btn("outline", "sm", "justify-start")}>
-                <CalendarIcon className="size-4" />
-                List a new event
-              </Link>
               <Link href="/search" className={btn("outline", "sm", "justify-start")}>
                 <UsersIcon className="size-4" />
                 Search people

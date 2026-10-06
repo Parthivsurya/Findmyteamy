@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Button, btn } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { FilterIcon } from "@/components/icons";
 import {
   AVAILABILITY,
@@ -277,13 +277,10 @@ export function FilterPanel({
 
       <input type="hidden" name="sort" value={query.sort ?? "match"} />
 
-      <div className="flex gap-2 pt-1">
-        <Button type="submit" className="flex-1">
+      <div className="pt-1">
+        <Button type="submit" className="w-full">
           Apply filters
         </Button>
-        <Link href="/team-builder" className={btn("outline", "md")}>
-          Team Builder
-        </Link>
       </div>
     </form>
   );

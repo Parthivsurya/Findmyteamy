@@ -119,12 +119,7 @@ export default async function SearchPage({
               {activeEvent ? (
                 <>
                   {" attending "}
-                  <Link
-                    href={`/events/${activeEvent.slug}`}
-                    className="font-medium text-brand hover:underline"
-                  >
-                    {activeEvent.name}
-                  </Link>
+                  <span className="font-medium">{activeEvent.name}</span>
                 </>
               ) : null}
             </p>
@@ -167,9 +162,6 @@ export default async function SearchPage({
                 <div className="flex flex-wrap justify-center gap-2">
                   <Link href="/search" className={btn("primary", "md")}>
                     Clear filters
-                  </Link>
-                  <Link href="/events" className={btn("outline", "md")}>
-                    Browse events
                   </Link>
                 </div>
               }

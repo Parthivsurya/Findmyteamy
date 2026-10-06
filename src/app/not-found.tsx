@@ -18,8 +18,8 @@ export default function NotFound() {
         <Link href="/" className={btn("primary")}>
           Search for a teammate
         </Link>
-        <Link href="/events" className={btn("outline")}>
-          Browse events
+        <Link href="/search" className={btn("outline")}>
+          Find people
         </Link>
       </div>
     </div>
