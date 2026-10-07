@@ -30,6 +30,8 @@ export default async function ProfileSettingsPage() {
       linkedinUrl: true,
       portfolioUrl: true,
       resumeUrl: true,
+      whatsapp: true,
+      showWhatsapp: true,
       showGithub: true,
       showLinkedin: true,
       showPortfolio: true,

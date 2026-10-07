@@ -31,6 +31,8 @@ export type CandidateResult = {
   score: number;
   reasons: string[];
   eventStatus: string | null;
+  /** Null unless they chose to share it, so the card cannot leak an opt-out. */
+  whatsapp: string | null;
   /** From the Amrita roll address — drives the year and branch filters. */
   branchCode: string | null;
   joiningYear: number | null;
@@ -234,6 +236,9 @@ export async function searchPeople(
         score: matchScore(forScoring, need),
         reasons: matchReasons(forScoring, need, skillNames),
         eventStatus: forScoring.eventStatus,
+        // Only the number they chose to share reaches the card, so the
+        // Connect button cannot appear for someone who opted out.
+        whatsapp: user.showWhatsapp ? user.whatsapp : null,
         branchCode: user.branchCode,
         joiningYear: user.joiningYear,
         programYears: user.programYears,

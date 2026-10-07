@@ -34,6 +34,7 @@ import {
 import { getCurrentUser, requireOnboardedUser } from "@/lib/auth";
 import { listVouchesFor } from "@/lib/services/vouch";
 import { joinRouteLabel } from "@/lib/join-route";
+import { formatWhatsapp, whatsappLink } from "@/lib/whatsapp";
 import { db } from "@/lib/db";
 import { formatDateRange, relativeTime } from "@/lib/utils";
 
@@ -349,6 +350,32 @@ export default async function ProfilePage({ params }: Props) {
               </div>
             ) : null}
           </dl>
+
+          {/* The whole reason the number is collected: one tap from finding
+              someone to actually talking to them. Pre-filled so the first
+              message is not a blank box, and only shown when they chose to
+              share it. */}
+          {profile.whatsapp && (profile.showWhatsapp || isOwner) && !isOwner ? (
+            <a
+              href={whatsappLink(
+                profile.whatsapp,
+                `Hi ${profile.name.split(" ")[0]}, I found you on FindMyTeammate and I am looking for a teammate.`,
+              )}
+              target="_blank"
+              rel="noreferrer"
+              className={btn("primary", "md", "mb-3")}
+            >
+              Connect on WhatsApp
+              <ExternalIcon className="size-3 opacity-70" />
+            </a>
+          ) : null}
+
+          {profile.whatsapp && isOwner ? (
+            <p className="mb-3 text-[0.8rem] text-ink-muted">
+              Your WhatsApp is {profile.showWhatsapp ? "shown" : "hidden"} to
+              other students: {formatWhatsapp(profile.whatsapp)}
+            </p>
+          ) : null}
 
           {links.length ? (
             <div className="mt-4 flex flex-wrap gap-2">

@@ -106,9 +106,11 @@ export async function updateProfileAction(
     linkedinUrl: text(formData, "linkedinUrl"),
     portfolioUrl: text(formData, "portfolioUrl"),
     resumeUrl: text(formData, "resumeUrl"),
+    whatsapp: text(formData, "whatsapp"),
     showGithub: checked(formData, "showGithub"),
     showLinkedin: checked(formData, "showLinkedin"),
     showPortfolio: checked(formData, "showPortfolio"),
+    showWhatsapp: checked(formData, "showWhatsapp"),
   });
 
   if (!parsed.success) {
@@ -136,9 +138,13 @@ export async function updateProfileAction(
       linkedinUrl: data.linkedinUrl ?? null,
       portfolioUrl: data.portfolioUrl ?? null,
       resumeUrl: data.resumeUrl ?? null,
+      // Already normalised by the validator, so what is stored is always a
+      // number wa.me will accept.
+      whatsapp: data.whatsapp ?? null,
       showGithub: data.showGithub ?? true,
       showLinkedin: data.showLinkedin ?? true,
       showPortfolio: data.showPortfolio ?? true,
+      showWhatsapp: data.showWhatsapp ?? true,
     },
   });
 

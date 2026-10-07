@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { formatWhatsapp } from "@/lib/whatsapp";
 import { Button } from "@/components/ui/button";
 import { CheckIcon, PlusIcon } from "@/components/icons";
 import {
@@ -53,10 +54,12 @@ export function ProfileForm({
     image: string | null;
     githubUrl: string | null;
     linkedinUrl: string | null;
+    whatsapp: string | null;
     portfolioUrl: string | null;
     resumeUrl: string | null;
     showGithub: boolean;
     showLinkedin: boolean;
+    showWhatsapp: boolean;
     showPortfolio: boolean;
   };
 }) {
@@ -132,6 +135,39 @@ export function ProfileForm({
 
       <fieldset className="space-y-3">
         <legend className="field-label">Links and what is public</legend>
+
+        <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
+          <div>
+            <label htmlFor="whatsapp" className="field-label">
+              WhatsApp
+            </label>
+            <input
+              id="whatsapp"
+              name="whatsapp"
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              defaultValue={
+                defaults.whatsapp ? formatWhatsapp(defaults.whatsapp) : ""
+              }
+              placeholder="98765 43210"
+              className="field"
+            />
+            <p className="field-hint">
+              A 10-digit mobile is enough. This is what the Connect on WhatsApp
+              button on your profile opens.
+            </p>
+          </div>
+          <label className="flex items-center gap-2 pb-1 text-[0.82rem] sm:pb-6">
+            <input
+              type="checkbox"
+              name="showWhatsapp"
+              defaultChecked={defaults.showWhatsapp}
+              className="size-3.5 accent-[var(--brand-fill)]"
+            />
+            Show
+          </label>
+        </div>
 
         {(
           [

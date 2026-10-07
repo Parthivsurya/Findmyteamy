@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { normaliseWhatsapp } from "./whatsapp";
 import {
   ACHIEVEMENT_POSITIONS,
   ACHIEVEMENT_STATUSES,
@@ -61,6 +62,24 @@ const optionalText = (max: number) =>
     .optional()
     .transform((v) => (v === "" ? undefined : v));
 
+/**
+ * A WhatsApp number, validated and normalised together.
+ *
+ * Normalising here rather than at the call site means nothing downstream can
+ * ever hold a number in a shape wa.me refuses: by the time it is stored it is
+ * already link-ready, or the form has been rejected.
+ */
+const whatsappField = z
+  .string()
+  .trim()
+  .max(24)
+  .optional()
+  .transform((v) => (v ? normaliseWhatsapp(v) : undefined))
+  .refine((v) => v !== null, {
+    message: "That does not look like a WhatsApp number. A 10-digit mobile is enough.",
+  })
+  .transform((v) => v ?? undefined);
+
 const optionalUrl = z
   .string()
   .trim()
@@ -115,9 +134,11 @@ export const profileSchema = z.object({
   linkedinUrl: optionalUrl,
   portfolioUrl: optionalUrl,
   resumeUrl: optionalUrl,
+  whatsapp: whatsappField,
   showGithub: z.boolean().optional(),
   showLinkedin: z.boolean().optional(),
   showPortfolio: z.boolean().optional(),
+  showWhatsapp: z.boolean().optional(),
 });
 
 export const skillsSchema = z.object({

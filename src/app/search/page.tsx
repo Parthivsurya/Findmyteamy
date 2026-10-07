@@ -11,6 +11,7 @@ import { db } from "@/lib/db";
 import { getRoles, getSkills } from "@/lib/services/catalog";
 import { searchPeople } from "@/lib/services/search";
 import { cn, pluralize, withParams } from "@/lib/utils";
+import { whatsappLink } from "@/lib/whatsapp";
 import { searchQuerySchema } from "@/lib/validators";
 
 export const metadata: Metadata = {
@@ -184,18 +185,23 @@ export default async function SearchPage({
                         >
                           View profile
                         </Link>
-                        <Link
-                          href={
-                            user
-                              ? `/invite/${candidate.username}${
-                                  activeEvent ? `?event=${activeEvent.slug}` : ""
-                                }`
-                              : `/login?next=/invite/${candidate.username}`
-                          }
-                          className={btn("primary", "sm", "flex-1")}
-                        >
-                          Invite
-                        </Link>
+                        {/* Was "Invite", which led into the team flow that is
+                            deferred, so every card ended at a dead page.
+                            Connect is the real next step anyway: you have
+                            found someone, now talk to them. */}
+                        {candidate.whatsapp ? (
+                          <a
+                            href={whatsappLink(
+                              candidate.whatsapp,
+                              `Hi ${candidate.name.split(" ")[0]}, I found you on FindMyTeammate and I am looking for a teammate.`,
+                            )}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={btn("primary", "sm", "flex-1")}
+                          >
+                            Connect
+                          </a>
+                        ) : null}
                       </>
                     }
                   />
