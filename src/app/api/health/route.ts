@@ -9,7 +9,7 @@ import { isTypeSafeConfigured, typeSafeModel } from "@/lib/typesafe";
  * up correctly. Reports which optional services are configured, but never the
  * values themselves.
  */
-export async function GET(request: Request) {
+export async function GET() {
   const startedAt = Date.now();
 
   let database = "ok";
@@ -19,35 +19,9 @@ export async function GET(request: Request) {
     database = "unreachable";
   }
 
-  // Temporary. The sign-up page returns 500 for any vouch token in
-  // production but works locally against SQLite, and Vercel's logs are not
-  // readable from here, so this reports the real error instead of guessing.
-  // Remove once the cause is found.
-  let vouchProbe: string | undefined;
-  if (new URL(request.url).searchParams.has("probe")) {
-    try {
-      const row = await db.vouch.findUnique({
-        where: { token: "diagnostic-nonexistent" },
-        select: { id: true, voucher: { select: { name: true } } },
-      });
-      vouchProbe = `query ok, returned ${row === null ? "null" : "a row"}`;
-    } catch (error) {
-      const e = error as { name?: string; message?: string; code?: string; meta?: unknown };
-      vouchProbe = [
-        e.name ?? "Error",
-        e.code ? `code=${e.code}` : "",
-        e.meta ? `meta=${JSON.stringify(e.meta).slice(0, 200)}` : "",
-        (e.message ?? "").replace(/\s+/g, " ").trim().slice(0, 600),
-      ]
-        .filter(Boolean)
-        .join("  ");
-    }
-  }
-
   const body = {
     status: database === "ok" ? "ok" : "degraded",
     database,
-    ...(vouchProbe ? { vouchProbe } : {}),
     databaseProvider: databaseProvider(),
     // Warn loudly about the two settings that are unsafe in production.
     config: {
