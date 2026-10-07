@@ -18,7 +18,9 @@ import { listAccessRequests } from "@/lib/services/access-requests";
 import { listAllUsers } from "@/lib/services/accounts";
 import { DeleteUser } from "@/components/admin/people";
 import { joinRouteLabel } from "@/lib/join-route";
-import { buildVouchForest } from "@/lib/services/vouch";
+import { buildVouchForest, listPendingVouchLinks } from "@/lib/services/vouch";
+import { appUrl } from "@/lib/env";
+import { CopyLink } from "@/components/settings/vouch-forms";
 import { SKILL_CATEGORY_LABEL, type SkillCategory } from "@/lib/enums";
 import { listFlaggedAssessments } from "@/lib/services/skill-assessment";
 import { requireAdmin } from "@/lib/auth";
@@ -44,6 +46,7 @@ export default async function AdminPage() {
     accessRequests,
     forest,
     people,
+    pendingLinks,
   ] = await Promise.all([
     db.achievement.findMany({
       where: { status: "PENDING" },
@@ -104,6 +107,7 @@ export default async function AdminPage() {
     listAccessRequests("PENDING"),
     buildVouchForest(),
     listAllUsers(),
+    listPendingVouchLinks(),
   ]);
 
   const [
@@ -287,7 +291,33 @@ export default async function AdminPage() {
             description="Every account traces to a voucher, an approved request, or the founding cohort. A root with an unusually large subtree is where collusion would show up first."
             action={<SeedMemberForm />}
           />
-          <CardBody>
+          <CardBody className="space-y-4">
+            {pendingLinks.length ? (
+              <div>
+                <p className="field-label">Links waiting to be used</p>
+                <ul className="space-y-1.5">
+                  {pendingLinks.map((link) => {
+                    const url = `${appUrl()}/signup?vouch=${link.token}`;
+                    const roll = `${link.branchCode}${String(link.joiningYear).slice(2)}${link.rollNumber}`;
+                    return (
+                      <li key={link.id} className="flex items-center gap-2">
+                        <span className="w-24 shrink-0 font-mono text-[0.78rem] font-medium">
+                          {roll}
+                        </span>
+                        <code className="min-w-0 flex-1 truncate rounded-box border border-line bg-surface-2 px-2 py-1 font-mono text-[0.72rem] text-ink-muted">
+                          {url}
+                        </code>
+                        <span className="hidden shrink-0 text-[0.72rem] text-ink-muted sm:inline">
+                          {link.kind === "ADMIN_SEED" ? "founding" : link.voucher.name}
+                        </span>
+                        <CopyLink url={url} />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            ) : null}
+
             <VouchTree roots={forest.roots} totals={forest.totals} />
           </CardBody>
         </Card>

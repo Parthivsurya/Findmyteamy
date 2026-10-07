@@ -100,7 +100,26 @@ export function VouchForm({ ownCampus }: { ownCampus?: string | null }) {
       <Button type="submit" disabled={pending}>
         {pending ? "Creating…" : "Create vouch link"}
       </Button>
+
+      {state?.link ? <NewLink url={state.link} /> : null}
     </form>
+  );
+}
+
+/**
+ * A freshly created link, shown where it was created.
+ *
+ * The first version only said "send it to them", which gave the admin nothing
+ * to send. The link has to appear at the moment it exists.
+ */
+export function NewLink({ url }: { url: string }) {
+  return (
+    <div className="mt-2 flex items-center gap-2">
+      <code className="min-w-0 flex-1 truncate rounded-box border border-line bg-surface-2 px-2 py-1 font-mono text-[0.75rem] text-ink-2">
+        {url}
+      </code>
+      <CopyLink url={url} />
+    </div>
   );
 }
 

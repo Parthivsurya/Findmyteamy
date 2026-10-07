@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { NewLink } from "@/components/settings/vouch-forms";
 import {
   decideAccessRequestAction,
   seedMemberAction,
@@ -53,6 +54,7 @@ export function SeedMemberForm() {
       </Button>
       <div className="w-full">
         <Notice state={state} />
+        {state?.link ? <NewLink url={state.link} /> : null}
       </div>
     </form>
   );

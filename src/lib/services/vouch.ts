@@ -520,3 +520,29 @@ export async function buildVouchForest(): Promise<{
     },
   };
 }
+
+/**
+ * Links that have been created but not yet used.
+ *
+ * Shown in the admin panel so a link is never lost by navigating away from
+ * the screen that made it. Without this the only copy of a fresh token lived
+ * in one render of one form.
+ */
+export async function listPendingVouchLinks() {
+  return db.vouch.findMany({
+    where: { status: "PENDING" },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    select: {
+      id: true,
+      token: true,
+      kind: true,
+      branchCode: true,
+      joiningYear: true,
+      rollNumber: true,
+      createdAt: true,
+      expiresAt: true,
+      voucher: { select: { name: true, username: true } },
+    },
+  });
+}

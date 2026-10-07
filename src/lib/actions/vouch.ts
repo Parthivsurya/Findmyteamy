@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { flattenZod } from "@/lib/api";
 import { requireAdmin, requireOnboardedUser } from "@/lib/auth";
+import { appUrl } from "@/lib/env";
 import {
   decideAccessRequest,
   submitAccessRequest,
@@ -50,10 +51,10 @@ export async function createVouchAction(
         campusCode: parsed.data.campusCode,
         schoolCode: parsed.data.schoolCode,
       }),
-    () => ({
+    (vouch) => ({
       ok: true,
-      message:
-        "Link created. Copy it from the list below and send it to them. Only that roll number can use it.",
+      message: `Link created for ${parsed.data.shortRoll}. Only that roll number can use it.`,
+      link: `${appUrl()}/signup?vouch=${vouch.token}`,
     }),
   );
 
@@ -91,9 +92,12 @@ export async function seedMemberAction(
         schoolCode: parsed.data.schoolCode,
         kind: "ADMIN_SEED",
       }),
-    () => ({
+    // The link itself comes back, because a confirmation that says "send it
+    // to them" without giving you anything to send is no use at all.
+    (vouch) => ({
       ok: true,
-      message: "Founding member link created. Send it to them to sign up.",
+      message: `Founding member link for ${parsed.data.shortRoll}. Only that roll number can use it.`,
+      link: `${appUrl()}/signup?vouch=${vouch.token}`,
     }),
   );
 

@@ -6,6 +6,8 @@ export type FormResult = {
   fieldErrors?: Record<string, string>;
   /** Set by actions that want the page to show a confirmation. */
   message?: string;
+  /** A URL the page should display for copying, such as a fresh vouch link. */
+  link?: string;
 };
 
 /**
