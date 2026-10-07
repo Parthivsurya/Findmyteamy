@@ -32,8 +32,15 @@ export async function GET(request: Request) {
       });
       vouchProbe = `query ok, returned ${row === null ? "null" : "a row"}`;
     } catch (error) {
-      const e = error as { name?: string; message?: string };
-      vouchProbe = `${e.name ?? "Error"}: ${(e.message ?? "").split("\n").slice(0, 3).join(" | ").slice(0, 300)}`;
+      const e = error as { name?: string; message?: string; code?: string; meta?: unknown };
+      vouchProbe = [
+        e.name ?? "Error",
+        e.code ? `code=${e.code}` : "",
+        e.meta ? `meta=${JSON.stringify(e.meta).slice(0, 200)}` : "",
+        (e.message ?? "").replace(/\s+/g, " ").trim().slice(0, 600),
+      ]
+        .filter(Boolean)
+        .join("  ");
     }
   }
 
