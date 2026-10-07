@@ -213,9 +213,41 @@
     border: 1px solid var(--line-strong);
     border-radius: var(--r-box);
     padding: 0.42rem 0.6rem;
-    font-size: 0.9rem;
+    /* 16px on phones, and only on phones.
+       iOS Safari zooms the page whenever a focused input is smaller than
+       16px, which is the lurch people describe as "the site is not mobile
+       friendly". The denser 0.9rem is kept from the small breakpoint up,
+       where there is no such behaviour and the extra density is worth it. */
+    font-size: 16px;
     color: var(--ink);
     transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+
+  @media (min-width: 640px) {
+    .field {
+      font-size: 0.9rem;
+    }
+  }
+
+  /* Comfortable targets on touch, without inflating a dense desktop UI.
+     A finger needs far more than a cursor: a 14px checkbox is a miss waiting
+     to happen, and the rows here are full of them. */
+  @media (pointer: coarse) {
+    .field {
+      padding: 0.55rem 0.7rem;
+    }
+
+    /* Checkbox sizing is handled on the elements themselves: Tailwind's
+       utilities sit in a later cascade layer and would win here regardless of
+       specificity, so a rule in this layer would silently do nothing. */
+
+    /* Anything clickable gets a minimum height, including the small buttons
+       in list rows that were 23 to 28 pixels tall. */
+    button,
+    [role="button"],
+    a[class*="inline-flex"] {
+      min-height: 2.25rem;
+    }
   }
 
   .field:hover:not(:disabled) {

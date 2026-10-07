@@ -163,7 +163,7 @@ export function ProfileForm({
               type="checkbox"
               name="showWhatsapp"
               defaultChecked={defaults.showWhatsapp}
-              className="size-3.5 accent-[var(--brand-fill)]"
+              className="size-4 accent-[var(--brand-fill)] sm:size-3.5"
             />
             Show
           </label>
@@ -196,7 +196,7 @@ export function ProfileForm({
                 type="checkbox"
                 name={showKey}
                 defaultChecked={defaults[showKey]}
-                className="size-4 accent-[var(--brand)]"
+                className="size-4 accent-[var(--brand-fill)]"
               />
               Public
             </label>

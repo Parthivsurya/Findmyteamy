@@ -143,7 +143,7 @@ export function SkillPicker({
                 remove(selected[selected.length - 1]!);
               }
             }}
-            className="w-full bg-transparent px-1.5 py-1 text-[0.875rem] outline-none disabled:cursor-not-allowed"
+            className="w-full bg-transparent px-1.5 py-1 text-base sm:text-[0.875rem] outline-none disabled:cursor-not-allowed"
             role="combobox"
             aria-expanded={open}
             aria-controls={`${name}-options`}

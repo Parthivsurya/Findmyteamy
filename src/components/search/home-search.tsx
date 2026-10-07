@@ -102,7 +102,7 @@ function Filter({
         checked={checked}
         disabled={disabled}
         onChange={(event) => onChange(event.target.checked)}
-        className="size-3.5 accent-[var(--brand-fill)]"
+        className="size-4 accent-[var(--brand-fill)] sm:size-3.5"
       />
       {label}
       {detail ? (

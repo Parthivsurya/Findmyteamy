@@ -82,7 +82,7 @@ export function FilterPanel({
             value="true"
             defaultChecked={query.sameYear}
             disabled={!signedIn}
-            className="size-4 accent-[var(--brand)]"
+            className="size-4 accent-[var(--brand-fill)]"
           />
           Same year as me
         </label>
@@ -94,7 +94,7 @@ export function FilterPanel({
             value="true"
             defaultChecked={query.sameBranch}
             disabled={!signedIn}
-            className="size-4 accent-[var(--brand)]"
+            className="size-4 accent-[var(--brand-fill)]"
           />
           Same branch as me
         </label>
@@ -256,7 +256,7 @@ export function FilterPanel({
             name="verifiedOnly"
             value="true"
             defaultChecked={query.verifiedOnly}
-            className="size-4 accent-[var(--brand)]"
+            className="size-4 accent-[var(--brand-fill)]"
           />
           Has verified wins
         </label>

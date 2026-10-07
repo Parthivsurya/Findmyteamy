@@ -190,7 +190,7 @@ export default async function AdminPage() {
                   key={person.id}
                   className="flex flex-wrap items-start gap-3 px-4 py-3"
                 >
-                  <div className="min-w-44 flex-1">
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href={`/u/${person.username}`}
@@ -209,7 +209,7 @@ export default async function AdminPage() {
                         <Badge tone="warn">Onboarding unfinished</Badge>
                       ) : null}
                     </div>
-                    <p className="mt-0.5 font-mono text-[0.75rem] text-ink-muted">
+                    <p className="mt-0.5 break-all font-mono text-[0.75rem] text-ink-muted">
                       {person.email}
                     </p>
                     <p className="mt-0.5 text-[0.75rem] text-ink-muted">
@@ -265,7 +265,7 @@ export default async function AdminPage() {
                   className="space-y-2 rounded-box border border-line p-3"
                 >
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-mono text-[0.82rem] font-medium">
+                    <span className="min-w-0 break-all font-mono text-[0.82rem] font-medium">
                       {request.email}
                     </span>
                     <span className="ml-auto text-[0.75rem] text-ink-muted">
@@ -289,9 +289,12 @@ export default async function AdminPage() {
           <CardHead
             title="How people got in"
             description="Every account traces to a voucher, an approved request, or the founding cohort. A root with an unusually large subtree is where collusion would show up first."
-            action={<SeedMemberForm />}
           />
           <CardBody className="space-y-4">
+            <div className="border-b border-line pb-4">
+              <SeedMemberForm />
+            </div>
+
             {pendingLinks.length ? (
               <div>
                 <p className="field-label">Links waiting to be used</p>
