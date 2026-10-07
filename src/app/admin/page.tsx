@@ -15,6 +15,9 @@ import { ShieldIcon } from "@/components/icons";
 import { AccessDecision, SeedMemberForm } from "@/components/admin/vouch-admin";
 import { VouchTree } from "@/components/admin/vouch-tree";
 import { listAccessRequests } from "@/lib/services/access-requests";
+import { listAllUsers } from "@/lib/services/accounts";
+import { DeleteUser } from "@/components/admin/people";
+import { joinRouteLabel } from "@/lib/join-route";
 import { buildVouchForest } from "@/lib/services/vouch";
 import { SKILL_CATEGORY_LABEL, type SkillCategory } from "@/lib/enums";
 import { listFlaggedAssessments } from "@/lib/services/skill-assessment";
@@ -40,6 +43,7 @@ export default async function AdminPage() {
     stats,
     accessRequests,
     forest,
+    people,
   ] = await Promise.all([
     db.achievement.findMany({
       where: { status: "PENDING" },
@@ -99,6 +103,7 @@ export default async function AdminPage() {
     ]),
     listAccessRequests("PENDING"),
     buildVouchForest(),
+    listAllUsers(),
   ]);
 
   const [
@@ -167,6 +172,72 @@ export default async function AdminPage() {
       </section>
 
       <div className="space-y-6">
+        {/* -------------------------------------------------- the people */}
+        <Card>
+          <CardHead
+            title="People"
+            description="Everyone with an account. Deleting one removes their skills, teams, requests and vouches with them, and cannot be undone."
+            action={<Badge tone="neutral">{people.length} accounts</Badge>}
+          />
+          <CardBody className="px-0 py-0">
+            <ul className="divide-y divide-[var(--line)]">
+              {people.map((person) => (
+                <li
+                  key={person.id}
+                  className="flex flex-wrap items-start gap-3 px-4 py-3"
+                >
+                  <div className="min-w-44 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Link
+                        href={`/u/${person.username}`}
+                        className="text-[0.88rem] font-medium hover:text-brand"
+                      >
+                        {person.name}
+                      </Link>
+                      {person.role === "ADMIN" ? (
+                        <Badge tone="brand">Admin</Badge>
+                      ) : null}
+                      <Badge tone="neutral">{joinRouteLabel(person.joinedVia)}</Badge>
+                      {!person.emailVerifiedAt ? (
+                        <Badge tone="warn">Unverified</Badge>
+                      ) : null}
+                      {!person.onboarded ? (
+                        <Badge tone="warn">Onboarding unfinished</Badge>
+                      ) : null}
+                    </div>
+                    <p className="mt-0.5 font-mono text-[0.75rem] text-ink-muted">
+                      {person.email}
+                    </p>
+                    <p className="mt-0.5 text-[0.75rem] text-ink-muted">
+                      {person._count.skills} skills · {person.profileCompleteness}% complete
+                      {person._count.vouchesWritten > 0
+                        ? ` · vouched for ${person._count.vouchesWritten}`
+                        : ""}
+                      {person.lastActiveAt
+                        ? ` · active ${relativeTime(person.lastActiveAt)}`
+                        : ""}
+                    </p>
+                  </div>
+
+                  <div className="shrink-0">
+                    {person.id === admin.id ? (
+                      <span className="text-[0.75rem] text-ink-muted">
+                        This is you
+                      </span>
+                    ) : (
+                      <DeleteUser
+                        userId={person.id}
+                        username={person.username}
+                        name={person.name}
+                      />
+                    )}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </CardBody>
+        </Card>
+
         {/* ------------------------------------------- access requests */}
         <Card>
           <CardHead

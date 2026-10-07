@@ -326,3 +326,59 @@ export async function changePassword(
     data: { passwordHash: await hashPassword(newPassword) },
   });
 }
+
+// ---------------------------------------------------------------------------
+// Admin: people
+// ---------------------------------------------------------------------------
+
+/** Everyone on the platform, for the admin people list. */
+export async function listAllUsers() {
+  return db.user.findMany({
+    orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+    select: {
+      id: true,
+      name: true,
+      username: true,
+      email: true,
+      role: true,
+      joinedVia: true,
+      onboarded: true,
+      emailVerifiedAt: true,
+      createdAt: true,
+      lastActiveAt: true,
+      branchCode: true,
+      joiningYear: true,
+      profileCompleteness: true,
+      _count: { select: { skills: true, vouchesWritten: true } },
+    },
+  });
+}
+
+/**
+ * Removes an account and everything that belongs to it.
+ *
+ * Deliberately a hard delete rather than a flag. Twenty-three relations
+ * cascade, so skills, roles, achievements, teams they led, requests,
+ * notifications, reports, blocks, vouches and skill assessments all go with
+ * them. There is no undo, which is why the caller shows a confirmation step.
+ *
+ * An admin cannot delete themselves. Nothing else in the app would stop the
+ * last administrator removing their own access and locking the platform.
+ */
+export async function deleteUserAsAdmin(targetId: string, adminId: string) {
+  if (targetId === adminId) {
+    throw new HttpError(
+      400,
+      "You cannot delete your own account from here. Use settings if you really mean to.",
+    );
+  }
+
+  const target = await db.user.findUnique({
+    where: { id: targetId },
+    select: { id: true, name: true, email: true, role: true },
+  });
+  if (!target) throw new HttpError(404, "That account no longer exists");
+
+  await db.user.delete({ where: { id: targetId } });
+  return target;
+}

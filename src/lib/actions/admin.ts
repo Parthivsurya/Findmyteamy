@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { reviewAchievement } from "@/lib/services/achievements";
+import { deleteUserAsAdmin } from "@/lib/services/accounts";
 import { eventReviewSchema } from "@/lib/validators";
 import { field, guard, type FormResult } from "./shared";
 
@@ -140,5 +141,40 @@ export async function resolveReportAction(
   );
 
   revalidatePath("/admin");
+  return result;
+}
+
+/**
+ * Deleting a person, from the admin people list.
+ *
+ * Requires the account's own username typed back as confirmation. A single
+ * button is too easy to hit by accident for something with no undo, and
+ * twenty-three relations cascade behind this.
+ */
+export async function deleteUserAction(
+  _prev: FormResult | undefined,
+  formData: FormData,
+): Promise<FormResult> {
+  const admin = await requireAdmin();
+
+  const userId = field(formData, "userId");
+  const confirm = field(formData, "confirm");
+  const expected = field(formData, "username");
+
+  if (!userId || !expected) return { error: "Missing account details" };
+  if (confirm?.toLowerCase() !== expected.toLowerCase()) {
+    return { error: `Type ${expected} to confirm the deletion` };
+  }
+
+  const result = await guard(
+    () => deleteUserAsAdmin(userId, admin.id),
+    (deleted) => ({
+      ok: true,
+      message: `${deleted.name} and everything belonging to them has been deleted.`,
+    }),
+  );
+
+  revalidatePath("/admin");
+  revalidatePath("/search");
   return result;
 }
