@@ -3,7 +3,6 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { SignupForm } from "@/components/auth/forms";
-import { RequestAccessForm } from "@/components/auth/request-access";
 import { getCurrentUser } from "@/lib/auth";
 import { formatShortRoll } from "@/lib/amrita";
 import { getVouchByToken } from "@/lib/services/vouch";
@@ -49,16 +48,7 @@ export default async function SignupPage({
       }
       footer={
         <div className="space-y-6">
-          <div className="space-y-2">
-            <h2 className="text-[0.92rem] font-medium">No vouch link?</h2>
-            <p className="text-[0.85rem] leading-relaxed text-ink-muted">
-              Ask someone already here to vouch for you, or request access and
-              an admin will review it.
-            </p>
-            <RequestAccessForm />
-          </div>
-
-          <p className="rule pt-5 text-[0.85rem] text-ink-muted">
+          <p className="text-[0.85rem] text-ink-muted">
           Already registered?{" "}
           <Link href="/login" className="font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand">
             Sign in

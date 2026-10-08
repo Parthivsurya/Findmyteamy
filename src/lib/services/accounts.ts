@@ -4,8 +4,6 @@ import { parseStudentEmail, studentEmailProblem } from "@/lib/amrita";
 import { hashPassword, passwordProblem, verifyPassword } from "@/lib/password";
 import { RESERVED_USERNAMES } from "@/lib/validators";
 import { issueOtp, verifyOtp } from "./otp";
-import { vouchAcceptsEmail } from "./vouch";
-import { hasApprovedAccess } from "./access-requests";
 
 /**
  * Registration and sign-in for Amrita students.
@@ -71,20 +69,6 @@ export type SignupInput = {
  * Step one of sign-up: validate, store the account as unverified, and email a
  * one-time code. Re-running it for an unverified address simply re-sends.
  */
-/**
- * Whether this address may create an account at all.
- *
- * A usable vouch link bound to this exact roll, or an approved request naming
- * this exact address. Nothing else gets in.
- */
-async function mayRegister(email: string, vouchToken?: string): Promise<boolean> {
-  if (vouchToken) {
-    const check = await vouchAcceptsEmail(vouchToken, email);
-    if (check.ok) return true;
-  }
-  return hasApprovedAccess(email);
-}
-
 export async function startSignup(input: SignupInput) {
   const email = input.email.trim().toLowerCase();
 
@@ -97,19 +81,12 @@ export async function startSignup(input: SignupInput) {
   const name = input.name.trim();
   if (name.length < 2) throw new HttpError(400, "Enter your full name");
 
-  // The gate. Enforced here rather than in the form, because the form is the
-  // client and the client is never the authority: a hand-made POST must hit
-  // the same wall as the sign-up page does.
-  //
-  // Two ways through, and an address needs exactly one of them. Both are
-  // checked against this address specifically, so neither a link nor an
-  // approval can be handed to someone else.
-  if (!(await mayRegister(email, input.vouchToken))) {
-    throw new HttpError(
-      403,
-      "FindMyTeammate is invite only. Ask someone already here to vouch for you, or request access and an admin will review it.",
-    );
-  }
+  // Sign-up is open. Invite-only was tried for a day and the arithmetic was
+  // against it: a gate filters hardest against a first year who knows nobody,
+  // which is exactly the person a teammate finder is for, and growth stalled
+  // at four accounts. A vouch still means something, just as standing rather
+  // than as a turnstile: it shows on the profile with the voucher's name and
+  // reason, and others can search for vouched people specifically.
 
   const existing = await db.user.findUnique({
     where: { email },

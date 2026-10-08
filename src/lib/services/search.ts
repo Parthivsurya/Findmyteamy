@@ -33,6 +33,8 @@ export type CandidateResult = {
   eventStatus: string | null;
   /** Null unless they chose to share it, so the card cannot leak an opt-out. */
   whatsapp: string | null;
+  /** How many members have vouched for them, with a statement that still stands. */
+  vouchCount: number;
   /** From the Amrita roll address — drives the year and branch filters. */
   branchCode: string | null;
   joiningYear: number | null;
@@ -78,6 +80,18 @@ export async function searchPeople(
   // --- hard filters, applied by the database --------------------------------
   const where: Record<string, unknown> = { onboarded: true };
   const and: Array<Record<string, unknown>> = [];
+
+  // Vouched means at least one other member wrote a statement about them that
+  // still stands. Offered as a filter the searcher chooses rather than as a
+  // ranking boost: a boost would create a reason to collect vouches, and the
+  // whole point is that a vouch is somebody's word, not a score.
+  if (query.vouchedOnly) {
+    and.push({
+      vouchesReceived: {
+        some: { kind: "MEMBER", status: "REDEEMED", statement: { not: null } },
+      },
+    });
+  }
 
   if (viewerId) {
     and.push({ id: { not: viewerId } });
@@ -168,7 +182,14 @@ export async function searchPeople(
       participations: eventId
         ? { where: { eventId }, select: { status: true } }
         : { select: { status: true }, take: 0 },
-      _count: { select: { achievements: { where: { status: "VERIFIED" } } } },
+      _count: {
+        select: {
+          achievements: { where: { status: "VERIFIED" } },
+          vouchesReceived: {
+            where: { kind: "MEMBER", status: "REDEEMED", statement: { not: null } },
+          },
+        },
+      },
     },
   });
 
@@ -239,6 +260,7 @@ export async function searchPeople(
         // Only the number they chose to share reaches the card, so the
         // Connect button cannot appear for someone who opted out.
         whatsapp: user.showWhatsapp ? user.whatsapp : null,
+        vouchCount: user._count.vouchesReceived,
         branchCode: user.branchCode,
         joiningYear: user.joiningYear,
         programYears: user.programYears,
@@ -328,6 +350,7 @@ export async function buildTeam({
           college: undefined,
           location: undefined,
           mode: undefined,
+          vouchedOnly: false,
           sameYear: false,
           sameBranch: false,
           sameCampus: false,

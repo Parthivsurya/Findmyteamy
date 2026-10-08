@@ -231,6 +231,8 @@ export const searchQuerySchema = queryObject({
   // --- Amrita academic filters ---------------------------------------------
   // "same as me" pairs, resolved against the signed-in student's own address,
   // plus explicit values for shareable links.
+  /** Narrow to people somebody else put their name to. */
+  vouchedOnly: boolFlag,
   sameYear: boolFlag,
   sameBranch: boolFlag,
   sameCampus: boolFlag,

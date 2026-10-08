@@ -243,46 +243,51 @@ export default async function AdminPage() {
         </Card>
 
         {/* ------------------------------------------- access requests */}
-        <Card>
-          <CardHead
-            title="Requests to join"
-            description="Students with a valid Amrita address but no vouch link. Their address already proves they are a student, so this is about accountability rather than identity."
-            action={
-              accessRequests.length ? (
-                <Badge tone="warn">{accessRequests.length} waiting</Badge>
-              ) : null
-            }
-          />
-          <CardBody className="space-y-4">
-            {accessRequests.length === 0 ? (
-              <p className="text-[0.85rem] text-ink-muted">
-                Nothing waiting. The queue is clear.
-              </p>
-            ) : (
-              accessRequests.map((request) => (
-                <div
-                  key={request.id}
-                  className="space-y-2 rounded-box border border-line p-3"
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="min-w-0 break-all font-mono text-[0.82rem] font-medium">
-                      {request.email}
-                    </span>
-                    <span className="ml-auto text-[0.75rem] text-ink-muted">
-                      {relativeTime(request.createdAt)}
-                    </span>
+        {/* Only shown while any remain. Sign-up is open again so no new
+            ones arrive, but anything already in the queue must still be
+            resolvable rather than disappearing with the feature. */}
+        {accessRequests.length ? (
+          <Card>
+            <CardHead
+              title="Requests to join"
+              description="Students with a valid Amrita address but no vouch link. Their address already proves they are a student, so this is about accountability rather than identity."
+              action={
+                accessRequests.length ? (
+                  <Badge tone="warn">{accessRequests.length} waiting</Badge>
+                ) : null
+              }
+            />
+            <CardBody className="space-y-4">
+              {accessRequests.length === 0 ? (
+                <p className="text-[0.85rem] text-ink-muted">
+                  Nothing waiting. The queue is clear.
+                </p>
+              ) : (
+                accessRequests.map((request) => (
+                  <div
+                    key={request.id}
+                    className="space-y-2 rounded-box border border-line p-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="min-w-0 break-all font-mono text-[0.82rem] font-medium">
+                        {request.email}
+                      </span>
+                      <span className="ml-auto text-[0.75rem] text-ink-muted">
+                        {relativeTime(request.createdAt)}
+                      </span>
+                    </div>
+                    {request.note ? (
+                      <p className="text-[0.85rem] leading-relaxed text-ink-2">
+                        {request.note}
+                      </p>
+                    ) : null}
+                    <AccessDecision requestId={request.id} />
                   </div>
-                  {request.note ? (
-                    <p className="text-[0.85rem] leading-relaxed text-ink-2">
-                      {request.note}
-                    </p>
-                  ) : null}
-                  <AccessDecision requestId={request.id} />
-                </div>
-              ))
-            )}
-          </CardBody>
-        </Card>
+                ))
+              )}
+            </CardBody>
+          </Card>
+        ) : null}
 
         {/* ------------------------------------------------ the vouch tree */}
         <Card>

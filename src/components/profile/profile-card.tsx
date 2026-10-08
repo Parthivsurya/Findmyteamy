@@ -10,6 +10,8 @@ import { AvailabilityBadge } from "./availability";
 import { RoleChip, SkillChip } from "./skills";
 
 export type ProfileCardUser = {
+  /** Shown as a marker when somebody has vouched for them. */
+  vouchCount?: number;
   id: string;
   name: string;
   username: string;
@@ -71,6 +73,18 @@ export function ProfileCard({
 
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <AvailabilityBadge availability={user.availability} short />
+            {/* Standing, visible where people are actually scanning. The
+                statement itself is on the profile; here it is only the fact
+                that somebody put their name to them. */}
+            {user.vouchCount && user.vouchCount > 0 ? (
+              <Badge
+                tone="brand"
+                title={`${user.vouchCount} ${user.vouchCount === 1 ? "member has" : "members have"} vouched for them`}
+              >
+                Vouched
+                {user.vouchCount > 1 ? ` ×${user.vouchCount}` : ""}
+              </Badge>
+            ) : null}
             {user.verifiedWins > 0 ? (
               <Badge tone="ok" title={`${user.verifiedWins} verified achievements`}>
                 <VerifiedIcon className="size-3" />

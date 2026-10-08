@@ -69,6 +69,22 @@ export function FilterPanel({
         />
       </div>
 
+      <label className="flex items-start gap-2 text-[0.83rem]">
+        <input
+          type="checkbox"
+          name="vouchedOnly"
+          value="true"
+          defaultChecked={query.vouchedOnly}
+          className="mt-0.5 size-4 accent-[var(--brand-fill)] sm:size-3.5"
+        />
+        <span>
+          Vouched for only
+          <span className="block text-[0.76rem] text-ink-muted">
+            Someone already here put their name to them.
+          </span>
+        </span>
+      </label>
+
       {/* The two filters that matter most on a single campus. */}
       <fieldset className="space-y-2 rounded-box border border-line bg-surface-2 p-3">
         <legend className="px-1 text-[0.76rem] font-medium text-ink-muted">
